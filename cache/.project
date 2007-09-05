@@ -1,0 +1,13 @@
+<projectDescription>
+  <name>jboss-ejb3-cache</name>
+  <comment>The Java EJB 3.0 Cache classes</comment>
+  <projects/>
+  <buildSpec>
+    <buildCommand>
+      <name>org.eclipse.jdt.core.javabuilder</name>
+    </buildCommand>
+  </buildSpec>
+  <natures>
+    <nature>org.eclipse.jdt.core.javanature</nature>
+  </natures>
+</projectDescription>
