@@ -33,7 +33,22 @@ package org.jboss.ejb3.cache;
  */
 public interface StatefulObjectFactory<T>
 {
+   /**
+    * Creates a new stateful object by calling it's empty constructor,
+    * do injection, calling post-construct and finally calling the
+    * appropriate init method.
+    * 
+    * @param initTypes  the argument types for the init method
+    * @param initValues the arguments for the init method
+    * @return
+    */
    T create(Class<?> initTypes[], Object initValues[]);
    
+   /**
+    * Perform any cleanup actions on the object, such as
+    * calling the pre-destroy callback.
+    * 
+    * @param obj    the object
+    */
    void destroy(T obj);
 }

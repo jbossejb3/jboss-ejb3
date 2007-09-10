@@ -71,6 +71,16 @@ public class SimpleCache<T extends Identifiable> implements Cache<T>
       return obj;
    }
 
+   public T peek(Object key) throws NoSuchEJBException
+   {
+      return get(key);
+   }
+   
+   public void release(T obj)
+   {
+      // release does nothing
+   }
+   
    public void remove(Object key)
    {
       T obj;
@@ -80,5 +90,15 @@ public class SimpleCache<T extends Identifiable> implements Cache<T>
       }
       if(obj != null)
          factory.destroy(obj);
+   }
+   
+   public void start()
+   {
+      // do nothing
+   }
+   
+   public void stop()
+   {
+      // do nothing
    }
 }

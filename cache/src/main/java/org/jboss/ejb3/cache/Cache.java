@@ -45,13 +45,30 @@ public interface Cache<T extends Identifiable>
    T create(Class<?> initTypes[], Object initValues[]);
    
    /**
-    * Get the specified object from cache.
+    * Get the specified object from cache. This will mark
+    * the object as being in use.
     * 
     * @param key    the identifier of the object
     * @return       the object
-    * @throws NoSuchEJBException if the object does not exist
+    * @throws NoSuchEJBException    if the object does not exist
     */
    T get(Object key) throws NoSuchEJBException;
+   
+   /**
+    * Peek at an object which might be in use.
+    * 
+    * @param key    the identifier of the object
+    * @return       the object
+    * @throws NoSuchEJBException    if the object does not exist
+    */
+   T peek(Object key) throws NoSuchEJBException;
+   
+   /**
+    * Release the object from use.
+    * 
+    * @param obj    the object
+    */
+   void release(T obj);
    
    /**
     * Remove the specified object from cache.
@@ -59,4 +76,14 @@ public interface Cache<T extends Identifiable>
     * @param key    the identifier of the object
     */
    void remove(Object key);
+   
+   /**
+    * Start the cache.
+    */
+   void start();
+   
+   /**
+    * Stop the cache.
+    */
+   void stop();
 }
