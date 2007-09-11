@@ -1,9 +1,9 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2007, Red Hat Middleware LLC, and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
-  *
+ * JBoss, Home of Professional Open Source
+ * Copyright 2007, Red Hat Middleware LLC, and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation; either version 2.1 of
@@ -22,28 +22,16 @@
 package org.jboss.ejb3.cache;
 
 /**
- * Stores an indentifiable object on a persistence store. Note that the object store
- * does NOT call any callbacks.
+ * A cache which passivates unused objects.
  * 
- * It is assumed the key represents something meaning full to the object store.
+ * A PassivatingCache is linked to an ObjectStore to store the
+ * passivated object and a PassivationManager to managed lifecycle
+ * callbacks on the object.
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  * @version $Revision: $
  */
-public interface ObjectStore<T extends Identifiable>
+public interface PassivatingCache<T extends Identifiable> extends Cache<T>
 {
-   /**
-    * Load the object from storage.
-    * 
-    * @param key    the object identifier
-    * @return       the object or null if not found
-    */
-   T load(Object key);
-   
-   /**
-    * Store the object into storage.
-    * 
-    * @param obj    the object
-    */
-   void store(T obj);
+
 }

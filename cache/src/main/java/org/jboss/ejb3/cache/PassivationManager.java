@@ -1,9 +1,9 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2007, Red Hat Middleware LLC, and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
-  *
+ * JBoss, Home of Professional Open Source
+ * Copyright 2007, Red Hat Middleware LLC, and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation; either version 2.1 of
@@ -21,29 +21,29 @@
  */
 package org.jboss.ejb3.cache;
 
+import java.io.Serializable;
+
 /**
- * Stores an indentifiable object on a persistence store. Note that the object store
- * does NOT call any callbacks.
- * 
- * It is assumed the key represents something meaning full to the object store.
+ * Manage passivation lifecycle callbacks on an object.
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  * @version $Revision: $
  */
-public interface ObjectStore<T extends Identifiable>
+public interface PassivationManager<T extends Serializable>
 {
    /**
-    * Load the object from storage.
-    * 
-    * @param key    the object identifier
-    * @return       the object or null if not found
-    */
-   T load(Object key);
-   
-   /**
-    * Store the object into storage.
+    * This method is called after an object has been retrieved
+    * from an ObjectStore.
     * 
     * @param obj    the object
     */
-   void store(T obj);
+   void postActivate(T obj);
+   
+   /**
+    * This method is called before an object is serialized into an
+    * ObjectStore.
+    * 
+    * @param obj    the object
+    */
+   void prePassivate(T obj);
 }
