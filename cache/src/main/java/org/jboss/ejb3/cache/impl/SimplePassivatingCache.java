@@ -104,7 +104,14 @@ public class SimplePassivatingCache<T extends Identifiable & Serializable> imple
                      if(then >= entry.lastUsed && entry.state != EntryState.IN_USE)
                      {
                         // TODO: can passivate?
-                        passivationManager.prePassivate(entry.obj);
+                        try
+                        {
+                           passivationManager.prePassivate(entry.obj);
+                        }
+                        catch(Throwable t)
+                        {
+                           log.warn("pre passivate failed for " + entry.obj, t);
+                        }
                         
                         store.store(entry.obj);
                         
@@ -164,13 +171,34 @@ public class SimplePassivatingCache<T extends Identifiable & Serializable> imple
          if(entry == null)
             throw new NoSuchEJBException(String.valueOf(key));
          if(entry.state != EntryState.READY)
-            throw new IllegalStateException("entry " + entry + " is not ready");
+            throw new IllegalStateException("entry " + key + " is not ready");
          entry.state = EntryState.IN_USE;
          entry.lastUsed = System.currentTimeMillis();
          return entry.obj;
       }
    }
 
+   public void passivate(Object key)
+   {
+      log.trace("passivate " + key);
+      synchronized (cache)
+      {
+         Entry entry = cache.get(key);
+         
+         if(entry == null)
+            throw new IllegalArgumentException("entry " + key + " not found in cache " + this);
+         
+         if(entry.state == EntryState.IN_USE)
+            throw new IllegalStateException("entry " + entry + " is in use");
+         
+         passivationManager.prePassivate(entry.obj);
+         
+         store.store(entry.obj);
+         
+         cache.remove(key);
+      }
+   }
+   
    public T peek(Object key) throws NoSuchEJBException
    {
       synchronized (cache)
@@ -185,9 +213,9 @@ public class SimplePassivatingCache<T extends Identifiable & Serializable> imple
                
                entry = new Entry(obj);
                cache.put(key, entry);
+               entry.state = EntryState.READY;
             }
          }
-         entry.state = EntryState.READY;
          if(entry == null)
             throw new NoSuchEJBException(String.valueOf(key));
          return entry.obj;
@@ -196,16 +224,23 @@ public class SimplePassivatingCache<T extends Identifiable & Serializable> imple
 
    public void release(T obj)
    {
+      releaseByKey(obj.getId());
+   }
+
+   protected void releaseByKey(Object key)
+   {
       synchronized (cache)
       {
-         Entry entry = cache.get(obj.getId());
+         Entry entry = cache.get(key);
+         if(entry == null)
+            throw new IllegalStateException("object " + key + " not from this cache");
          if(entry.state != EntryState.IN_USE)
             throw new IllegalStateException("entry " + entry + " is not in use");
          entry.state = EntryState.READY;
          entry.lastUsed = System.currentTimeMillis();
       }
    }
-
+   
    public void remove(Object key)
    {
       Entry entry;

@@ -83,6 +83,29 @@ public class PassivationUnitTestCase extends TestCase
       assertEquals("MockBeanContext should have been passivated", 2, container.passivations);
    }
    
+   /**
+    * Peek of an active object should not change it state.
+    */
+   public void testPeekActive()
+   {
+      MockBeanContainer container = new MockBeanContainer();
+      FileObjectStore<MockBeanContext> store = new FileObjectStore<MockBeanContext>();
+      store.setStorageDirectory("./target/tmp/passivation");
+      store.start();
+      SimplePassivatingCache<MockBeanContext> cache = new SimplePassivatingCache<MockBeanContext>(container, container, store);
+      cache.setName("MockBeanContainer");
+      cache.setSessionTimeout(1);
+      cache.start();
+      
+      MockBeanContext obj = cache.create(null, null);
+      Object key = obj.getId();
+      
+      cache.peek(key);
+      
+      cache.release(obj);
+      obj = null;      
+   }
+   
    private static void wait(Object obj) throws InterruptedException
    {
       synchronized (obj)

@@ -26,8 +26,8 @@ import java.util.Map;
 
 import javax.ejb.NoSuchEJBException;
 
+import org.jboss.ejb3.cache.Cache;
 import org.jboss.ejb3.cache.Identifiable;
-import org.jboss.ejb3.cache.PassivatingCache;
 import org.jboss.ejb3.cache.StatefulObjectFactory;
 
 /**
@@ -36,7 +36,7 @@ import org.jboss.ejb3.cache.StatefulObjectFactory;
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  * @version $Revision: $
  */
-public class EntryStateCache<T extends Identifiable> implements PassivatingCache<T>
+public class EntryStateCache<T extends Identifiable> implements Cache<T>
 {
    private StatefulObjectFactory<T> factory;
    private Map<Object, Entry> cache;

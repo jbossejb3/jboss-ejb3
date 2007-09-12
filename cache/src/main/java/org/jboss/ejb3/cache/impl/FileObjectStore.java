@@ -167,6 +167,7 @@ public class FileObjectStore<T extends Identifiable> implements ObjectStore<T>
       if(!file.exists())
          return null;
       
+      log.debug("loading state from " + file);
       try
       {
          FileInputStream fis = FISAction.open(file);

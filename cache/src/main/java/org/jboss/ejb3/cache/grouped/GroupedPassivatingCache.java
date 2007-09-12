@@ -19,24 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.cache;
+package org.jboss.ejb3.cache.grouped;
+
+import org.jboss.ejb3.cache.Identifiable;
+import org.jboss.ejb3.cache.PassivatingCache;
 
 /**
- * A cache which passivates unused objects.
- * 
- * A PassivatingCache is linked to an ObjectStore to store the
- * passivated object and a PassivationManager to managed lifecycle
- * callbacks on the object.
+ * Allows objects to the members of a PassivationGroup.
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  * @version $Revision: $
  */
-public interface PassivatingCache<T extends Identifiable> extends Cache<T>
+public interface GroupedPassivatingCache<T extends Identifiable> extends PassivatingCache<T>
 {
-   /**
-    * Force passivation of an object. The object must not be in use.
-    * 
-    * @param key    the identifier of the object
-    */
-   void passivate(Object key);
+   void setGroup(T obj, PassivationGroup group);
 }

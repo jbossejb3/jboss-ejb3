@@ -60,7 +60,7 @@
   <!-- ============================== -->
 
   <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
-    <param name="Threshold" value="FATAL"/>
+    <!--param name="Threshold" value="FATAL"/-->
     <param name="Target" value="System.out"/>
 
     <layout class="org.apache.log4j.PatternLayout">
@@ -112,11 +112,10 @@
   <!-- Limit categories -->
   <!-- ================ -->
 
-  <!-- Limit JBoss categories to INFO 
+  <!-- Limit JBoss categories to INFO -->
   <category name="org.jboss">
     <priority value="INFO" class="org.jboss.logging.XLevel"/>
   </category>
-  -->
 
   <!-- Increase the priority threshold for the DefaultDS category
   <category name="DefaultDS">
@@ -147,6 +146,11 @@
   <category name="org.jboss.tm">
     <priority value="TRACE" class="org.jboss.logging.XLevel"/>
   </category>
+  
+  <category name="org.jboss.ejb3">
+    <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+  </category>
+  
   <!-- ======================= -->
   <!-- Setup the Root category -->
   <!-- ======================= -->

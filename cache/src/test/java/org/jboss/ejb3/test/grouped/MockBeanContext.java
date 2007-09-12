@@ -19,24 +19,42 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.cache;
+package org.jboss.ejb3.test.grouped;
+
+import java.io.Serializable;
+
+import org.jboss.ejb3.cache.Identifiable;
 
 /**
- * A cache which passivates unused objects.
- * 
- * A PassivatingCache is linked to an ObjectStore to store the
- * passivated object and a PassivationManager to managed lifecycle
- * callbacks on the object.
+ * Comment
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  * @version $Revision: $
  */
-public interface PassivatingCache<T extends Identifiable> extends Cache<T>
+public class MockBeanContext implements Identifiable, Serializable
 {
-   /**
-    * Force passivation of an object. The object must not be in use.
-    * 
-    * @param key    the identifier of the object
-    */
-   void passivate(Object key);
+   private static final long serialVersionUID = 1L;
+
+   private static volatile long currentId = 0;
+   
+   private long id;
+   
+   public Object shared;
+   
+   public MockBeanContext()
+   {
+      this.id = ++currentId;
+   }
+   
+   public Object getId()
+   {
+      return id;
+   }
+
+   @Override
+   public String toString()
+   {
+      return super.toString() + "{id=" + id + "}";
+   }
+
 }

@@ -19,24 +19,43 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.cache;
+package org.jboss.ejb3.cache.impl;
+
+import org.jboss.ejb3.cache.PassivationManager;
+import org.jboss.ejb3.cache.StatefulObjectFactory;
+import org.jboss.ejb3.cache.grouped.PassivationGroup;
+import org.jboss.logging.Logger;
 
 /**
- * A cache which passivates unused objects.
- * 
- * A PassivatingCache is linked to an ObjectStore to store the
- * passivated object and a PassivationManager to managed lifecycle
- * callbacks on the object.
+ * Comment
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  * @version $Revision: $
  */
-public interface PassivatingCache<T extends Identifiable> extends Cache<T>
+public class PassivationGroupContainer implements StatefulObjectFactory<PassivationGroup>, PassivationManager<PassivationGroup>
 {
-   /**
-    * Force passivation of an object. The object must not be in use.
-    * 
-    * @param key    the identifier of the object
-    */
-   void passivate(Object key);
+   private static final Logger log = Logger.getLogger(PassivationGroupContainer.class);
+   
+   public PassivationGroup create(Class<?>[] initTypes, Object[] initValues)
+   {
+      return new PassivationGroupImpl();
+   }
+
+   public void destroy(PassivationGroup obj)
+   {
+      // TODO: nothing?
+   }
+
+   public void postActivate(PassivationGroup obj)
+   {
+      log.trace("post activate " + obj);
+      ((PassivationGroupImpl) obj).postActivate();
+   }
+
+   public void prePassivate(PassivationGroup obj)
+   {
+      log.trace("pre passivate " + obj);
+      ((PassivationGroupImpl) obj).prePassivate();
+   }
+
 }
