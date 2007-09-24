@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
     <groupId>org.jboss</groupId>
     <!--
@@ -12,15 +13,15 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jboss</groupId>
   <artifactId>jboss-ejb3-cache</artifactId>
-  <version>0.11.0.Beta1</version>
+  <version>0.11-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>JBoss EJB 3.0 Cache</name>
   <url>http://www.jboss.org</url>
   <description>The Java EJB 3.0 Cache classes</description>
 <scm>
-    <connection>scm:svn:http://anonsvn.jboss.org/repos/jbossas/projects/ejb33/tags/jboss-ejb3-cache-0.11.0.Beta1</connection>
-    <developerConnection>scm:svn:https://svn.jboss.org/repos/jbossas/projects/ejb3/tags/jboss-ejb3-cache-0.11.0.Beta1</developerConnection>
-    <url>http://viewvc.jboss.org/cgi-bin/viewvc.cgi/jbossas/projects/ejb33/tags/jboss-ejb3-cache-0.11.0.Beta1</url>
+    <connection>scm:svn:http://anonsvn.jboss.org/repos/jbossas/projects/ejb3/trunk/</connection>
+    <developerConnection>scm:svn:https://svn.jboss.org/repos/jbossas/projects/ejb/trunk/</developerConnection>
+    <url>http://viewvc.jboss.org/cgi-bin/viewvc.cgi/jbossas/projects/ejb3/trunk/</url>
   </scm>
   <build>
     <plugins>
