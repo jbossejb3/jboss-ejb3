@@ -25,9 +25,9 @@ import javax.ejb.NoSuchEJBException;
 
 /**
  * Cache a stateful object and make sure any life cycle callbacks are
- * called at the appropiate time.
+ * called at the appropriate time.
  * 
- * A cache is linked to an object factory. How the link is establish is left beyond
+ * A cache is linked to an object factory. How the link is established is left beyond
  * scope.
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
