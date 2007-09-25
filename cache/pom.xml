@@ -17,7 +17,7 @@
   <name>JBoss EJB 3.0 Cache</name>
   <url>http://www.jboss.org</url>
   <description>The Java EJB 3.0 Cache classes</description>
-<scm>
+  <scm>
     <connection>scm:svn:http://anonsvn.jboss.org/repos/jbossas/projects/ejb3/trunk/</connection>
     <developerConnection>scm:svn:https://svn.jboss.org/repos/jbossas/projects/ejb/trunk/</developerConnection>
     <url>http://viewvc.jboss.org/cgi-bin/viewvc.cgi/jbossas/projects/ejb3/trunk/</url>
