@@ -39,7 +39,7 @@ import org.jboss.logging.Logger;
  * Comment
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
- * @version $Revision: $
+ * @version $Revision$
  */
 public class SimplePassivatingCache<T extends Identifiable & Serializable> implements PassivatingCache<T>
 {
@@ -140,6 +140,27 @@ public class SimplePassivatingCache<T extends Identifiable & Serializable> imple
       this.cache = new HashMap<Object, Entry>();
    }
    
+   /**
+    * Activate an entry and put it back in the cache.
+    * 
+    * This method is not thread safe.
+    * 
+    * @param key    the indentifier of the object
+    * @return       the entry or null if not found
+    */
+   protected Entry activate(Object key)
+   {
+      T obj = store.load(key);
+      if(obj == null)
+         return null;
+      
+      passivationManager.postActivate(obj);
+      
+      Entry entry = new Entry(obj);
+      cache.put(key, entry);
+      return entry;
+   }
+   
    public T create(Class<?>[] initTypes, Object[] initValues)
    {
       T obj = factory.create(initTypes, initValues);
@@ -158,15 +179,9 @@ public class SimplePassivatingCache<T extends Identifiable & Serializable> imple
          Entry entry = cache.get(key);
          if(entry == null)
          {
-            T obj = store.load(key);
-            if(obj != null)
-            {
-               passivationManager.postActivate(obj);
-               
-               entry = new Entry(obj);
-               cache.put(key, entry);
+            entry = activate(key);
+            if(entry != null)
                return entry.obj;
-            }
          }
          if(entry == null)
             throw new NoSuchEJBException(String.valueOf(key));
@@ -206,15 +221,11 @@ public class SimplePassivatingCache<T extends Identifiable & Serializable> imple
          Entry entry = cache.get(key);
          if(entry == null)
          {
-            T obj = store.load(key);
-            if(obj != null)
-            {
-               passivationManager.postActivate(obj);
-               
-               entry = new Entry(obj);
-               cache.put(key, entry);
+            entry = activate(key);
+            // We're only peeking so the entry is not in use,
+            // since it's just activated it couldn't have been in use as well.
+            if(entry != null)
                entry.state = EntryState.READY;
-            }
          }
          if(entry == null)
             throw new NoSuchEJBException(String.valueOf(key));
@@ -247,6 +258,14 @@ public class SimplePassivatingCache<T extends Identifiable & Serializable> imple
       synchronized (cache)
       {
          entry = cache.remove(key);
+         if(entry == null)
+         {
+            entry = activate(key);
+            if(entry == null)
+               throw new NoSuchEJBException(String.valueOf(key));
+            // The entry was not in use, so it must be ready
+            entry.state = EntryState.READY;
+         }
          if(entry.state != EntryState.READY)
             throw new IllegalStateException("entry " + entry + " is not ready");
       }

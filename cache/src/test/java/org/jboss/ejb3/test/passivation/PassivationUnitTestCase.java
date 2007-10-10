@@ -23,29 +23,16 @@ package org.jboss.ejb3.test.passivation;
 
 import org.jboss.ejb3.cache.impl.FileObjectStore;
 import org.jboss.ejb3.cache.impl.SimplePassivatingCache;
-
-import junit.framework.TestCase;
+import org.jboss.ejb3.test.cache.common.CacheTestCase;
 
 /**
  * Comment
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
- * @version $Revision: $
+ * @version $Revision$
  */
-public class PassivationUnitTestCase extends TestCase
+public class PassivationUnitTestCase extends CacheTestCase
 {
-   private static void sleep(long micros)
-   {
-      try
-      {
-         Thread.sleep(micros);
-      }
-      catch (InterruptedException e)
-      {
-         // ignore
-      }
-   }
-   
    public void test1() throws InterruptedException
    {
       MockBeanContainer container = new MockBeanContainer();
@@ -106,11 +93,30 @@ public class PassivationUnitTestCase extends TestCase
       obj = null;      
    }
    
-   private static void wait(Object obj) throws InterruptedException
+   /**
+    * Test the remove of a passivated object.
+    */
+   public void testRemotePassivated() throws Exception
    {
-      synchronized (obj)
-      {
-         obj.wait(5000);
-      }
+      MockBeanContainer container = new MockBeanContainer();
+      FileObjectStore<MockBeanContext> store = new FileObjectStore<MockBeanContext>();
+      store.setStorageDirectory("./target/tmp/passivation");
+      store.start();
+      SimplePassivatingCache<MockBeanContext> cache = new SimplePassivatingCache<MockBeanContext>(container, container, store);
+      cache.setName("MockBeanContainer");
+      cache.setSessionTimeout(1);
+      cache.start();
+      
+      MockBeanContext obj = cache.create(null, null);
+      Object key = obj.getId();
+      
+      cache.release(obj);
+      obj = null;
+      
+      wait(container);
+      
+      assertEquals("MockBeanContext should have been passivated", 1, container.passivations);
+      
+      cache.remove(key);
    }
 }
