@@ -12,15 +12,15 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jboss</groupId>
   <artifactId>jboss-ejb3-cache</artifactId>
-  <version>0.11-SNAPSHOT</version>
+  <version>0.11.1</version>
   <packaging>jar</packaging>
   <name>JBoss EJB 3.0 Cache</name>
   <url>http://www.jboss.org</url>
   <description>The Java EJB 3.0 Cache classes</description>
   <scm>
-    <connection>scm:svn:http://anonsvn.jboss.org/repos/jbossas/projects/ejb3/trunk/</connection>
-    <developerConnection>scm:svn:https://svn.jboss.org/repos/jbossas/projects/ejb/trunk/</developerConnection>
-    <url>http://viewvc.jboss.org/cgi-bin/viewvc.cgi/jbossas/projects/ejb3/trunk/</url>
+    <connection>scm:svn:http://anonsvn.jboss.org/repos/jbossas/projects/ejb33/tags/jboss-ejb3-cache-0.11.1</connection>
+    <developerConnection>scm:svn:https://svn.jboss.org/repos/jbossas/projects/ejb3/tags/jboss-ejb3-cache-0.11.1</developerConnection>
+    <url>http://viewvc.jboss.org/cgi-bin/viewvc.cgi/jbossas/projects/ejb33/tags/jboss-ejb3-cache-0.11.1</url>
   </scm>
   <build>
     <plugins>
