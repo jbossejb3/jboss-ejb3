@@ -24,24 +24,6 @@
   </scm>
   <build>
     <plugins>
-      <!-- Normally defined in the parent -->
-      <plugin>
-        <groupId>org.jboss.maven.plugins</groupId>
-        <artifactId>maven-jboss-deploy-plugin</artifactId>
-        <version>1.4</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>jboss-deploy</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <jbossDeployRoot>${jboss.repository.root}</jbossDeployRoot>
-          <groupId>jboss</groupId>
-        </configuration>
-        <inherited>true</inherited>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
