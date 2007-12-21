@@ -1,69 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  vi:ts=2:sw=2:expandtab:
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-   <!-- Define Parent -->
-   <parent>
-      <groupId>org.jboss.ejb3</groupId>
-      <artifactId>jboss-ejb3</artifactId>
-      <version>0.12.0-SNAPSHOT</version>
-      <relativePath>../build/pom.xml</relativePath>
-   </parent>
+  <!-- Define Parent -->
+  <parent>
+    <groupId>org.jboss.ejb3</groupId>
+    <artifactId>jboss-ejb3</artifactId>
+    <version>0.12.0-SNAPSHOT</version>
+    <relativePath>../build/pom.xml</relativePath>
+  </parent>
 
-   <!-- Maven POM Model Version -->
-   <modelVersion>4.0.0</modelVersion>
+  <!-- Maven POM Model Version -->
+  <modelVersion>4.0.0</modelVersion>
 
-   <!-- Artifact Information -->
-   <groupId>org.jboss</groupId>
-   <artifactId>jboss-ejb3-cache</artifactId>
-   <version>0.12-SNAPSHOT</version>
-   <packaging>jar</packaging>
-   <name>JBoss EJB 3.0 Cache</name>
-   <url>http://labs.jboss.com/jbossejb3/</url>
-   <description>The Java EJB 3.0 Cache classes</description>
+  <!-- Artifact Information -->
+  <groupId>org.jboss</groupId>
+  <artifactId>jboss-ejb3-cache</artifactId>
+  <version>0.12-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <name>JBoss EJB 3.0 Cache</name>
+  <url>http://labs.jboss.com/jbossejb3/</url>
+  <description>The Java EJB 3.0 Cache classes</description>
 
 
-   <dependencies>
+  <dependencies>
 
-      <!-- EJB3 API -->
-      <dependency>
-         <groupId>org.jboss.javaee</groupId>
-         <artifactId>jboss-ejb-api</artifactId>
-      </dependency>
+    <!-- EJB3 API -->
+    <dependency>
+      <groupId>org.jboss.javaee</groupId>
+      <artifactId>jboss-ejb-api</artifactId>
+    </dependency>
 
-      <!-- GNU Trove -->
-      <dependency>
-         <groupId>trove</groupId>
-         <artifactId>trove</artifactId>
-         <scope>runtime</scope>
-      </dependency>
+    <!-- GNU Trove -->
+    <dependency>
+      <groupId>trove</groupId>
+      <artifactId>trove</artifactId>
+      <scope>runtime</scope>
+    </dependency>
 
-      <!-- JBoss Common Core -->
-      <dependency>
-         <groupId>org.jboss</groupId>
-         <artifactId>jboss-common-core</artifactId>
-      </dependency>
+    <!-- JBoss Common Core -->
+    <dependency>
+      <groupId>org.jboss</groupId>
+      <artifactId>jboss-common-core</artifactId>
+    </dependency>
 
-      <!-- JBoss Common Logging -->
-      <dependency>
-         <groupId>jboss</groupId>
-         <artifactId>jboss-common-logging-log4j</artifactId>
-         <scope>runtime</scope>
-      </dependency>
+    <!-- JBoss Common Logging -->
+    <dependency>
+      <groupId>jboss</groupId>
+      <artifactId>jboss-common-logging-log4j</artifactId>
+      <scope>runtime</scope>
+    </dependency>
 
-      <!-- JBoss Serialization -->
-      <dependency>
-         <groupId>jboss</groupId>
-         <artifactId>jboss-serialization</artifactId>
-      </dependency>
+    <!-- JBoss Serialization -->
+    <dependency>
+      <groupId>jboss</groupId>
+      <artifactId>jboss-serialization</artifactId>
+    </dependency>
 
-      <!-- JUnit -->
-      <dependency>
-         <groupId>junit</groupId>
-         <artifactId>junit</artifactId>
-         <scope>test</scope>
-      </dependency>
+    <!-- JUnit -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
 
-   </dependencies>
+  </dependencies>
 
 </project>
