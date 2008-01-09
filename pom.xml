@@ -20,6 +20,7 @@
   <!-- Artifact Information -->
   <artifactId>jboss-ejb3-pool</artifactId>
   <packaging>jar</packaging>
+  <version>0.13.0-SNAPSHOT</version>
   <name>JBoss EJB 3.0 Pool</name>
   <description>JBoss EJB 3.0 Pool classes for SLSBs</description>
   <url>http://labs.jboss.com/jbossejb3/</url>
