@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<server>
+   <mbean code="org.jboss.mq.server.jmx.Queue"
+      name="jboss.mq.destination:service=Queue,name=queueA">
+      <attribute name="JNDIName">queue/queueA</attribute>
+      <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+   </mbean>
+
+   <mbean code="org.jboss.mq.server.jmx.Queue"
+      name="jboss.mq.destination:service=Queue,name=queueB">
+      <attribute name="JNDIName">queue/queueB</attribute>
+      <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+   </mbean>
+
+   <mbean code="org.jboss.mq.server.jmx.Queue"
+      name="jboss.mq.destination:service=Queue,name=queueC">
+      <attribute name="JNDIName">queue/queueC</attribute>
+      <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+   </mbean>
+
+</server>
