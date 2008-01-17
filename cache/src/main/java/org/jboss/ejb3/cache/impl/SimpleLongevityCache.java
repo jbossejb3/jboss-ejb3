@@ -34,7 +34,7 @@ import org.jboss.ejb3.cache.LongevityCache;
  * Comment
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
- * @version $Revision: $
+ * @version $Revision$
  */
 public class SimpleLongevityCache<T extends Identifiable> implements LongevityCache<T>
 {

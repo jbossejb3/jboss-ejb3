@@ -28,7 +28,7 @@ import org.jboss.ejb3.cache.PassivatingCache;
  * Allows objects to the members of a PassivationGroup.
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
- * @version $Revision: $
+ * @version $Revision$
  */
 public interface GroupedPassivatingCache<T extends Identifiable> extends PassivatingCache<T>
 {

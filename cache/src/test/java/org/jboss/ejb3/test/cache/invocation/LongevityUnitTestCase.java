@@ -34,7 +34,7 @@ import junit.framework.TestCase;
  * I can have multiple invocations on a bean.
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
- * @version $Revision: $
+ * @version $Revision$
  */
 public class LongevityUnitTestCase extends TestCase
 {

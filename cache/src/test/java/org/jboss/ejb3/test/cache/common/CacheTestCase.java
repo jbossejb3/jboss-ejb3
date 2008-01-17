@@ -29,7 +29,7 @@ import junit.framework.TestCase;
  * You can either extend it or call the static helper methods directly.
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
- * @version $Revision: $
+ * @version $Revision$
  */
 public abstract class CacheTestCase extends TestCase
 {

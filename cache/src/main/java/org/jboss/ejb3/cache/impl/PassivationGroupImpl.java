@@ -32,7 +32,7 @@ import org.jboss.util.id.GUID;
  * Comment
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
- * @version $Revision: $
+ * @version $Revision$
  */
 public class PassivationGroupImpl implements PassivationGroup
 {

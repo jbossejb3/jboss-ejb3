@@ -29,7 +29,7 @@ package org.jboss.ejb3.cache;
  * callbacks on the object.
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
- * @version $Revision: $
+ * @version $Revision$
  */
 public interface PassivatingCache<T extends Identifiable> extends Cache<T>
 {

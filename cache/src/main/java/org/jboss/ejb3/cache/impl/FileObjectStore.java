@@ -43,7 +43,7 @@ import org.jboss.serial.io.JBossObjectOutputStream;
  * Stores objects in a directory via serialization.
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
- * @version $Revision: $
+ * @version $Revision$
  */
 public class FileObjectStore<T extends Identifiable> implements ObjectStore<T>
 {

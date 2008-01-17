@@ -30,7 +30,7 @@ import org.jboss.ejb3.cache.Identifiable;
  * one unit of work.
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
- * @version $Revision: $
+ * @version $Revision$
  */
 public interface PassivationGroup extends Identifiable, Serializable
 {

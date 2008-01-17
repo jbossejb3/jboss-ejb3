@@ -27,7 +27,7 @@ import org.jboss.ejb3.cache.Identifiable;
  * Comment
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
- * @version $Revision: $
+ * @version $Revision$
  */
 public class MockIdentifiable implements Identifiable
 {

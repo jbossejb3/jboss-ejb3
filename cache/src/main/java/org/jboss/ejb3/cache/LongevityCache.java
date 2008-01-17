@@ -28,7 +28,7 @@ package org.jboss.ejb3.cache;
  * The longevity cache allows: get, finished, get, finished, release.
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
- * @version $Revision: $
+ * @version $Revision$
  */
 public interface LongevityCache<T extends Identifiable> extends Cache<T>
 {

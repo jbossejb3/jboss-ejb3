@@ -31,7 +31,7 @@ import org.jboss.ejb3.test.cache.common.CacheTestCase;
  * Test the passivation on a longevity cache.
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
- * @version $Revision: $
+ * @version $Revision$
  */
 public class LongevityPassivationUnitTestCase extends CacheTestCase
 {
