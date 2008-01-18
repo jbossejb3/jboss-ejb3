@@ -78,13 +78,8 @@ public class StatefulTreeCache implements ClusteredStatefulCache
 
    private static final String[] DEFAULT_HASH_BUCKETS = new String[DEFAULT_BUCKET_COUNT];
    
-   private static Option LOCAL_ONLY_OPTION = new Option();
-   private static Option GRAVITATE_OPTION = new Option();
    static
    {
-      LOCAL_ONLY_OPTION.setCacheModeLocal(true);
-      GRAVITATE_OPTION.setForceDataGravitation(true);
-      
       for (int i = 0; i < DEFAULT_HASH_BUCKETS.length; i++)
       {
          DEFAULT_HASH_BUCKETS[i] = String.valueOf(i);
@@ -682,26 +677,16 @@ public class StatefulTreeCache implements ClusteredStatefulCache
    
    private static Option getLocalOnlyOption()
    {
-      try
-      {
-         return LOCAL_ONLY_OPTION.clone();
-      }
-      catch (CloneNotSupportedException e)
-      {
-         throw new RuntimeException(e);
-      }
+      Option opt = new Option();
+      opt.setCacheModeLocal(true);
+      return opt;
    }
    
    private static Option getGravitateOption()
    {
-      try
-      {
-         return GRAVITATE_OPTION.clone();
-      }
-      catch (CloneNotSupportedException e)
-      {
-         throw new RuntimeException(e);
-      }
+      Option opt = new Option();
+      opt.setForceDataGravitation(true);
+      return opt;
    }
    
    private class RemovalTimeoutTask extends Thread
