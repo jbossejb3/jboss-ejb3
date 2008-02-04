@@ -68,7 +68,7 @@ import org.jboss.util.id.GUID;
  *
  * @author <a href="mailto:bill@jboss.org">Bill Burke</a>
  * @author Brian Stansberry
- * 
+ *
  * @version $Revision$
  */
 public class StatefulTreeCache implements ClusteredStatefulCache
@@ -77,15 +77,20 @@ public class StatefulTreeCache implements ClusteredStatefulCache
    private static final int DEFAULT_BUCKET_COUNT = 100;
 
    private static final String[] DEFAULT_HASH_BUCKETS = new String[DEFAULT_BUCKET_COUNT];
-   
+
+   private static Option LOCAL_ONLY_OPTION = new Option();
+   private static Option GRAVITATE_OPTION = new Option();
    static
    {
+      LOCAL_ONLY_OPTION.setCacheModeLocal(true);
+      GRAVITATE_OPTION.setForceDataGravitation(true);
+
       for (int i = 0; i < DEFAULT_HASH_BUCKETS.length; i++)
       {
          DEFAULT_HASH_BUCKETS[i] = String.valueOf(i);
       }
    }
-   
+
    private ThreadLocal<Boolean> localActivity = new ThreadLocal<Boolean>();
    private Logger log = Logger.getLogger(StatefulTreeCache.class);
    private Pool pool;
@@ -94,14 +99,14 @@ public class StatefulTreeCache implements ClusteredStatefulCache
    private Fqn cacheNode;
    private Region region;
    private ClusteredStatefulCacheListener listener;
-   
+
    public static long MarkInUseWaitTime = 15000;
-   
+
    protected String[] hashBuckets = DEFAULT_HASH_BUCKETS;
    protected int createCount = 0;
    protected int passivatedCount = 0;
    protected int removeCount = 0;
-   protected long removalTimeout = 0; 
+   protected long removalTimeout = 0;
    protected RemovalTimeoutTask removalTask = null;
    protected boolean running = true;
    protected Map<Object, Long> beans = new ConcurrentHashMap<Object, Long>();
@@ -165,7 +170,7 @@ public class StatefulTreeCache implements ClusteredStatefulCache
    {
       return get(key, true);
    }
-   
+
    public StatefulBeanContext get(Object key, boolean markInUse) throws EJBException
    {
       StatefulBeanContext entry = null;
@@ -188,35 +193,35 @@ public class StatefulTreeCache implements ClusteredStatefulCache
       {
          localActivity.set(active);
       }
-      
+
       if (entry == null)
       {
          throw new NoSuchEJBException("Could not find stateful bean: " + key);
       }
       else if (markInUse && entry.isRemoved())
       {
-         throw new NoSuchEJBException("Could not find stateful bean: " + key + 
+         throw new NoSuchEJBException("Could not find stateful bean: " + key +
                                       " (bean was marked as removed)");
       }
-      
+
       entry.postReplicate();
-      
+
       if (markInUse)
       {
          entry.setInUse(true);
-         
+
          // Mark the Fqn telling the eviction thread not to passivate it yet.
          // Note the Fqn we use is relative to the region!
          region.markNodeCurrentlyInUse(new Fqn(key.toString()), MarkInUseWaitTime);
          entry.lastUsed = System.currentTimeMillis();
          beans.put(key, new Long(entry.lastUsed));
       }
-      
+
       if(log.isTraceEnabled())
       {
          log.trace("get: retrieved bean with cache id " +id.toString());
       }
-      
+
       return entry;
    }
 
@@ -224,7 +229,7 @@ public class StatefulTreeCache implements ClusteredStatefulCache
    {
       return get(key, false);
    }
-   
+
    public void remove(Object key)
    {
       Fqn id = getFqn(key, false);
@@ -236,13 +241,13 @@ public class StatefulTreeCache implements ClusteredStatefulCache
          }
          InvocationContext ictx = cache.getInvocationContext();
          ictx.setOptionOverrides(getGravitateOption());
-         StatefulBeanContext ctx = (StatefulBeanContext) cache.get(id, "bean"); 
-         
+         StatefulBeanContext ctx = (StatefulBeanContext) cache.get(id, "bean");
+
          if (ctx != null)
          {
             if (!ctx.isRemoved())
                pool.remove(ctx);
-            
+
             if (ctx.getCanRemoveFromCache())
             {
                // Do a cluster-wide removal of the ctx
@@ -254,7 +259,7 @@ public class StatefulTreeCache implements ClusteredStatefulCache
                // But, we must replicate it so other nodes know the parent is removed!
                putInCache(ctx);
             }
-            
+
             ++removeCount;
             beans.remove(key);
          }
@@ -288,7 +293,7 @@ public class StatefulTreeCache implements ClusteredStatefulCache
       {
          throw new IllegalArgumentException("Received unexpected replicate call for nested context " + ctx.getId());
       }
-      
+
       try
       {
          putInCache(ctx);
@@ -303,13 +308,13 @@ public class StatefulTreeCache implements ClusteredStatefulCache
    public void initialize(Container container) throws Exception
    {
       this.ejbContainer = (EJBContainer) container;
-      
+
       log = Logger.getLogger(getClass().getName() + "." + this.ejbContainer.getEjbName());
-            
+
       this.pool = this.ejbContainer.getPool();
       ClassLoader cl = this.ejbContainer.getClassloader();
       this.classloader = new WeakReference<ClassLoader>(cl);
-      
+
       Advisor advisor = this.ejbContainer;
       CacheConfig config = (CacheConfig) advisor.resolveAnnotation(CacheConfig.class);
       MBeanServer server = MBeanServerLocator.locateJBoss();
@@ -327,21 +332,21 @@ public class StatefulTreeCache implements ClusteredStatefulCache
       EvictionPolicyConfig epc = getEvictionPolicyConfig((int) config.idleTimeoutSeconds(),
             config.maxSize());
       region.setEvictionPolicy(epc);
-      
+
       // JBCACHE-1136.  There's no reason to have state in an inactive region
       cleanBeanRegion();
-      
+
       // Transfer over the state for the region
       region.registerContextClassLoader(cl);
       region.activate();
-      
+
       log.debug("initialize(): created region: " +region + " for ejb: " + this.ejbContainer.getEjbName());
-   
+
       removalTimeout = config.removalTimeoutSeconds();
       if (removalTimeout > 0)
          removalTask = new RemovalTimeoutTask("SFSB Removal Thread - " + this.ejbContainer.getObjectName().getCanonicalName());
    }
-   
+
    protected EvictionPolicyConfig getEvictionPolicyConfig(int timeToLiveSeconds, int maxNodes)
    {
       LRUConfiguration epc = new LRUConfiguration();
@@ -355,16 +360,16 @@ public class StatefulTreeCache implements ClusteredStatefulCache
    public void start()
    {
       // register to listen for cache events
-      
-      // TODO this approach may not be scalable when there are many beans 
-      // since then we will need to go thru N listeners to figure out which 
+
+      // TODO this approach may not be scalable when there are many beans
+      // since then we will need to go thru N listeners to figure out which
       // one this event belongs to. Consider having a singleton listener
       listener = new ClusteredStatefulCacheListener();
       cache.addCacheListener(listener);
-      
+
       if (removalTask != null)
          removalTask.start();
-      
+
       running = true;
    }
 
@@ -377,28 +382,28 @@ public class StatefulTreeCache implements ClusteredStatefulCache
          // Remove the listener
          if (listener != null)
             cache.removeCacheListener(listener);
-   
+
          // Remove locally. We do this to clean up the persistent store,
          // which is not affected by the inactivateRegion call below.
-         cleanBeanRegion();    
-         
+         cleanBeanRegion();
+
          try {
             // Remove locally. We do this to clean up the persistent store,
             // which is not affected by the region.deactivate call below.
             InvocationContext ctx = cache.getInvocationContext();
             ctx.setOptionOverrides(getLocalOnlyOption());
             cache.removeNode(cacheNode);
-         } 
-         catch (CacheException e) 
+         }
+         catch (CacheException e)
          {
             log.error("stop(): can't remove bean from the underlying distributed cache");
          }
-         
+
          if (region != null)
          {
             region.deactivate();
-            region.unregisterContextClassLoader();      
-            
+            region.unregisterContextClassLoader();
+
             // FIXME this method needs to be in Cache
             ((CacheSPI) cache).getRegionManager().removeRegion(region.getFqn());
             // Clear any queues
@@ -406,15 +411,15 @@ public class StatefulTreeCache implements ClusteredStatefulCache
             region = null;
          }
       }
-      
+
       classloader = null;
-      
+
       if (removalTask != null)
          removalTask.interrupt();
-      
+
       log.debug("stop(): StatefulTreeCache stopped successfully for " +cacheNode);
    }
-   
+
    public int getCacheSize()
    {
       int count = 0;
@@ -444,37 +449,37 @@ public class StatefulTreeCache implements ClusteredStatefulCache
    {
       return beans.size();
    }
-   
+
    public int getCreateCount()
    {
 	   return createCount;
    }
-   
+
    public int getPassivatedCount()
    {
 	   return passivatedCount;
    }
-   
+
    public int getRemoveCount()
    {
       return removeCount;
    }
-   
+
    public int getAvailableCount()
    {
       return -1;
    }
-   
+
    public int getMaxSize()
    {
       return -1;
    }
-   
+
    public int getCurrentSize()
    {
       return getCacheSize();
    }
-   
+
    private void putInCache(StatefulBeanContext ctx)
    {
       Boolean active = localActivity.get();
@@ -483,14 +488,14 @@ public class StatefulTreeCache implements ClusteredStatefulCache
          localActivity.set(Boolean.TRUE);
          ctx.preReplicate();
          cache.put(getFqn(ctx.getId(), false), "bean", ctx);
-         ctx.markedForReplication = false;    
+         ctx.markedForReplication = false;
       }
       finally
       {
          localActivity.set(active);
-      }  
+      }
    }
-   
+
    private Fqn getFqn(Object id, boolean regionRelative)
    {
       String beanId = id.toString();
@@ -503,32 +508,32 @@ public class StatefulTreeCache implements ClusteredStatefulCache
       {
          index = (beanId.hashCode()& 0x7FFFFFFF) % hashBuckets.length;
       }
-      
+
       if (regionRelative)
          return new Fqn( new Object[] {hashBuckets[index], beanId} );
       else
          return new Fqn(cacheNode, hashBuckets[index], beanId);
    }
-   
+
    private void cleanBeanRegion()
    {
       try {
          // Remove locally.
          cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
          cache.removeNode(cacheNode);
-      } 
-      catch (CacheException e) 
+      }
+      catch (CacheException e)
       {
          log.error("Stop(): can't remove bean from the underlying distributed cache");
-      }       
+      }
    }
-   
-   /** 
+
+   /**
     * Creates a RuntimeException, but doesn't pass CacheException as the cause
     * as it is a type that likely doesn't exist on a client.
     * Instead creates a RuntimeException with the original exception's
     * stack trace.
-    */   
+    */
    private RuntimeException convertToRuntimeException(CacheException e)
    {
       RuntimeException re = new RuntimeException(e.getClass().getName() + " " + e.getMessage());
@@ -554,17 +559,17 @@ public class StatefulTreeCache implements ClusteredStatefulCache
          if(fqn.size() != FQN_SIZE) return;
          if(!fqn.isChildOrEquals(cacheNode)) return;
 
-         // Don't activate a bean just so we can replace the object 
+         // Don't activate a bean just so we can replace the object
          // with a replicated one
-         if (Boolean.TRUE != localActivity.get()) 
+         if (Boolean.TRUE != localActivity.get())
          {
             // But we do want to record that the bean's now in memory
             --passivatedCount;
-            return; 
+            return;
          }
-         
+
          StatefulBeanContext bean = (StatefulBeanContext) nodeData.get("bean");
-         
+
          if(bean == null)
          {
             throw new IllegalStateException("nodeLoaded(): null bean instance.");
@@ -576,27 +581,27 @@ public class StatefulTreeCache implements ClusteredStatefulCache
          {
             log.trace("nodeLoaded(): send postActivate event to bean at fqn: " +fqn);
          }
-         
+
          ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
          try
-         {  
+         {
             ClassLoader cl = classloader.get();
             if (cl != null)
             {
                Thread.currentThread().setContextClassLoader(cl);
             }
-            
+
             bean.activateAfterReplication();
          }
          finally
          {
             Thread.currentThread().setContextClassLoader(oldCl);
          }
-         
+
       }
 
       @NodePassivated
-      public void nodePassivated(NodePassivatedEvent event) 
+      public void nodePassivated(NodePassivatedEvent event)
       {
          // Ignore everything but "pre" events for nodes in our region
          if(!event.isPre()) return;
@@ -606,8 +611,8 @@ public class StatefulTreeCache implements ClusteredStatefulCache
 
          StatefulBeanContext bean = null;
          ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
-         Boolean active = localActivity.get();       
-         try 
+         Boolean active = localActivity.get();
+         try
          {
             localActivity.set(Boolean.TRUE);
             bean = (StatefulBeanContext) event.getData().get("bean");
@@ -618,19 +623,19 @@ public class StatefulTreeCache implements ClusteredStatefulCache
                {
                   Thread.currentThread().setContextClassLoader(cl);
                }
-               
+
                if (!bean.getCanPassivate())
                {
                   // Abort the eviction
-                  throw new ContextInUseException("Cannot passivate bean " + fqn + 
+                  throw new ContextInUseException("Cannot passivate bean " + fqn +
                         " -- it or one if its children is currently in use");
                }
-               
+
                if(log.isTraceEnabled())
                {
                   log.trace("nodePassivated(): send prePassivate event to bean at fqn: " +fqn);
                }
-               
+
                bean.passivateAfterReplication();
                   ++passivatedCount;
             }
@@ -674,21 +679,17 @@ public class StatefulTreeCache implements ClusteredStatefulCache
          }
       }
    }
-   
+
    private static Option getLocalOnlyOption()
    {
-      Option opt = new Option();
-      opt.setCacheModeLocal(true);
-      return opt;
+      return LOCAL_ONLY_OPTION.clone();
    }
-   
+
    private static Option getGravitateOption()
    {
-      Option opt = new Option();
-      opt.setForceDataGravitation(true);
-      return opt;
+      return GRAVITATE_OPTION.clone();
    }
-   
+
    private class RemovalTimeoutTask extends Thread
    {
       public RemovalTimeoutTask(String name)
@@ -712,7 +713,7 @@ public class StatefulTreeCache implements ClusteredStatefulCache
             try
             {
                long now = System.currentTimeMillis();
-               
+
                Iterator<Map.Entry<Object, Long>> it = beans.entrySet().iterator();
                while (it.hasNext())
                {
