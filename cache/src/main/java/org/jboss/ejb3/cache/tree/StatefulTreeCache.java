@@ -325,8 +325,8 @@ public class StatefulTreeCache implements ClusteredStatefulCache
       CacheJmxWrapperMBean mbean = (CacheJmxWrapperMBean) MBeanProxyExt.create(CacheJmxWrapperMBean.class, cacheON, server);
       cache = mbean.getCache();
 
-      cacheNode = new Fqn(new Object[] { this.ejbContainer.getDeploymentQualifiedName() });
-
+      cacheNode = new Fqn(new Object[] { this.ejbContainer.getDeploymentPropertyListString() });
+      
       // Try to create an eviction region per ejb
       region = cache.getRegion(cacheNode, true);
       EvictionPolicyConfig epc = getEvictionPolicyConfig((int) config.idleTimeoutSeconds(),
@@ -576,7 +576,7 @@ public class StatefulTreeCache implements ClusteredStatefulCache
          }
 
          --passivatedCount;
-
+       
          if(log.isTraceEnabled())
          {
             log.trace("nodeLoaded(): send postActivate event to bean at fqn: " +fqn);
@@ -637,7 +637,7 @@ public class StatefulTreeCache implements ClusteredStatefulCache
                }
 
                bean.passivateAfterReplication();
-                  ++passivatedCount;
+               ++passivatedCount;
             }
          }
          catch (NoSuchEJBException e)
