@@ -35,7 +35,6 @@ import org.jboss.ejb3.EJBContainer;
 import org.jboss.ejb3.annotation.CacheConfig;
 import org.jboss.ejb3.annotation.PersistenceManager;
 import org.jboss.ejb3.cache.StatefulCache;
-import org.jboss.ejb3.deployers.Ejb3Deployer;
 import org.jboss.ejb3.pool.Pool;
 import org.jboss.ejb3.stateful.StatefulBeanContext;
 import org.jboss.logging.Logger;
