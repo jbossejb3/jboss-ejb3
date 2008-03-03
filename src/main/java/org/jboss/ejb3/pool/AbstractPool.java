@@ -21,8 +21,11 @@
  */
 package org.jboss.ejb3.pool;
 
+import org.jboss.aop.Advisor;
+import org.jboss.ejb3.annotation.CacheConfig;
 import org.jboss.ejb3.BeanContext;
 import org.jboss.ejb3.Container;
+import org.jboss.ejb3.stateful.StatefulBeanContext;
 import org.jboss.injection.Injector;
 import org.jboss.logging.Logger;
 
@@ -77,19 +80,19 @@ public abstract class AbstractPool implements Pool
    {
       BeanContext ctx;
       ctx = createBeanContext();
-//      if (ctx instanceof StatefulBeanContext)
-//      {         
-//         StatefulBeanContext sfctx = (StatefulBeanContext) ctx;
-//         // Tell context how to handle replication
-//         Advisor advisor = (Advisor) container;
-//         CacheConfig config = (CacheConfig) advisor.resolveAnnotation(CacheConfig.class);
-//         if (config != null)
-//         {
-//            sfctx.setReplicationIsPassivation(config.replicationIsPassivation());
-//         }
-//         // this is for propagated extended PC's
-//         ctx = sfctx = sfctx.pushContainedIn();
-//      }
+      if (ctx instanceof StatefulBeanContext)
+      {         
+         StatefulBeanContext sfctx = (StatefulBeanContext) ctx;
+         // Tell context how to handle replication
+         Advisor advisor = (Advisor) container;
+         CacheConfig config = (CacheConfig) advisor.resolveAnnotation(CacheConfig.class);
+         if (config != null)
+         {
+            sfctx.setReplicationIsPassivation(config.replicationIsPassivation());
+         }
+         // this is for propagated extended PC's
+         ctx = sfctx = sfctx.pushContainedIn();
+      }
       container.pushContext(ctx);
       try
       {
@@ -107,12 +110,12 @@ public abstract class AbstractPool implements Pool
       finally
       {
          container.popContext();
-//         if (ctx instanceof StatefulBeanContext)
-//         {
-//            // this is for propagated extended PC's
-//            StatefulBeanContext sfctx = (StatefulBeanContext) ctx;
-//            sfctx.popContainedIn();
-//         }
+         if (ctx instanceof StatefulBeanContext)
+         {
+            // this is for propagated extended PC's
+            StatefulBeanContext sfctx = (StatefulBeanContext) ctx;
+            sfctx.popContainedIn();
+         }
       }
       
       container.invokePostConstruct(ctx, initValues);
