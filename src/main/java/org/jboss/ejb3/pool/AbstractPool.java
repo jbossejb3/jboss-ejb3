@@ -21,10 +21,10 @@
  */
 package org.jboss.ejb3.pool;
 
-import org.jboss.aop.Advisor;
-import org.jboss.ejb3.annotation.CacheConfig;
 import org.jboss.ejb3.BeanContext;
 import org.jboss.ejb3.Container;
+import org.jboss.ejb3.EJBContainer;
+import org.jboss.ejb3.annotation.CacheConfig;
 import org.jboss.ejb3.stateful.StatefulBeanContext;
 import org.jboss.injection.Injector;
 import org.jboss.logging.Logger;
@@ -83,9 +83,10 @@ public abstract class AbstractPool implements Pool
       if (ctx instanceof StatefulBeanContext)
       {         
          StatefulBeanContext sfctx = (StatefulBeanContext) ctx;
+         // FIXME: remove this class cast
+         EJBContainer c = (EJBContainer) container;
          // Tell context how to handle replication
-         Advisor advisor = (Advisor) container;
-         CacheConfig config = (CacheConfig) advisor.resolveAnnotation(CacheConfig.class);
+         CacheConfig config = c.getAnnotation(CacheConfig.class);
          if (config != null)
          {
             sfctx.setReplicationIsPassivation(config.replicationIsPassivation());
