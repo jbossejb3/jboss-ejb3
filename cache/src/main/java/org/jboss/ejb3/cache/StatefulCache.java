@@ -22,7 +22,9 @@
 package org.jboss.ejb3.cache;
 
 import javax.ejb.EJBException;
-import org.jboss.ejb3.Container;
+import javax.ejb.NoSuchEJBException;
+
+import org.jboss.ejb3.EJBContainer;
 import org.jboss.ejb3.stateful.StatefulBeanContext;
 
 /**
@@ -88,5 +90,5 @@ public interface StatefulCache extends Cache<StatefulBeanContext>
    
    int getTotalSize();
    
-   public void initialize(Container container) throws Exception;
+   public void initialize(EJBContainer container) throws Exception;
 }

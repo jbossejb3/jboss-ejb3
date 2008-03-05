@@ -32,7 +32,6 @@ import javax.ejb.NoSuchEJBException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
-import org.jboss.aop.Advisor;
 import org.jboss.cache.Cache;
 import org.jboss.cache.CacheException;
 import org.jboss.cache.CacheSPI;
@@ -49,7 +48,6 @@ import org.jboss.cache.notifications.annotation.NodeActivated;
 import org.jboss.cache.notifications.annotation.NodePassivated;
 import org.jboss.cache.notifications.event.NodeActivatedEvent;
 import org.jboss.cache.notifications.event.NodePassivatedEvent;
-import org.jboss.ejb3.Container;
 import org.jboss.ejb3.EJBContainer;
 import org.jboss.ejb3.annotation.CacheConfig;
 import org.jboss.ejb3.cache.ClusteredStatefulCache;
@@ -300,18 +298,17 @@ public class StatefulTreeCache implements ClusteredStatefulCache
       }
    }
 
-   public void initialize(Container container) throws Exception
+   public void initialize(EJBContainer container) throws Exception
    {
-      this.ejbContainer = (EJBContainer) container;
-
+      this.ejbContainer = container;
+      
       log = Logger.getLogger(getClass().getName() + "." + this.ejbContainer.getEjbName());
 
       this.pool = this.ejbContainer.getPool();
       ClassLoader cl = this.ejbContainer.getClassloader();
       this.classloader = new WeakReference<ClassLoader>(cl);
-
-      Advisor advisor = this.ejbContainer;
-      CacheConfig config = (CacheConfig) advisor.resolveAnnotation(CacheConfig.class);
+      
+      CacheConfig config = (CacheConfig) ejbContainer.resolveAnnotation(CacheConfig.class);
       MBeanServer server = MBeanServerLocator.locateJBoss();
       String name = config.name();
       if (name == null || name.trim().length() == 0)

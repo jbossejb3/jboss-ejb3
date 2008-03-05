@@ -22,9 +22,11 @@
 package org.jboss.ejb3.cache;
 
 import java.util.HashMap;
+
 import javax.ejb.EJBException;
 import javax.ejb.NoSuchEJBException;
-import org.jboss.ejb3.Container;
+
+import org.jboss.ejb3.EJBContainer;
 import org.jboss.ejb3.pool.Pool;
 import org.jboss.ejb3.stateful.StatefulBeanContext;
 
@@ -41,7 +43,7 @@ public class NoPassivationCache implements StatefulCache
    private int createCount = 0;
    private int removeCount = 0;
 
-   public void initialize(Container container) throws Exception
+   public void initialize(EJBContainer container) throws Exception
    {
       this.pool = container.getPool();
       cacheMap = new HashMap<Object, StatefulBeanContext>();

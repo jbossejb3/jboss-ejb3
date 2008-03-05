@@ -30,7 +30,6 @@ import javax.ejb.EJBException;
 import javax.ejb.NoSuchEJBException;
 
 import org.jboss.aop.Advisor;
-import org.jboss.ejb3.Container;
 import org.jboss.ejb3.EJBContainer;
 import org.jboss.ejb3.annotation.CacheConfig;
 import org.jboss.ejb3.annotation.PersistenceManager;
@@ -239,9 +238,9 @@ public class SimpleStatefulCache implements StatefulCache
       }
    }
 
-   public void initialize(Container container) throws Exception
+   public void initialize(EJBContainer container) throws Exception
    {
-      Advisor advisor = (Advisor) container;
+      Advisor advisor = container.getAdvisor();
       this.pool = container.getPool();
       cacheMap = new CacheMap();
       PersistenceManager pmConfig = (PersistenceManager) advisor.resolveAnnotation(PersistenceManager.class);
