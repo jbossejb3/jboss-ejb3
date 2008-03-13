@@ -147,11 +147,10 @@ public class NoPassivationCache implements StatefulCache
       {
          ctx = (StatefulBeanContext) cacheMap.remove(key);
       }
-      if (ctx != null)
-      {
-         pool.remove(ctx);
-         ++removeCount;
-      }
+      if(ctx == null)
+         throw new NoSuchEJBException("Could not find Stateful bean: " + key);
+      pool.remove(ctx);
+      ++removeCount;
    }
 
    public int getCacheSize()

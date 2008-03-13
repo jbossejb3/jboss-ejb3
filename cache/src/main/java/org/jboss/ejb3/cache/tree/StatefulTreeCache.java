@@ -235,27 +235,27 @@ public class StatefulTreeCache implements ClusteredStatefulCache
          InvocationContext ictx = cache.getInvocationContext();
          ictx.setOptionOverrides(getGravitateOption());
          StatefulBeanContext ctx = (StatefulBeanContext) cache.get(id, "bean");
+         
+         if(ctx == null)
+            throw new NoSuchEJBException("Could not find Stateful bean: " + key);
+         
+         if (!ctx.isRemoved())
+            pool.remove(ctx);
 
-         if (ctx != null)
+         if (ctx.getCanRemoveFromCache())
          {
-            if (!ctx.isRemoved())
-               pool.remove(ctx);
-
-            if (ctx.getCanRemoveFromCache())
-            {
-               // Do a cluster-wide removal of the ctx
-               cache.removeNode(id);
-            }
-            else
-            {
-               // We can't remove the ctx as it contains live nested beans
-               // But, we must replicate it so other nodes know the parent is removed!
-               putInCache(ctx);
-            }
-
-            ++removeCount;
-            beans.remove(key);
+            // Do a cluster-wide removal of the ctx
+            cache.removeNode(id);
          }
+         else
+         {
+            // We can't remove the ctx as it contains live nested beans
+            // But, we must replicate it so other nodes know the parent is removed!
+            putInCache(ctx);
+         }
+
+         ++removeCount;
+         beans.remove(key);
       }
       catch (CacheException e)
       {

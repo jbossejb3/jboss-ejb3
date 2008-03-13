@@ -451,23 +451,20 @@ public class SimpleStatefulCache implements StatefulCache
       {
          ctx = (StatefulBeanContext) cacheMap.get(key);
       }
-      if (ctx != null) 
+      if(ctx == null)
+         throw new NoSuchEJBException("Could not find Stateful bean: " + key);
+      if (!ctx.isRemoved())
+         pool.remove(ctx);
+      
+      ++removeCount;
+      
+      if (ctx.getCanRemoveFromCache())
       {
-         if (!ctx.isRemoved())
-            pool.remove(ctx);
-         
-         ++removeCount;
-         
-         if (ctx.getCanRemoveFromCache())
+         synchronized (cacheMap)
          {
-            synchronized (cacheMap)
-            {
-               cacheMap.remove(key);
-            }
+            cacheMap.remove(key);
          }
       }
-//      else
-//         log.warn("Remove failed, context " + key + " was not found");
    }
 
    public int getCacheSize()
