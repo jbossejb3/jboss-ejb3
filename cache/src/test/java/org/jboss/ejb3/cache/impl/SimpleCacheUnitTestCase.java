@@ -75,5 +75,16 @@ public class SimpleCacheUnitTestCase extends TestCase
       {
          // good
       }
+      
+      // EJBTHREE-1218: throw NoSuchEJBException on remove
+      try
+      {
+         cache.remove(key);
+         fail("Expected NoSuchEJBException");
+      }
+      catch(NoSuchEJBException e)
+      {
+         // good
+      }
    }
 }

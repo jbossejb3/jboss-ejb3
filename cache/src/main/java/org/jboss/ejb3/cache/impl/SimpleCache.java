@@ -88,8 +88,11 @@ public class SimpleCache<T extends Identifiable> implements Cache<T>
       {
          obj = cache.remove(key);
       }
-      if(obj != null)
-         factory.destroy(obj);
+      // EJBTHREE-1218: throw NoSuchEJBException if the bean can not be found
+      if(obj == null)
+         throw new NoSuchEJBException(String.valueOf(key));
+      
+      factory.destroy(obj);
    }
    
    public void start()

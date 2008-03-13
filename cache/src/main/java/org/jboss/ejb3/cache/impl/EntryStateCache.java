@@ -125,8 +125,9 @@ public class EntryStateCache<T extends Identifiable> implements Cache<T>
          if(entry.state != State.READY)
             throw new IllegalStateException("entry " + entry + " is not ready");
       }
-      if(entry != null)
-         factory.destroy(entry.obj);
+      if(entry == null)
+         throw new NoSuchEJBException(String.valueOf(key));
+      factory.destroy(entry.obj);
    }
 
    public void start()
