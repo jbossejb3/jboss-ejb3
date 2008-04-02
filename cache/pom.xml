@@ -51,7 +51,7 @@
     <!-- JBoss Common Logging -->
     <dependency>
       <groupId>jboss</groupId>
-      <artifactId>jboss-common-logging-log4j</artifactId>
+      <artifactId>jboss-logging-log4j</artifactId>
       <scope>runtime</scope>
     </dependency>
 
@@ -59,6 +59,7 @@
     <dependency>
       <groupId>jboss</groupId>
       <artifactId>jboss-serialization</artifactId>
+      <version>1.0.3.GA</version>
     </dependency>
 
     <!-- JUnit -->
