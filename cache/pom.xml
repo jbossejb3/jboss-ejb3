@@ -50,7 +50,7 @@
 
     <!-- JBoss Common Logging -->
     <dependency>
-      <groupId>jboss</groupId>
+      <groupId>org.jboss.logging</groupId>
       <artifactId>jboss-logging-log4j</artifactId>
       <scope>runtime</scope>
     </dependency>
