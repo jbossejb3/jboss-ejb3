@@ -33,7 +33,7 @@ import org.jboss.logging.Logger;
  * Comment
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
- * @version $Revision: $
+ * @version $Revision$
  */
 public class MockBeanContext implements BeanContext
 {
@@ -91,6 +91,15 @@ public class MockBeanContext implements BeanContext
       return null;
    }
 
+   /* (non-Javadoc)
+    * @see org.jboss.ejb3.interceptors.container.BeanContext#getInterceptors()
+    */
+   public Object[] getInterceptors()
+   {
+      // TODO Auto-generated method stub
+      return null;
+   }
+   
    /* (non-Javadoc)
     * @see org.jboss.ejb3.BeanContext#getInvokedMethodKey()
     */
