@@ -22,6 +22,7 @@
 package org.jboss.ejb3.test.mdbsessionpoolclear.adapter.jms.inflow;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jms.Connection;
 import javax.jms.Destination;
@@ -51,8 +52,6 @@ import org.jboss.tm.TransactionManagerLocator;
 import org.jboss.util.Strings;
 import org.jboss.util.naming.Util;
 
-import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
-
 /**
  * A generic jms Activation.
  * 
@@ -77,7 +76,7 @@ public class JmsActivation implements ExceptionListener
    protected MessageEndpointFactory endpointFactory;
    
    /** Whether delivery is active */
-   protected SynchronizedBoolean deliveryActive;
+   protected AtomicBoolean deliveryActive;
    
    /** The jms provider adapter */
    protected JMSProviderAdapter adapter;
@@ -210,7 +209,7 @@ public class JmsActivation implements ExceptionListener
     */
    public void start() throws ResourceException
    {
-      deliveryActive = new SynchronizedBoolean(true);
+      deliveryActive = new AtomicBoolean(true);
       ra.getWorkManager().scheduleWork(new SetupActivation());
    }
 

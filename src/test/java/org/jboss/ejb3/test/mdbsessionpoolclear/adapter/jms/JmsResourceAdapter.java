@@ -23,6 +23,7 @@ package org.jboss.ejb3.test.mdbsessionpoolclear.adapter.jms;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
@@ -36,8 +37,6 @@ import javax.transaction.xa.XAResource;
 import org.jboss.logging.Logger;
 import org.jboss.ejb3.test.mdbsessionpoolclear.adapter.jms.inflow.JmsActivation;
 import org.jboss.ejb3.test.mdbsessionpoolclear.adapter.jms.inflow.JmsActivationSpec;
-
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
  * A generic resource adapter for any JMS server.
@@ -54,7 +53,7 @@ public class JmsResourceAdapter implements ResourceAdapter
    private BootstrapContext ctx;
 
    /** The activations by activation spec */
-   private ConcurrentReaderHashMap activations = new ConcurrentReaderHashMap();
+   private ConcurrentHashMap<ActivationSpec, JmsActivation> activations = new ConcurrentHashMap<ActivationSpec, JmsActivation>();
    
    /**
     * Get the work manager
@@ -69,13 +68,13 @@ public class JmsResourceAdapter implements ResourceAdapter
    public void endpointActivation(MessageEndpointFactory endpointFactory, ActivationSpec spec) throws ResourceException
    {
       JmsActivation activation = new JmsActivation(this, endpointFactory, (JmsActivationSpec) spec);
-      activations.put(spec, activation);
+      activation = activations.putIfAbsent(spec, activation);
       activation.start();
    }
 
    public void endpointDeactivation(MessageEndpointFactory endpointFactory, ActivationSpec spec)
    {
-      JmsActivation activation = (JmsActivation) activations.remove(spec);
+      JmsActivation activation = activations.remove(spec);
       if (activation != null)
          activation.stop();
    }

@@ -22,12 +22,13 @@
 package org.jboss.ejb3.pool;
 
 import java.util.LinkedList;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import javax.ejb.EJBException;
 
 import org.jboss.ejb3.BeanContext;
 import org.jboss.ejb3.Container;
 import org.jboss.logging.Logger;
-import EDU.oswego.cs.dl.util.concurrent.FIFOSemaphore;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.org">Kabir Khan</a>
@@ -46,7 +47,7 @@ public class StrictMaxPool
     * When set, only maxSize instances may be active and any attempt to get an
     * instance will block until an instance is freed.
     */
-   private FIFOSemaphore strictMaxSize;
+   private Semaphore strictMaxSize;
    private int inUse = 0;
    /**
     * The time in milliseconds to wait for the strictMaxSize semaphore.
@@ -78,7 +79,7 @@ public class StrictMaxPool
    {
       super.initialize(container, maxSize, timeout);
       this.maxSize = maxSize;
-      this.strictMaxSize = new FIFOSemaphore(maxSize);
+      this.strictMaxSize = new Semaphore(maxSize, true);
       this.strictTimeout = timeout;
    }
    
@@ -100,7 +101,7 @@ public class StrictMaxPool
    public void setMaxSize(int maxSize)
    {
       this.maxSize = maxSize;
-      this.strictMaxSize = new FIFOSemaphore(maxSize);
+      this.strictMaxSize = new Semaphore(maxSize, true);
    }
 
    /**
@@ -118,9 +119,9 @@ public class StrictMaxPool
       // Block until an instance is available
       try
       {
-         boolean acquired = strictMaxSize.attempt(strictTimeout);
+         boolean acquired = strictMaxSize.tryAcquire(strictTimeout, TimeUnit.MILLISECONDS);
          if (trace)
-            log.trace("Acquired(" + acquired + ") strictMaxSize semaphore, remaining=" + strictMaxSize.permits());
+            log.trace("Acquired(" + acquired + ") strictMaxSize semaphore, remaining=" + strictMaxSize.availablePermits());
          if (acquired == false)
             throw new EJBException("Failed to acquire the pool semaphore, strictTimeout=" + strictTimeout);
       }
@@ -154,9 +155,9 @@ public class StrictMaxPool
       // Block until an instance is available
       try
       {
-         boolean acquired = strictMaxSize.attempt(strictTimeout);
+         boolean acquired = strictMaxSize.tryAcquire(strictTimeout, TimeUnit.MILLISECONDS);
          if (trace)
-            log.trace("Acquired(" + acquired + ") strictMaxSize semaphore, remaining=" + strictMaxSize.permits());
+            log.trace("Acquired(" + acquired + ") strictMaxSize semaphore, remaining=" + strictMaxSize.availablePermits());
          if (acquired == false)
             throw new EJBException("Failed to acquire the pool semaphore, strictTimeout=" + strictTimeout);
       }

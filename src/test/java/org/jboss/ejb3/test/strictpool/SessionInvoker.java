@@ -21,8 +21,9 @@
  */
 package org.jboss.ejb3.test.strictpool;
 
+import java.util.concurrent.CountDownLatch;
+
 import org.jboss.logging.Logger;
-import EDU.oswego.cs.dl.util.concurrent.CountDown;
 
 /** Invoker thread for StatelessSession tests.
  * Adapted from the EJB 2.1 tests (org.jboss.test.cts.test.SessionInvoker)
@@ -32,11 +33,11 @@ import EDU.oswego.cs.dl.util.concurrent.CountDown;
 public class SessionInvoker extends Thread
 {
    int id;
-   CountDown done;
+   CountDownLatch done;
    public Exception runEx;
    StrictlyPooledSession strictlyPooledSession;
 
-   public SessionInvoker(int id, CountDown done, StrictlyPooledSession strictlyPooledSession)
+   public SessionInvoker(int id, CountDownLatch done, StrictlyPooledSession strictlyPooledSession)
    {
       super("SessionInvoker#"+id);
       this.id = id;
@@ -54,7 +55,7 @@ public class SessionInvoker extends Thread
       {
          runEx = e;
       }
-      done.release();
+      done.countDown();
       System.out.println("End run, this="+this);
    }
 

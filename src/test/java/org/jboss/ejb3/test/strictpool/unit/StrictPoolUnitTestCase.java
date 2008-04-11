@@ -23,6 +23,7 @@ package org.jboss.ejb3.test.strictpool.unit;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -45,9 +46,6 @@ import org.jboss.ejb3.test.strictpool.SessionInvoker;
 import org.jboss.ejb3.test.strictpool.StrictlyPooledSession;
 import org.jboss.test.JBossTestCase;
 
-import EDU.oswego.cs.dl.util.concurrent.CountDown;
-
-
 /**
  * Adapted from the EJB 2.1 tests (org.jboss.test.cts.test.StatefulSessionUnitTestCase and
  * org.jboss.test.cts.test.MDBUnitTestCase)
@@ -68,7 +66,7 @@ public class StrictPoolUnitTestCase
    public void testSession() throws Exception
    {
       System.out.println("*** testSession");
-      CountDown done = new CountDown(MAX_SIZE);
+      CountDownLatch done = new CountDownLatch(MAX_SIZE);
       InitialContext ctx = new InitialContext();
       StrictlyPooledSession session =(StrictlyPooledSession)ctx.lookup("StrictlyPooledSessionBean/remote");
       SessionInvoker[] threads = new SessionInvoker[MAX_SIZE];
@@ -78,8 +76,8 @@ public class StrictPoolUnitTestCase
          threads[n] = t;
          t.start();
       }
-      boolean ok = done.attempt(1500 * MAX_SIZE);
-      super.assertTrue("Acquired done, remaining="+done.currentCount(), ok);
+      boolean ok = done.await(1500 * MAX_SIZE, TimeUnit.MILLISECONDS);
+      super.assertTrue("Acquired done, remaining="+done.getCount(), ok);
 
       for(int n = 0; n < MAX_SIZE; n ++)
       {
