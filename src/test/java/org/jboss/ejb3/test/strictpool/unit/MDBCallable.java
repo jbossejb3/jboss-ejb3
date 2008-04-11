@@ -40,7 +40,7 @@ import org.jboss.logging.Logger;
  * Send a JMS text message and expect a reply.
  * 
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
- * @version $Revision: $
+ * @version $Revision$
  */
 public class MDBCallable implements Callable<String>
 {

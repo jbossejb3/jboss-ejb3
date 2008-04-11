@@ -35,7 +35,7 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  * @version $Revision$
  */
-public class MockBeanContext implements BeanContext
+public class MockBeanContext implements BeanContext<Container>
 {
    private static Logger log = Logger.getLogger(MockBeanContext.class);
    
