@@ -42,7 +42,8 @@ public class NoPassivationCache implements StatefulCache
    private HashMap<Object, StatefulBeanContext> cacheMap;
    private int createCount = 0;
    private int removeCount = 0;
-
+   private boolean running;
+   
    public void initialize(EJBContainer container) throws Exception
    {
       this.pool = container.getPool();
@@ -55,6 +56,7 @@ public class NoPassivationCache implements StatefulCache
 
    public void start()
    {
+      this.running = true;
    }
 
    public void stop()
@@ -63,6 +65,7 @@ public class NoPassivationCache implements StatefulCache
       {
          cacheMap.clear();
       }
+      this.running = false;
    }
 
    public StatefulBeanContext create()
@@ -70,7 +73,7 @@ public class NoPassivationCache implements StatefulCache
       return create(null, null);
    }
    
-   public StatefulBeanContext create(Class[] initTypes, Object[] initValues)
+   public StatefulBeanContext create(Class<?>[] initTypes, Object[] initValues)
    {
       StatefulBeanContext ctx = null;
       try
@@ -191,5 +194,10 @@ public class NoPassivationCache implements StatefulCache
    public int getCurrentSize()
    {
       return cacheMap.size();
+   }
+   
+   public boolean isStarted()
+   {
+      return this.running;
    }
 }

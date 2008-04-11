@@ -341,7 +341,7 @@ public class SimpleStatefulCache implements StatefulCache
       return ctx;
    }
 
-   public StatefulBeanContext create(Class[] initTypes, Object[] initValues)
+   public StatefulBeanContext create(Class<?>[] initTypes, Object[] initValues)
    {
       StatefulBeanContext ctx = null;
       try
@@ -505,5 +505,10 @@ public class SimpleStatefulCache implements StatefulCache
    public int getCurrentSize()
    {
       return cacheMap.size();
+   }
+   
+   public boolean isStarted()
+   {
+      return this.running;
    }
 }

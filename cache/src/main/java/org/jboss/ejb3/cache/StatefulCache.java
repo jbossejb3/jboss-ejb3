@@ -91,4 +91,6 @@ public interface StatefulCache extends Cache<StatefulBeanContext>
    int getTotalSize();
    
    public void initialize(EJBContainer container) throws Exception;
+   
+   public boolean isStarted();
 }

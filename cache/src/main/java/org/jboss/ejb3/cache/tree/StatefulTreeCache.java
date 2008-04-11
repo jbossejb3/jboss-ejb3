@@ -728,4 +728,9 @@ public class StatefulTreeCache implements ClusteredStatefulCache
          }
       }
    }
+   
+   public boolean isStarted()
+   {
+      return this.running;
+   }
 }
