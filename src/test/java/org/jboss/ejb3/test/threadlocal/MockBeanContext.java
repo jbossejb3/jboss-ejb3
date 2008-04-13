@@ -92,6 +92,14 @@ public class MockBeanContext implements BeanContext<Container>
    }
 
    /* (non-Javadoc)
+    * @see org.jboss.ejb3.interceptors.container.BeanContext#getInterceptor(java.lang.Class)
+    */
+   public Object getInterceptor(Class<?> interceptorClass) throws IllegalArgumentException
+   {
+      throw new IllegalArgumentException("NOP");
+   }
+   
+   /* (non-Javadoc)
     * @see org.jboss.ejb3.interceptors.container.BeanContext#getInterceptors()
     */
    public Object[] getInterceptors()
