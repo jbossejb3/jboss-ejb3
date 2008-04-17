@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aop>
+   <interceptor class="org.jboss.ejb3.test.tx.common.StatefulInstanceInterceptor" scope="PER_VM"/>
+   <interceptor factory="org.jboss.ejb3.tx.TxInterceptorFactory" scope="PER_CLASS_JOINPOINT"/>
+    
+   <domain name="Stateful Container">
+      <bind pointcut="execution(public * *->*(..))">
+         <interceptor-ref name="org.jboss.ejb3.test.tx.common.StatefulInstanceInterceptor"/>
+         <!--interceptor-ref name="org.jboss.aspects.tx.TxPropagationInterceptor"/-->
+         <interceptor-ref name="org.jboss.ejb3.tx.TxInterceptorFactory"/>
+      </bind>
+      <!--
+      <bind pointcut="execution(public * $instanceof{javax.ejb.SessionSynchronization}->*(..))">
+         <interceptor-ref name="org.jboss.ejb3.stateful.SessionSynchronizationInterceptor"/>
+      </bind>
+      -->
+   </domain>
+</aop>
