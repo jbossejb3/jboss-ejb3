@@ -1,13 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <aop>
+   <interceptor class="org.jboss.aspects.currentinvocation.CurrentInvocationInterceptor" scope="PER_VM"/>
    <interceptor class="org.jboss.ejb3.test.tx.common.StatefulInstanceInterceptor" scope="PER_VM"/>
-   <interceptor factory="org.jboss.ejb3.tx.TxInterceptorFactory" scope="PER_CLASS_JOINPOINT"/>
-    
+   <interceptor factory="org.jboss.ejb3.tx.BMTTxInterceptorFactory" scope="PER_CLASS_JOINPOINT"/>
+   <interceptor factory="org.jboss.ejb3.tx.CMTTxInterceptorFactory" scope="PER_CLASS_JOINPOINT"/>
+   
+   <domain name="Stateless Container">
+      <bind pointcut="execution(public * *->*(..))">
+         <interceptor-ref name="org.jboss.aspects.currentinvocation.CurrentInvocationInterceptor"/>
+         <interceptor-ref name="org.jboss.ejb3.tx.CMTTxInterceptorFactory"/>
+         <!-- here be an instance interceptor -->
+         <interceptor-ref name="org.jboss.ejb3.tx.BMTTxInterceptorFactory"/>
+      </bind>
+   </domain>
+   
    <domain name="Stateful Container">
       <bind pointcut="execution(public * *->*(..))">
-         <interceptor-ref name="org.jboss.ejb3.test.tx.common.StatefulInstanceInterceptor"/>
          <!--interceptor-ref name="org.jboss.aspects.tx.TxPropagationInterceptor"/-->
-         <interceptor-ref name="org.jboss.ejb3.tx.TxInterceptorFactory"/>
+         <interceptor-ref name="org.jboss.ejb3.tx.CMTTxInterceptorFactory"/>
+         <interceptor-ref name="org.jboss.ejb3.test.tx.common.StatefulInstanceInterceptor"/>
+         <interceptor-ref name="org.jboss.ejb3.tx.BMTTxInterceptorFactory"/>
       </bind>
       <!--
       <bind pointcut="execution(public * $instanceof{javax.ejb.SessionSynchronization}->*(..))">

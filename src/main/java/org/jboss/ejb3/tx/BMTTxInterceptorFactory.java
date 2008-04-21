@@ -21,42 +21,39 @@
  */
 package org.jboss.ejb3.tx;
 
-import javax.transaction.Transaction;
+import javax.ejb.Stateful;
+import javax.ejb.TransactionManagementType;
 import javax.transaction.TransactionManager;
 
-import org.jboss.aop.joinpoint.Invocation;
+import org.jboss.aop.Advisor;
+import org.jboss.aop.joinpoint.Joinpoint;
+import org.jboss.ejb3.interceptors.aop.AbstractInterceptorFactory;
 import org.jboss.logging.Logger;
 
 /**
- * Comment
+ * This interceptor handles transactions for AOP
  *
  * @author <a href="mailto:bill@jboss.org">Bill Burke</a>
- *  @author <a href="mailto:osh@sparre.dk">Ole Husgaard</a>
  * @version $Revision:72368 $
  */
-public abstract class BMTInterceptor extends AbstractInterceptor
+public class BMTTxInterceptorFactory extends AbstractInterceptorFactory
 {
-   private static final Logger log = Logger.getLogger(BMTInterceptor.class);
-   
-   protected final TransactionManager tm;
+   @SuppressWarnings("unused")
+   private static final Logger log = Logger.getLogger(CMTTxInterceptorFactory.class);
 
-   protected BMTInterceptor(TransactionManager tm)
+   public Object createPerJoinpoint(Advisor advisor, Joinpoint jp)
    {
-      this.tm = tm;
-   }
-
-   protected abstract Object handleInvocation(Invocation invocation) throws Throwable;
-   
-   public Object invoke(Invocation invocation) throws Throwable
-   {
-      Transaction oldTx = tm.suspend();
-      try
-      {
-         return handleInvocation(invocation);
-      }
-      finally
-      {
-         if (oldTx != null) tm.resume(oldTx);
-      }
+      // We have to do this until AOP supports matching based on annotation attributes
+      TransactionManagementType type = TxUtil.getTransactionManagementType(advisor);
+      if (type != TransactionManagementType.BEAN)
+         return new NullInterceptor();
+      
+      TransactionManager tm = TxUtil.getTransactionManager();
+      boolean stateful = advisor.resolveAnnotation(Stateful.class) != null;
+      // Both MessageDriven and Stateless are stateless
+      if(stateful)
+         return new StatefulBMTInterceptor(tm);
+      else
+         return new StatelessBMTInterceptor(tm);
    }
 }
