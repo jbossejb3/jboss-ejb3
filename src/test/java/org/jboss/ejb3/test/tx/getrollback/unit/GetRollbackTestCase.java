@@ -69,7 +69,7 @@ public class GetRollbackTestCase
    
    private void expectFalse(String methodName) throws Throwable
    {
-      boolean actual = container.invoke(instance, methodName);
+      Boolean actual = container.invoke(instance, methodName);
       assertFalse(actual);
    }
    
