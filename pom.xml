@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jboss.ejb3</groupId>
     <artifactId>jboss-ejb3-build</artifactId>
-    <version>0.13.1-SNAPSHOT</version>
+    <version>0.13.3-SNAPSHOT</version>
     <relativePath>../build/pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -60,15 +60,9 @@
       <version>5.0.0.Beta4</version>
     </dependency>
     <dependency>
-      <groupId>org.jboss</groupId>
+      <groupId>org.jboss.naming</groupId>
       <artifactId>jnpserver</artifactId>
       <scope>test</scope>
-      <exclusions>
-         <exclusion>
-            <groupId>jboss</groupId>
-            <artifactId>jboss-common-core</artifactId>
-         </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.jboss.metadata</groupId>
