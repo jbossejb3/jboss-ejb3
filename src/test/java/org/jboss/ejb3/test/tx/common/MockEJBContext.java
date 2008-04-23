@@ -74,7 +74,7 @@ public class MockEJBContext implements EJBContext
 
    public boolean getRollbackOnly() throws IllegalStateException
    {
-      return TxUtil.getRollbackOnly(getCurrentInvocation());
+      return TxUtil.getRollbackOnly();
    }
 
    public TimerService getTimerService() throws IllegalStateException
@@ -104,6 +104,6 @@ public class MockEJBContext implements EJBContext
 
    public void setRollbackOnly() throws IllegalStateException
    {
-      throw new IllegalStateException("N/A");
+      TxUtil.setRollbackOnly();
    }
 }

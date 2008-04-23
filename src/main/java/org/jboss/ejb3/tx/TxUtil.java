@@ -31,10 +31,13 @@ import javax.ejb.TransactionManagementType;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
 
 import org.jboss.aop.Advisor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
+import org.jboss.aspects.currentinvocation.CurrentInvocation;
+import org.jboss.ejb3.interceptors.container.BeanContext;
 import org.jboss.logging.Logger;
 import org.jboss.tm.TransactionManagerLocator;
 
@@ -48,12 +51,14 @@ public class TxUtil
 {
    private static final Logger log = Logger.getLogger(TxUtil.class);
    
-   protected static TransactionManager getTransactionManager()
+   // TODO: should really be protected
+   public static TransactionManager getTransactionManager()
    {
       return TransactionManagerLocator.getInstance().locate();
    }
 
-   protected static TransactionManagementType getTransactionManagementType(Advisor advisor)
+   // TODO: should really be protected
+   public static TransactionManagementType getTransactionManagementType(Advisor advisor)
    {
       TransactionManagement transactionManagement =  (TransactionManagement) advisor.resolveAnnotation(TransactionManagement.class);
       if (transactionManagement == null) return TransactionManagementType.CONTAINER;
@@ -92,12 +97,9 @@ public class TxUtil
       
    }
 
-   /**
-    * @param currentInvocation
-    * @return
-    */
-   public static boolean getRollbackOnly(Invocation currentInvocation)
+   public static boolean getRollbackOnly()
    {
+      Invocation currentInvocation = CurrentInvocation.getCurrentInvocation();
       Advisor advisor = currentInvocation.getAdvisor();
       // EJB1.1 11.6.1: Must throw IllegalStateException if BMT
       TransactionManagementType type = TxUtil.getTransactionManagementType(advisor);
@@ -151,4 +153,47 @@ public class TxUtil
       return getTxType(invocation.getAdvisor(), ((MethodInvocation) invocation).getActualMethod());
    }
 
+   public static UserTransaction getUserTransaction(BeanContext<?> ctx)
+   {
+      Invocation invocation = CurrentInvocation.getCurrentInvocation();
+      
+      // TODO: these checks are real ugly
+      // getUserTransaction is not allowed during construction and injection EJB 3 4.4.1 and EJB 3 4.5.2
+      // We're constructing the bean
+      if(invocation == null)
+         throw new IllegalStateException("It's not allowed to get the UserTransaction during construction and injection " + ctx);
+      // Is construction happening from within another bean?
+      if(ctx.getInstance() != invocation.getTargetObject())
+         throw new IllegalStateException("It's not allowed to get the UserTransaction during construction and injection " + ctx);
+      
+      Advisor advisor = invocation.getAdvisor();
+      TransactionManagementType type = TxUtil.getTransactionManagementType(advisor);
+      if (type != TransactionManagementType.BEAN) throw new IllegalStateException("Container " + advisor.getName() + ": it is illegal to inject UserTransaction into a CMT bean");
+
+      return new UserTransactionImpl();   
+   }
+   
+   public static void setRollbackOnly()
+   {
+      Advisor advisor = CurrentInvocation.getCurrentInvocation().getAdvisor();
+      // EJB1.1 11.6.1: Must throw IllegalStateException if BMT
+      TransactionManagementType type = TxUtil.getTransactionManagementType(advisor);
+      if (type != TransactionManagementType.CONTAINER) throw new IllegalStateException("Container " + advisor.getName() + ": it is illegal to call setRollbackOnly from BMT: " + type);
+
+      try
+      {
+         TransactionManager tm = TxUtil.getTransactionManager();
+
+         // The getRollbackOnly and setRollBackOnly method of the SessionContext interface should be used
+         // only in the session bean methods that execute in the context of a transaction.
+         if (tm.getTransaction() == null)
+            throw new IllegalStateException("setRollbackOnly() not allowed without a transaction.");
+
+         tm.setRollbackOnly();
+      }
+      catch (SystemException e)
+      {
+         log.warn("failed to set rollback only; ignoring", e);
+      }
+   }
 }

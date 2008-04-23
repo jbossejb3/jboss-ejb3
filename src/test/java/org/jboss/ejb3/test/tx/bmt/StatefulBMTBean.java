@@ -21,12 +21,12 @@
  */
 package org.jboss.ejb3.test.tx.bmt;
 
+import javax.annotation.Resource;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateful;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.transaction.UserTransaction;
-
-import org.jboss.ejb3.tx.UserTransactionImpl;
 
 /**
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
@@ -36,10 +36,17 @@ import org.jboss.ejb3.tx.UserTransactionImpl;
 @TransactionManagement(TransactionManagementType.BEAN)
 public class StatefulBMTBean
 {
+   private SessionContext ctx;
+   private Boolean isGetUserTransactionAllowed;
+   
    private UserTransaction getUserTransaction()
    {
-      // TODO: use the API
-      return new UserTransactionImpl();
+      return ctx.getUserTransaction();
+   }
+   
+   public boolean isGetUserTransactionAllowed()
+   {
+      return isGetUserTransactionAllowed;
    }
    
    public void normal() throws Exception
@@ -54,6 +61,26 @@ public class StatefulBMTBean
       finally
       {
          tx.rollback();
+      }
+   }
+   
+   /**
+    * Note that the call to this method is hard-coded!
+    * @param ctx
+    */
+   @Resource
+   public void setSessionContext(SessionContext ctx)
+   {
+      this.ctx = ctx;
+      
+      try
+      {
+         ctx.getUserTransaction();
+         isGetUserTransactionAllowed = true;
+      }
+      catch(IllegalStateException e)
+      {
+         isGetUserTransactionAllowed = false;
       }
    }
 }

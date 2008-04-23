@@ -16,6 +16,7 @@
    
    <domain name="Stateful Container">
       <bind pointcut="execution(public * *->*(..))">
+         <interceptor-ref name="org.jboss.aspects.currentinvocation.CurrentInvocationInterceptor"/>
          <!--interceptor-ref name="org.jboss.aspects.tx.TxPropagationInterceptor"/-->
          <interceptor-ref name="org.jboss.ejb3.tx.CMTTxInterceptorFactory"/>
          <interceptor-ref name="org.jboss.ejb3.test.tx.common.StatefulInstanceInterceptor"/>

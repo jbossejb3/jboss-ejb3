@@ -21,12 +21,25 @@
  */
 package org.jboss.ejb3.test.tx.common;
 
+import java.security.Identity;
+import java.security.Principal;
 import java.util.List;
+import java.util.Properties;
 import java.util.UUID;
+
+import javax.ejb.EJBHome;
+import javax.ejb.EJBLocalHome;
+import javax.ejb.EJBLocalObject;
+import javax.ejb.EJBObject;
+import javax.ejb.SessionContext;
+import javax.ejb.TimerService;
+import javax.transaction.UserTransaction;
+import javax.xml.rpc.handler.MessageContext;
 
 import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.ejb3.cache.Identifiable;
 import org.jboss.ejb3.interceptors.container.DummyBeanContext;
+import org.jboss.ejb3.tx.TxUtil;
 
 /**
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
@@ -37,6 +50,95 @@ public class StatefulBeanContext<T> extends DummyBeanContext<T>
 {
    private Object id = UUID.randomUUID();
    private SimpleMetaData metaData = new SimpleMetaData();
+   
+   private SessionContext sessionContext = new SessionContext()
+   {
+      public <T> T getBusinessObject(Class<T> businessInterface) throws IllegalStateException
+      {
+         throw new RuntimeException("N/A");
+      }
+
+      public EJBLocalObject getEJBLocalObject() throws IllegalStateException
+      {
+         throw new RuntimeException("N/A");
+      }
+
+      public EJBObject getEJBObject() throws IllegalStateException
+      {
+         throw new RuntimeException("N/A");
+      }
+
+      public Class getInvokedBusinessInterface() throws IllegalStateException
+      {
+         throw new RuntimeException("N/A");
+      }
+
+      public MessageContext getMessageContext() throws IllegalStateException
+      {
+         throw new RuntimeException("N/A");
+      }
+
+      public Identity getCallerIdentity()
+      {
+         throw new RuntimeException("N/A");
+      }
+
+      public Principal getCallerPrincipal()
+      {
+         throw new RuntimeException("N/A");
+      }
+
+      public EJBHome getEJBHome()
+      {
+         throw new RuntimeException("N/A");
+      }
+
+      public EJBLocalHome getEJBLocalHome()
+      {
+         throw new RuntimeException("N/A");
+      }
+
+      public Properties getEnvironment()
+      {
+         throw new RuntimeException("N/A");
+      }
+
+      public boolean getRollbackOnly() throws IllegalStateException
+      {
+         throw new RuntimeException("N/A");
+      }
+
+      public TimerService getTimerService() throws IllegalStateException
+      {
+         throw new RuntimeException("N/A");
+      }
+
+      public UserTransaction getUserTransaction() throws IllegalStateException
+      {
+         return TxUtil.getUserTransaction(StatefulBeanContext.this);
+      }
+
+      public boolean isCallerInRole(Identity role)
+      {
+         throw new RuntimeException("N/A");
+      }
+
+      public boolean isCallerInRole(String roleName)
+      {
+         throw new RuntimeException("N/A");
+      }
+
+      public Object lookup(String name)
+      {
+         throw new RuntimeException("N/A");
+      }
+
+      public void setRollbackOnly() throws IllegalStateException
+      {
+         throw new RuntimeException("N/A");
+      }
+      
+   };
    
    /**
     * @param instance
@@ -55,5 +157,10 @@ public class StatefulBeanContext<T> extends DummyBeanContext<T>
    public SimpleMetaData getMetaData()
    {
       return metaData;
+   }
+   
+   protected SessionContext getSessionContext()
+   {
+      return sessionContext;
    }
 }

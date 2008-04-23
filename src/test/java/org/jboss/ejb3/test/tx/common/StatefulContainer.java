@@ -32,6 +32,7 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.ejb.SessionContext;
 
 import org.jboss.aop.Advisor;
 import org.jboss.aop.ClassAdvisor;
@@ -51,6 +52,7 @@ import org.jboss.ejb3.interceptors.container.BeanContextFactory;
 import org.jboss.ejb3.interceptors.container.ContainerMethodInvocation;
 import org.jboss.ejb3.interceptors.container.DestructionInvocation;
 import org.jboss.ejb3.interceptors.lang.ClassHelper;
+import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
@@ -58,6 +60,8 @@ import org.jboss.ejb3.interceptors.lang.ClassHelper;
  */
 public class StatefulContainer<T> extends AbstractContainer<T, StatefulContainer<T>>
 {
+   private static final Logger log = Logger.getLogger(StatefulContainer.class);
+   
    private BeanContextFactory<T, StatefulContainer<T>> beanContextFactory = new BeanContextFactory<T, StatefulContainer<T>>()
    {
 
@@ -84,7 +88,19 @@ public class StatefulContainer<T> extends AbstractContainer<T, StatefulContainer
             Object initargs[] = null;
             T targetObject = getBeanClass().cast(advisor.invokeNew(initargs, idx));
             
-            BeanContext<T> component = new StatefulBeanContext<T>(targetObject, ejb3Interceptors);
+            StatefulBeanContext<T> component = new StatefulBeanContext<T>(targetObject, ejb3Interceptors);
+            
+            // Do injection (sort of)
+            try
+            {
+               Method method = getBeanClass().getMethod("setSessionContext", SessionContext.class);
+               SessionContext sessionContext = component.getSessionContext();
+               method.invoke(targetObject, sessionContext);
+            }
+            catch(NoSuchMethodException e)
+            {
+               log.debug("no method found setSessionContext");
+            }
             
             // Do lifecycle callbacks
             Interceptor interceptors[] = createLifecycleInterceptors(component, PostConstruct.class);

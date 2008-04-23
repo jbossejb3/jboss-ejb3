@@ -29,6 +29,7 @@ import org.jboss.ejb3.test.tx.common.StatefulContainer;
 import org.jboss.ejb3.test.tx.mc.UnitTestBootstrap;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -68,6 +69,17 @@ public class BMTUnitTestCase
    @After
    public void tearDown() throws Exception
    {
+   }
+   
+   @Test
+   public void testIsGetUserTransactionAllowed() throws Throwable
+   {
+      StatefulContainer<StatefulBMTBean> container = new StatefulContainer<StatefulBMTBean>("StatefulBMTBean", "Stateful Container", StatefulBMTBean.class);
+      
+      Object id = container.construct();
+      
+      Boolean isAllowed = container.invoke(id, "isGetUserTransactionAllowed");
+      Assert.assertFalse(isAllowed);
    }
    
    @Test
