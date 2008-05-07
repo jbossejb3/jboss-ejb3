@@ -36,11 +36,10 @@ import org.jboss.cache.Cache;
 import org.jboss.cache.CacheException;
 import org.jboss.cache.CacheSPI;
 import org.jboss.cache.Fqn;
-import org.jboss.cache.InvocationContext;
 import org.jboss.cache.Node;
 import org.jboss.cache.Region;
+import org.jboss.cache.RegionNotEmptyException;
 import org.jboss.cache.config.EvictionPolicyConfig;
-import org.jboss.cache.config.Option;
 import org.jboss.cache.eviction.LRUConfiguration;
 import org.jboss.cache.jmx.CacheJmxWrapperMBean;
 import org.jboss.cache.notifications.annotation.CacheListener;
@@ -173,8 +172,7 @@ public class StatefulTreeCache implements ClusteredStatefulCache
       {
          localActivity.set(Boolean.TRUE);
          // If need be, gravitate
-         InvocationContext ictx = cache.getInvocationContext();
-         ictx.setOptionOverrides(getGravitateOption());
+         cache.getInvocationContext().getOptionOverrides().setForceDataGravitation(true);
          entry = (StatefulBeanContext) cache.get(id, "bean");
       }
       catch (CacheException e)
@@ -232,8 +230,7 @@ public class StatefulTreeCache implements ClusteredStatefulCache
          {
             log.trace("remove: cache id " +id.toString());
          }
-         InvocationContext ictx = cache.getInvocationContext();
-         ictx.setOptionOverrides(getGravitateOption());
+         cache.getInvocationContext().getOptionOverrides().setForceDataGravitation(true);
          StatefulBeanContext ctx = (StatefulBeanContext) cache.get(id, "bean");
          
          if(ctx == null)
@@ -330,7 +327,18 @@ public class StatefulTreeCache implements ClusteredStatefulCache
 
       // Transfer over the state for the region
       region.registerContextClassLoader(cl);
-      region.activate();
+      try
+      {
+      	region.activate();
+      }
+      catch (RegionNotEmptyException e)
+      {
+         // this can happen with nested bean contexts if gravitation
+         // pulls a parent bean over after the parent region is stopped
+         // Clean up and try again
+         cleanBeanRegion();
+         region.activate();
+      }
 
       log.debug("initialize(): created region: " +region + " for ejb: " + this.ejbContainer.getEjbName());
 
@@ -382,8 +390,7 @@ public class StatefulTreeCache implements ClusteredStatefulCache
          try {
             // Remove locally. We do this to clean up the persistent store,
             // which is not affected by the region.deactivate call below.
-            InvocationContext ctx = cache.getInvocationContext();
-            ctx.setOptionOverrides(getLocalOnlyOption());
+            cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
             cache.removeNode(cacheNode);
          }
          catch (CacheException e)
@@ -671,21 +678,7 @@ public class StatefulTreeCache implements ClusteredStatefulCache
          }
       }
    }
-
-   private static Option getLocalOnlyOption()
-   {
-      Option opt = new Option();
-      opt.setCacheModeLocal(true);
-      return opt;
-   }
-
-   private static Option getGravitateOption()
-   {
-      Option opt = new Option();
-      opt.setForceDataGravitation(true);
-      return opt;
-   }
-
+   
    private class RemovalTimeoutTask extends Thread
    {
       public RemovalTimeoutTask(String name)
