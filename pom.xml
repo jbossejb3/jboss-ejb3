@@ -38,7 +38,7 @@
     <dependency>
       <groupId>org.jboss.aspects</groupId>
       <artifactId>jboss-current-invocation-aspects</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.0.Beta1</version>
     </dependency>
     <dependency>
       <groupId>org.jboss.logging</groupId>
@@ -75,7 +75,7 @@
     <dependency>
       <groupId>org.jboss.aspects</groupId>
       <artifactId>jboss-transaction-aspects</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.0.Beta1</version>
     </dependency>
     <dependency>
       <groupId>org.jboss.deployers</groupId>
