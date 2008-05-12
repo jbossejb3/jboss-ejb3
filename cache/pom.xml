@@ -1,10 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
-  vi:ts=2:sw=2:expandtab:
--->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <!-- Define Parent -->
   <parent>
@@ -20,7 +14,7 @@
   <!-- Artifact Information -->
   <groupId>org.jboss.ejb3</groupId>
   <artifactId>jboss-ejb3-cache</artifactId>
-  <version>0.13.0-SNAPSHOT</version>
+  <version>0.13.0</version>
   <packaging>jar</packaging>
   <name>JBoss EJB 3.0 Cache</name>
   <url>http://labs.jboss.com/jbossejb3/</url>
@@ -71,4 +65,10 @@
 
   </dependencies>
 
+
+  <scm>
+    <connection>scm:svn:http://anonsvn.jboss.org/repos/jbossas/projects/ejb3/tags/jboss-ejb3-cache-0.13.0</connection>
+    <developerConnection>scm:svn:https://svn.jboss.org/repos/jbossas/projects/ejb3/tags/jboss-ejb3-cache-0.13.0</developerConnection>
+    <url>http://anonsvn.jboss.org/repos/jbossas/projects/ejb3/tags/jboss-ejb3-cache-0.13.0</url>
+  </scm>
 </project>
