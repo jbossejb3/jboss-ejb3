@@ -29,19 +29,17 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.ejb.EJBException;
 import javax.ejb.NoSuchEJBException;
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
 
 import org.jboss.cache.Cache;
 import org.jboss.cache.CacheException;
-import org.jboss.cache.CacheSPI;
+import org.jboss.cache.CacheManager;
+import org.jboss.cache.CacheStatus;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
 import org.jboss.cache.Region;
 import org.jboss.cache.RegionNotEmptyException;
 import org.jboss.cache.config.EvictionPolicyConfig;
 import org.jboss.cache.eviction.LRUConfiguration;
-import org.jboss.cache.jmx.CacheJmxWrapperMBean;
 import org.jboss.cache.notifications.annotation.CacheListener;
 import org.jboss.cache.notifications.annotation.NodeActivated;
 import org.jboss.cache.notifications.annotation.NodePassivated;
@@ -54,9 +52,8 @@ import org.jboss.ejb3.pool.Pool;
 import org.jboss.ejb3.stateful.NestedStatefulBeanContext;
 import org.jboss.ejb3.stateful.ProxiedStatefulBeanContext;
 import org.jboss.ejb3.stateful.StatefulBeanContext;
+import org.jboss.ha.framework.server.CacheManagerLocator;
 import org.jboss.logging.Logger;
-import org.jboss.mx.util.MBeanProxyExt;
-import org.jboss.mx.util.MBeanServerLocator;
 import org.jboss.util.id.GUID;
 
 /**
@@ -102,7 +99,10 @@ public class StatefulTreeCache implements ClusteredStatefulCache
    protected RemovalTimeoutTask removalTask = null;
    protected boolean running = true;
    protected Map<Object, Long> beans = new ConcurrentHashMap<Object, Long>();
+   protected CacheConfig cacheConfig;
+   protected CacheManager cacheManager;
    protected EJBContainer ejbContainer;
+   protected Object shutdownLock = new Object();
 
    public StatefulBeanContext create()
    {
@@ -302,34 +302,72 @@ public class StatefulTreeCache implements ClusteredStatefulCache
       log = Logger.getLogger(getClass().getName() + "." + this.ejbContainer.getEjbName());
 
       this.pool = this.ejbContainer.getPool();
-      ClassLoader cl = this.ejbContainer.getClassloader();
-      this.classloader = new WeakReference<ClassLoader>(cl);
+      this.classloader = new WeakReference<ClassLoader>(this.ejbContainer.getClassloader());
       
-      CacheConfig config = (CacheConfig) ejbContainer.resolveAnnotation(CacheConfig.class);
-      MBeanServer server = MBeanServerLocator.locateJBoss();
-      String name = config.name();
+      cacheConfig = (CacheConfig) this.ejbContainer.getAnnotation(CacheConfig.class);
+
+      this.cacheManager = CacheManagerLocator.getCacheManagerLocator().getCacheManager(null);
+
+      removalTimeout = cacheConfig.removalTimeoutSeconds();
+      if (removalTimeout > 0)
+         removalTask = new RemovalTimeoutTask("SFSB Removal Thread - " + this.ejbContainer.getObjectName().getCanonicalName());
+   }
+
+   protected EvictionPolicyConfig getEvictionPolicyConfig()
+   {
+      LRUConfiguration epc = new LRUConfiguration();
+      // Override the standard policy class
+      epc.setEvictionPolicyClass(AbortableLRUPolicy.class.getName());
+      epc.setTimeToLiveSeconds((int) cacheConfig.idleTimeoutSeconds());
+      epc.setMaxNodes(cacheConfig.maxSize());
+      return epc;
+   }
+
+   public void start()
+   {      
+      // Get our cache
+      String name = cacheConfig.name();
       if (name == null || name.trim().length() == 0)
          name = CacheConfig.DEFAULT_CLUSTERED_OBJECT_NAME;
-      ObjectName cacheON = new ObjectName(name);
-      CacheJmxWrapperMBean mbean = (CacheJmxWrapperMBean) MBeanProxyExt.create(CacheJmxWrapperMBean.class, cacheON, server);
-      cache = mbean.getCache();
+      try
+      {
+         cache = cacheManager.getCache(name, true);
+      }
+      catch (CacheException ce)
+      {
+         throw convertToRuntimeException(ce);
+      }
+      catch (RuntimeException re)
+      {
+         throw re;
+      }
+      catch (Exception e1)
+      {
+         throw new RuntimeException("Cannot get cache with name " + name, e1);
+      }
 
       cacheNode = new Fqn(new Object[] { this.ejbContainer.getDeploymentPropertyListString() });
       
       // Try to create an eviction region per ejb
       region = cache.getRegion(cacheNode, true);
-      EvictionPolicyConfig epc = getEvictionPolicyConfig((int) config.idleTimeoutSeconds(),
-            config.maxSize());
+      EvictionPolicyConfig epc = getEvictionPolicyConfig();
       region.setEvictionPolicy(epc);
 
+      if (cache.getCacheStatus() != CacheStatus.STARTED)
+      {
+         if (cache.getCacheStatus() != CacheStatus.CREATED)
+            cache.create();
+         cache.start();
+      }
+      
       // JBCACHE-1136.  There's no reason to have state in an inactive region
       cleanBeanRegion();
 
       // Transfer over the state for the region
-      region.registerContextClassLoader(cl);
+      region.registerContextClassLoader(classloader.get());
       try
       {
-      	region.activate();
+        region.activate();
       }
       catch (RegionNotEmptyException e)
       {
@@ -339,26 +377,9 @@ public class StatefulTreeCache implements ClusteredStatefulCache
          cleanBeanRegion();
          region.activate();
       }
-
-      log.debug("initialize(): created region: " +region + " for ejb: " + this.ejbContainer.getEjbName());
-
-      removalTimeout = config.removalTimeoutSeconds();
-      if (removalTimeout > 0)
-         removalTask = new RemovalTimeoutTask("SFSB Removal Thread - " + this.ejbContainer.getObjectName().getCanonicalName());
-   }
-
-   protected EvictionPolicyConfig getEvictionPolicyConfig(int timeToLiveSeconds, int maxNodes)
-   {
-      LRUConfiguration epc = new LRUConfiguration();
-      // Override the standard policy class
-      epc.setEvictionPolicyClass(AbortableLRUPolicy.class.getName());
-      epc.setTimeToLiveSeconds(timeToLiveSeconds);
-      epc.setMaxNodes(maxNodes);
-      return epc;
-   }
-
-   public void start()
-   {
+      
+      log.debug("started(): created region: " +region + " for ejb: " + ejbContainer.getEjbName());
+      
       // register to listen for cache events
 
       // TODO this approach may not be scalable when there are many beans
@@ -377,6 +398,13 @@ public class StatefulTreeCache implements ClusteredStatefulCache
    {
       running = false;
 
+      // Block until the removalTask is done removing a bean (if it is)
+      synchronized (shutdownLock)
+      {
+         if (removalTask != null && removalTask.isAlive())
+            removalTask.interrupt();
+      }
+      
       if (cache != null)
       {
          // Remove the listener
@@ -387,24 +415,12 @@ public class StatefulTreeCache implements ClusteredStatefulCache
          // which is not affected by the inactivateRegion call below.
          cleanBeanRegion();
 
-         try {
-            // Remove locally. We do this to clean up the persistent store,
-            // which is not affected by the region.deactivate call below.
-            cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
-            cache.removeNode(cacheNode);
-         }
-         catch (CacheException e)
-         {
-            log.error("stop(): can't remove bean from the underlying distributed cache");
-         }
-
          if (region != null)
          {
             region.deactivate();
             region.unregisterContextClassLoader();
 
-            // FIXME this method needs to be in Cache
-            ((CacheSPI) cache).getRegionManager().removeRegion(region.getFqn());
+            cache.removeRegion(region.getFqn());
             // Clear any queues
             region.resetEvictionQueues();
             region = null;
@@ -413,8 +429,11 @@ public class StatefulTreeCache implements ClusteredStatefulCache
 
       classloader = null;
 
-      if (removalTask != null)
-         removalTask.interrupt();
+      // Return the cache
+      String name = cacheConfig.name();
+      if (name == null || name.trim().length() == 0)
+         name = CacheConfig.DEFAULT_CLUSTERED_OBJECT_NAME;
+      cacheManager.releaseCache(name);
 
       log.debug("stop(): StatefulTreeCache stopped successfully for " +cacheNode);
    }
@@ -704,13 +723,18 @@ public class StatefulTreeCache implements ClusteredStatefulCache
                long now = System.currentTimeMillis();
 
                Iterator<Map.Entry<Object, Long>> it = beans.entrySet().iterator();
-               while (it.hasNext())
+               
+               // Block stop() processing while we process
+               synchronized (shutdownLock)
                {
-                  Map.Entry<Object, Long> entry = it.next();
-                  long lastUsed = entry.getValue().longValue();
-                  if (now - lastUsed >= removalTimeout * 1000)
+                  while (running && it.hasNext())
                   {
-                     remove(entry.getKey());
+                     Map.Entry<Object, Long> entry = it.next();
+                     long lastUsed = entry.getValue().longValue();
+                     if (now - lastUsed >= removalTimeout * 1000)
+                     {
+                        remove(entry.getKey());
+                     }
                   }
                }
             }
