@@ -67,7 +67,8 @@ import org.jboss.util.id.GUID;
  */
 public class StatefulTreeCache implements ClusteredStatefulCache
 {
-   private static final int FQN_SIZE = 3; // depth of fqn that we store the session in.
+   private static final int FQN_SIZE = 4; // depth of fqn that we store the session in.
+   private static final String SFSB = "sfsb";
    private static final int DEFAULT_BUCKET_COUNT = 100;
 
    private static final String[] DEFAULT_HASH_BUCKETS = new String[DEFAULT_BUCKET_COUNT];
@@ -346,7 +347,7 @@ public class StatefulTreeCache implements ClusteredStatefulCache
          throw new RuntimeException("Cannot get cache with name " + name, e1);
       }
 
-      cacheNode = new Fqn(new Object[] { this.ejbContainer.getDeploymentPropertyListString() });
+      cacheNode = new Fqn(new Object[] { SFSB, this.ejbContainer.getDeploymentPropertyListString() });
       
       // Try to create an eviction region per ejb
       region = cache.getRegion(cacheNode, true);
