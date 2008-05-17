@@ -34,8 +34,8 @@ import org.jboss.ejb3.EJBContainer;
 import org.jboss.ejb3.annotation.CacheConfig;
 import org.jboss.ejb3.annotation.PersistenceManager;
 import org.jboss.ejb3.cache.StatefulCache;
-import org.jboss.ejb3.pool.Pool;
 import org.jboss.ejb3.stateful.StatefulBeanContext;
+import org.jboss.ejb3.stateful.StatefulContainer;
 import org.jboss.logging.Logger;
 
 /**
@@ -48,7 +48,7 @@ public class SimpleStatefulCache implements StatefulCache
 {
    private Logger log = Logger.getLogger(SimpleStatefulCache.class);
 
-   private Pool pool;
+   private StatefulContainer container;
    private CacheMap cacheMap;
    private int maxSize = 1000;
    private StatefulSessionPersistenceManager pm;
@@ -240,8 +240,8 @@ public class SimpleStatefulCache implements StatefulCache
 
    public void initialize(EJBContainer container) throws Exception
    {
+      this.container = (StatefulContainer) container;
       Advisor advisor = container.getAdvisor();
-      this.pool = container.getPool();
       cacheMap = new CacheMap();
       PersistenceManager pmConfig = (PersistenceManager) advisor.resolveAnnotation(PersistenceManager.class);
       EJBContainer ejbContainer = (EJBContainer)container;
@@ -311,34 +311,7 @@ public class SimpleStatefulCache implements StatefulCache
 
    public StatefulBeanContext create()
    {
-      StatefulBeanContext ctx = null;
-      try
-      {
-         ctx = (StatefulBeanContext) pool.get();
-         
-         if (log.isTraceEnabled())
-         {
-            log.trace("Caching context " + ctx.getId() + " of type " + ctx.getClass());
-         }
-         synchronized (cacheMap)
-         {
-            cacheMap.put(ctx.getId(), ctx);
-         }
-         ctx.setInUse(true);
-         ctx.lastUsed = System.currentTimeMillis();
-         ++createCount;
-      }
-      catch (EJBException e)
-      {
-         e.printStackTrace();
-         throw e;
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-         throw new EJBException(e);
-      }
-      return ctx;
+      return create(null, null);
    }
 
    public StatefulBeanContext create(Class<?>[] initTypes, Object[] initValues)
@@ -346,7 +319,7 @@ public class SimpleStatefulCache implements StatefulCache
       StatefulBeanContext ctx = null;
       try
       {
-         ctx = (StatefulBeanContext) pool.get(initTypes, initValues);
+         ctx = container.create(initTypes, initValues);
          if (log.isTraceEnabled())
          {
             log.trace("Caching context " + ctx.getId() + " of type " + ctx.getClass());
@@ -454,7 +427,7 @@ public class SimpleStatefulCache implements StatefulCache
       if(ctx == null)
          throw new NoSuchEJBException("Could not find Stateful bean: " + key);
       if (!ctx.isRemoved())
-         pool.remove(ctx);
+         container.destroy(ctx);
       
       ++removeCount;
       

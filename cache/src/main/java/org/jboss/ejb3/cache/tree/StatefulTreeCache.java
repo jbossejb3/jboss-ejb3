@@ -52,6 +52,7 @@ import org.jboss.ejb3.pool.Pool;
 import org.jboss.ejb3.stateful.NestedStatefulBeanContext;
 import org.jboss.ejb3.stateful.ProxiedStatefulBeanContext;
 import org.jboss.ejb3.stateful.StatefulBeanContext;
+import org.jboss.ejb3.stateful.StatefulContainer;
 import org.jboss.ha.framework.server.CacheManagerLocator;
 import org.jboss.logging.Logger;
 import org.jboss.util.id.GUID;
@@ -83,7 +84,6 @@ public class StatefulTreeCache implements ClusteredStatefulCache
 
    private ThreadLocal<Boolean> localActivity = new ThreadLocal<Boolean>();
    private Logger log = Logger.getLogger(StatefulTreeCache.class);
-   private Pool pool;
    private WeakReference<ClassLoader> classloader;
    private Cache cache;
    private Fqn cacheNode;
@@ -102,34 +102,12 @@ public class StatefulTreeCache implements ClusteredStatefulCache
    protected Map<Object, Long> beans = new ConcurrentHashMap<Object, Long>();
    protected CacheConfig cacheConfig;
    protected CacheManager cacheManager;
-   protected EJBContainer ejbContainer;
+   protected StatefulContainer ejbContainer;
    protected Object shutdownLock = new Object();
 
    public StatefulBeanContext create()
-   {
-      StatefulBeanContext ctx = null;
-      try
-      {
-         ctx = (StatefulBeanContext) pool.get();
-         if (log.isTraceEnabled())
-         {
-            log.trace("Caching context " + ctx.getId() + " of type " + ctx.getClass());
-         }
-         putInCache(ctx);
-         ctx.setInUse(true);
-         ctx.lastUsed = System.currentTimeMillis();
-         ++createCount;
-         beans.put(ctx.getId(), new Long(ctx.lastUsed));
-      }
-      catch (EJBException e)
-      {
-         throw e;
-      }
-      catch (Exception e)
-      {
-         throw new EJBException(e);
-      }
-      return ctx;
+   {      
+      return create(null, null);
    }
 
    public StatefulBeanContext create(Class[] initTypes, Object[] initValues)
@@ -137,7 +115,7 @@ public class StatefulTreeCache implements ClusteredStatefulCache
       StatefulBeanContext ctx = null;
       try
       {
-         ctx = (StatefulBeanContext) pool.get(initTypes, initValues);
+         ctx = ejbContainer.create(initTypes, initValues);
          if (log.isTraceEnabled())
          {
             log.trace("Caching context " + ctx.getId() + " of type " + ctx.getClass());
@@ -238,7 +216,13 @@ public class StatefulTreeCache implements ClusteredStatefulCache
             throw new NoSuchEJBException("Could not find Stateful bean: " + key);
          
          if (!ctx.isRemoved())
-            pool.remove(ctx);
+         {
+            ejbContainer.destroy(ctx);
+         }
+         else if (log.isTraceEnabled())
+         {
+            log.trace("remove: " +id.toString() + " already removed from pool");
+         }
 
          if (ctx.getCanRemoveFromCache())
          {
@@ -250,6 +234,10 @@ public class StatefulTreeCache implements ClusteredStatefulCache
             // We can't remove the ctx as it contains live nested beans
             // But, we must replicate it so other nodes know the parent is removed!
             putInCache(ctx);
+            if(log.isTraceEnabled())
+            {
+               log.trace("remove: removed bean " +id.toString() + " cannot be removed from cache");
+            }
          }
 
          ++removeCount;
@@ -298,11 +286,10 @@ public class StatefulTreeCache implements ClusteredStatefulCache
 
    public void initialize(EJBContainer container) throws Exception
    {
-      this.ejbContainer = container;
+      this.ejbContainer = (StatefulContainer) container;
       
       log = Logger.getLogger(getClass().getName() + "." + this.ejbContainer.getEjbName());
 
-      this.pool = this.ejbContainer.getPool();
       this.classloader = new WeakReference<ClassLoader>(this.ejbContainer.getClassloader());
       
       cacheConfig = (CacheConfig) this.ejbContainer.getAnnotation(CacheConfig.class);
