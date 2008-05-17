@@ -27,8 +27,8 @@ import javax.ejb.EJBException;
 import javax.ejb.NoSuchEJBException;
 
 import org.jboss.ejb3.EJBContainer;
-import org.jboss.ejb3.pool.Pool;
 import org.jboss.ejb3.stateful.StatefulBeanContext;
+import org.jboss.ejb3.stateful.StatefulContainer;
 
 /**
  * Comment
@@ -38,7 +38,7 @@ import org.jboss.ejb3.stateful.StatefulBeanContext;
  */
 public class NoPassivationCache implements StatefulCache
 {   
-   private Pool pool;
+   private StatefulContainer container;
    private HashMap<Object, StatefulBeanContext> cacheMap;
    private int createCount = 0;
    private int removeCount = 0;
@@ -46,7 +46,7 @@ public class NoPassivationCache implements StatefulCache
    
    public void initialize(EJBContainer container) throws Exception
    {
-      this.pool = container.getPool();
+      this.container = (StatefulContainer) container;
       cacheMap = new HashMap<Object, StatefulBeanContext>();
    }
 
@@ -78,7 +78,7 @@ public class NoPassivationCache implements StatefulCache
       StatefulBeanContext ctx = null;
       try
       {
-         ctx = (StatefulBeanContext) pool.get(initTypes, initValues);
+         ctx = container.create(initTypes, initValues);
          ++createCount;
          synchronized (cacheMap)
          {
@@ -152,7 +152,7 @@ public class NoPassivationCache implements StatefulCache
       }
       if(ctx == null)
          throw new NoSuchEJBException("Could not find Stateful bean: " + key);
-      pool.remove(ctx);
+      container.destroy(ctx);
       ++removeCount;
    }
 
