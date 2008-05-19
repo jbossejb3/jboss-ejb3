@@ -366,6 +366,14 @@ public class StatefulTreeCache implements ClusteredStatefulCache
          region.activate();
       }
       
+      // JBCACHE-1349 -- ensure root node exists
+      Node regionRoot = cache.getNode(cacheNode);
+      if (regionRoot == null)
+      {
+         regionRoot = cache.getRoot().addChild(cacheNode);
+      }
+      regionRoot.setResident(true);
+      
       log.debug("started(): created region: " +region + " for ejb: " + ejbContainer.getEjbName());
       
       // register to listen for cache events
