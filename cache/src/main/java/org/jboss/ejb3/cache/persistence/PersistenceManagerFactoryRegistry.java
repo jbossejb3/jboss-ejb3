@@ -56,6 +56,8 @@ public class PersistenceManagerFactoryRegistry
     */
    public PersistenceManagerFactory getPersistenceManagerFactory(String name) throws PersistenceManagerFactoryNotRegisteredException
    {
+      assert factories != null : "factories has not been set";
+      
       // Obtain cache factory
       Class<? extends PersistenceManagerFactory> persistenceManagerFactory = this.factories.get(name);
 
