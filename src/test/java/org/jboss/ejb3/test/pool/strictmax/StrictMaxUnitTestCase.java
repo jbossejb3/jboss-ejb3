@@ -27,13 +27,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.TestCase;
+
 import org.jboss.ejb3.pool.Pool;
 import org.jboss.ejb3.pool.StatelessObjectFactory;
 import org.jboss.ejb3.pool.strictmax.StrictMaxPool;
 import org.jboss.ejb3.test.pool.common.MockBean;
 import org.jboss.ejb3.test.pool.common.MockFactory;
-
-import junit.framework.TestCase;
 
 /**
  * Comment
@@ -43,7 +43,7 @@ import junit.framework.TestCase;
  */
 public class StrictMaxUnitTestCase extends TestCase
 {
-   int used = 0;
+   volatile int used = 0;
    
    @Override
    protected void setUp() throws Exception
