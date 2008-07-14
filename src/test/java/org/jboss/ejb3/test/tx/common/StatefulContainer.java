@@ -52,7 +52,13 @@ import org.jboss.ejb3.interceptors.container.BeanContextFactory;
 import org.jboss.ejb3.interceptors.container.ContainerMethodInvocation;
 import org.jboss.ejb3.interceptors.container.DestructionInvocation;
 import org.jboss.ejb3.interceptors.lang.ClassHelper;
+import org.jboss.ejb3.metadata.MetaDataBridge;
+import org.jboss.ejb3.metadata.annotation.AnnotationRepositoryToMetaData;
+import org.jboss.ejb3.tx.metadata.ApplicationExceptionComponentMetaDataLoaderFactory;
+import org.jboss.ejb3.tx.metadata.ApplicationExceptionMetaDataBridge;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.ejb.jboss.JBossSessionBeanMetaData;
+import org.jboss.metadata.ejb.spec.ApplicationExceptionMetaData;
 
 /**
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
@@ -61,6 +67,8 @@ import org.jboss.logging.Logger;
 public class StatefulContainer<T> extends AbstractContainer<T, StatefulContainer<T>>
 {
    private static final Logger log = Logger.getLogger(StatefulContainer.class);
+   
+   private JBossSessionBeanMetaData beanMetaData;
    
    private BeanContextFactory<T, StatefulContainer<T>> beanContextFactory = new BeanContextFactory<T, StatefulContainer<T>>()
    {
@@ -200,6 +208,25 @@ public class StatefulContainer<T> extends AbstractContainer<T, StatefulContainer
    public StatefulContainer(String name, String domainName, Class<T> beanClass)
    {
       super(name, domainName, beanClass);
+      setBeanContextFactory(beanContextFactory);
+   }
+   
+   public StatefulContainer(String domainName, Class<T> beanClass, JBossSessionBeanMetaData beanMetaData)
+   {
+      super();
+      
+      this.beanMetaData = beanMetaData;
+      
+      String name = beanMetaData.getName();
+      
+      ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+      AnnotationRepositoryToMetaData annotations = new AnnotationRepositoryToMetaData(beanClass, beanMetaData, name, classLoader);
+      List<MetaDataBridge<ApplicationExceptionMetaData>> appExceptionBridges = new ArrayList<MetaDataBridge<ApplicationExceptionMetaData>>();
+      appExceptionBridges.add(new ApplicationExceptionMetaDataBridge());
+      annotations.addComponentMetaDataLoaderFactory(new ApplicationExceptionComponentMetaDataLoaderFactory(appExceptionBridges));
+
+      initializeAdvisor(name, getDomain(domainName), beanClass, annotations);
+      
       setBeanContextFactory(beanContextFactory);
    }
    

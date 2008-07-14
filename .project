@@ -3,10 +3,7 @@
   <comment>The JBoss EJB 3 Transactions component implements all functionality
     specified in Chapter 13 (Support for Transactions) of the EJB 3.0
     specification.</comment>
-  <projects>
-    <project>jboss-ejb3-cache</project>
-    <project>jboss-ejb3-interceptors</project>
-  </projects>
+  <projects/>
   <buildSpec>
     <buildCommand>
       <name>org.maven.ide.eclipse.maven2Builder</name>

@@ -68,33 +68,6 @@ public class TxUtil
    public static ApplicationException getApplicationException(Class<?> exceptionClass, Invocation invocation)
    {
       return AbstractInterceptor.resolveAnnotation(invocation, exceptionClass, ApplicationException.class);
-      /*
-      MethodInvocation ejb = (MethodInvocation) invocation;
-      EJBContainer container = AbstractInterceptor.getEJBContainer(invocation);
-
-      // TODO: Wolf: refactor onto a unified metadata view
-      
-      if (exceptionClass.isAnnotationPresent(ApplicationException.class))
-         return (ApplicationException)exceptionClass.getAnnotation(ApplicationException.class);
-
-      JBossAssemblyDescriptorMetaData assembly = container.getAssemblyDescriptor();
-
-      if (assembly != null)
-      {
-         ApplicationExceptionsMetaData exceptions = assembly.getApplicationExceptions();
-         if (exceptions != null)
-         {
-            for(ApplicationExceptionMetaData exception : exceptions)
-            {
-               if (exception.getExceptionClass().equals(exceptionClass.getName()))
-                  return new ApplicationExceptionImpl(exception.isRollback());
-            }
-         }
-
-      }
-      return null;
-      */
-      
    }
 
    public static boolean getRollbackOnly()
