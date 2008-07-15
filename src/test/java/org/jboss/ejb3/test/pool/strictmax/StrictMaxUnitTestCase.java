@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.TestCase;
 
@@ -43,7 +44,7 @@ import org.jboss.ejb3.test.pool.common.MockFactory;
  */
 public class StrictMaxUnitTestCase extends TestCase
 {
-   volatile int used = 0;
+   AtomicInteger used = new AtomicInteger(0);
    
    @Override
    protected void setUp() throws Exception
@@ -51,7 +52,7 @@ public class StrictMaxUnitTestCase extends TestCase
       super.setUp();
       
       MockBean.reset();
-      used = 0;
+      used = new AtomicInteger(0);
    }
    
    public void test1()
@@ -101,7 +102,7 @@ public class StrictMaxUnitTestCase extends TestCase
                
                bean = null;
                
-               used++;
+               used.incrementAndGet();
             }
             
             return null;
@@ -124,7 +125,7 @@ public class StrictMaxUnitTestCase extends TestCase
       
       pool.stop();
       
-      assertEquals(400, used);
+      assertEquals(400, used.intValue());
       assertEquals(10, MockBean.getPostConstructs());
       assertEquals(10, MockBean.getPreDestroys());
    }
