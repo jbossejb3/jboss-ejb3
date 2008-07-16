@@ -26,6 +26,7 @@ import static org.junit.Assert.fail;
 
 import java.net.URL;
 
+import javax.ejb.EJBTransactionRolledbackException;
 import javax.naming.InitialContext;
 import javax.transaction.Status;
 import javax.transaction.TransactionManager;
@@ -136,5 +137,62 @@ public class MetaDataTestCase
       {
          tm.rollback();
       }
+   }
+   
+   private void testNPE(JBossSessionBeanMetaData enterpriseBean) throws Throwable
+   {
+      container = new StatefulContainer<MyStatefulBean>("Stateful Container", MyStatefulBean.class, enterpriseBean);
+      
+      MyStateful bean = container.constructProxy(MyStateful.class);
+      
+      tm.begin();
+      try
+      {
+         bean.throwAppRuntimeException();
+         fail("Should have thrown EJBTransactionRolledbackException");
+      }
+      catch(EJBTransactionRolledbackException e)
+      {
+         // good, it's not an application exception
+      }
+      finally
+      {
+         tm.rollback();
+      }   
+   }
+   
+   @Test
+   public void testNPE1() throws Throwable
+   {
+      JBossAssemblyDescriptorMetaData assemblyDescriptor = new JBossAssemblyDescriptorMetaData();
+      //assemblyDescriptor.setApplicationExceptions(applicationExceptions);
+      
+      JBossSessionBeanMetaData enterpriseBean = new JBossSessionBeanMetaData();
+      enterpriseBean.setName("MyStatefulBean");
+      
+      JBossEnterpriseBeansMetaData enterpriseBeans = new JBossEnterpriseBeansMetaData();
+      enterpriseBeans.add(enterpriseBean);
+      
+      JBoss50MetaData jarMetaData = new JBoss50MetaData();
+      jarMetaData.setAssemblyDescriptor(assemblyDescriptor);
+      jarMetaData.setEnterpriseBeans(enterpriseBeans);
+      
+      testNPE(enterpriseBean);
+   }
+   
+   @Test
+   public void testNPE2() throws Throwable
+   {
+      JBossSessionBeanMetaData enterpriseBean = new JBossSessionBeanMetaData();
+      enterpriseBean.setName("MyStatefulBean");
+      
+      JBossEnterpriseBeansMetaData enterpriseBeans = new JBossEnterpriseBeansMetaData();
+      enterpriseBeans.add(enterpriseBean);
+      
+      JBoss50MetaData jarMetaData = new JBoss50MetaData();
+      //jarMetaData.setAssemblyDescriptor(assemblyDescriptor);
+      jarMetaData.setEnterpriseBeans(enterpriseBeans);
+      
+      testNPE(enterpriseBean);
    }
 }

@@ -27,8 +27,10 @@ import org.jboss.ejb3.metadata.ComponentMetaDataLoaderFactory;
 import org.jboss.ejb3.metadata.MetaDataBridge;
 import org.jboss.ejb3.metadata.plugins.loader.BridgedMetaDataLoader;
 import org.jboss.ejb3.metadata.spi.signature.ClassSignature;
+import org.jboss.metadata.ejb.jboss.JBossAssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.jboss.JBossEnterpriseBeanMetaData;
 import org.jboss.metadata.ejb.spec.ApplicationExceptionMetaData;
+import org.jboss.metadata.ejb.spec.ApplicationExceptionsMetaData;
 import org.jboss.metadata.spi.retrieval.MetaDataRetrieval;
 import org.jboss.metadata.spi.scope.ScopeKey;
 import org.jboss.metadata.spi.signature.Signature;
@@ -62,6 +64,20 @@ public class ApplicationExceptionComponentMetaDataLoaderFactory implements Compo
    
    private ApplicationExceptionMetaData findApplicationException(JBossEnterpriseBeanMetaData metaData, String name)
    {
-      return metaData.getEjbJarMetaData().getAssemblyDescriptor().getApplicationExceptions().get(name);
+      return getApplicationException(getApplicationExceptions(metaData.getEjbJarMetaData().getAssemblyDescriptor()), name);
+   }
+   
+   private ApplicationExceptionMetaData getApplicationException(ApplicationExceptionsMetaData applicationExceptions, String name)
+   {
+      if(applicationExceptions == null)
+         return null;
+      return applicationExceptions.get(name);
+   }
+   
+   private ApplicationExceptionsMetaData getApplicationExceptions(JBossAssemblyDescriptorMetaData assemblyDescriptor)
+   {
+      if(assemblyDescriptor == null)
+         return null;
+      return assemblyDescriptor.getApplicationExceptions();
    }
 }
