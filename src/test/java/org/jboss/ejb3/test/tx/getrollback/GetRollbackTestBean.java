@@ -26,6 +26,7 @@ import static javax.ejb.TransactionAttributeType.NEVER;
 import static javax.ejb.TransactionAttributeType.REQUIRED;
 
 import javax.ejb.EJBContext;
+import javax.ejb.PrePassivate;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -40,6 +41,8 @@ import org.jboss.ejb3.test.tx.common.MockEJBContext;
 public class GetRollbackTestBean
 {
    private EJBContext ctx = new MockEJBContext();
+   
+   public boolean prePassivateRan = false;
    
    @TransactionAttribute(MANDATORY)
    public boolean mandatory()
@@ -57,6 +60,14 @@ public class GetRollbackTestBean
    public boolean notSupported()
    {
       return ctx.getRollbackOnly();
+   }
+   
+   @PrePassivate
+   public void prePassivate()
+   {
+      ctx.getRollbackOnly();
+      
+      prePassivateRan = true;
    }
    
    @TransactionAttribute(REQUIRED)

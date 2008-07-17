@@ -107,7 +107,10 @@ public class TxUtil
    
    protected static TransactionAttributeType getTxType(Advisor advisor, Method method)
    {
-      TransactionAttribute tx = (TransactionAttribute) advisor.resolveAnnotation(method, TransactionAttribute.class);
+      TransactionAttribute tx = null;
+      
+      if(method != null)
+         tx = (TransactionAttribute) advisor.resolveAnnotation(method, TransactionAttribute.class);
 
       if (tx == null)
          tx = (TransactionAttribute) advisor.resolveAnnotation(TransactionAttribute.class);
@@ -123,7 +126,11 @@ public class TxUtil
    
    private static TransactionAttributeType getTxType(Invocation invocation)
    {
-      return getTxType(invocation.getAdvisor(), ((MethodInvocation) invocation).getActualMethod());
+      // Use the method tx attribute if we're invoking a business method, else the bean attribute
+      Method method = null;
+      if(invocation instanceof MethodInvocation)
+         method = ((MethodInvocation) invocation).getActualMethod();
+      return getTxType(invocation.getAdvisor(), method);
    }
 
    public static UserTransaction getUserTransaction(BeanContext<?> ctx)

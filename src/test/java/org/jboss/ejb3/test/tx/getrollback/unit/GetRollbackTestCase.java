@@ -23,14 +23,23 @@ package org.jboss.ejb3.test.tx.getrollback.unit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.net.URL;
+import java.util.List;
 
 import javax.ejb.EJBTransactionRolledbackException;
+import javax.ejb.PrePassivate;
 import javax.naming.InitialContext;
 import javax.transaction.TransactionManager;
 
+import org.jboss.aop.Advisor;
+import org.jboss.aop.advice.Interceptor;
+import org.jboss.aop.joinpoint.ConstructionInvocation;
+import org.jboss.ejb3.interceptors.aop.LifecycleCallbacks;
 import org.jboss.ejb3.interceptors.container.BeanContext;
 import org.jboss.ejb3.interceptors.direct.DirectContainer;
 import org.jboss.ejb3.test.tx.getrollback.GetRollbackTestBean;
@@ -51,8 +60,30 @@ public class GetRollbackTestCase
 {
    private static UnitTestBootstrap bootstrap;
    
-   private static DirectContainer<GetRollbackTestBean> container;
+   private static TestContainer<GetRollbackTestBean> container;
    private BeanContext<GetRollbackTestBean> instance;
+   
+   private static class TestContainer<T> extends DirectContainer<T>
+   {
+      public TestContainer(String name, String domainName, Class<? extends T> beanClass)
+      {
+         super(name, domainName, beanClass);
+      }
+      
+      protected void invokeCallback(BeanContext<?> component, Class<? extends Annotation> lifecycleAnnotationType) throws Throwable
+      {
+         List<Class<?>> lifecycleInterceptorClasses = getInterceptorRegistry().getLifecycleInterceptorClasses();
+         Advisor advisor = getAdvisor();
+         Interceptor interceptors[] = LifecycleCallbacks.createLifecycleCallbackInterceptors(advisor, lifecycleInterceptorClasses, component, lifecycleAnnotationType);
+         
+         Constructor<?> constructor = getBeanClass().getConstructor();
+         Object initargs[] = null;
+         ConstructionInvocation invocation = new ConstructionInvocation(interceptors, constructor, initargs);
+         invocation.setAdvisor(advisor);
+         invocation.setTargetObject(component.getInstance());
+         invocation.invokeNext();
+      }
+   }
    
    private void expectException(String methodName, Class<? extends Exception> exceptionClass) throws Throwable
    {
@@ -98,7 +129,7 @@ public class GetRollbackTestCase
       bootstrap.deploy(getResource("instance/beans.xml"));
       
       // TODO: should not use Stateful Container
-      container = new DirectContainer<GetRollbackTestBean>("GetRollbackTest", "Stateless Container", GetRollbackTestBean.class);
+      container = new TestContainer<GetRollbackTestBean>("GetRollbackTest", "Stateless Container", GetRollbackTestBean.class);
    }
 
    @AfterClass
@@ -117,7 +148,8 @@ public class GetRollbackTestCase
    @After
    public void tearDown() throws Exception
    {
-      container.destroy(instance);
+      if(instance != null)
+         container.destroy(instance);
    }
    
 
@@ -161,6 +193,29 @@ public class GetRollbackTestCase
       expectIllegalState("notSupported");
    }
 
+   /**
+    * This test is to make sure there is no ClassCastException in TxUtil.getTxType.
+    * It's actually not allowed by spec to do PrePassivate on a Stateless and it's
+    * also not allowed to do getRollbackOnly within a lifecycle method.
+    */
+   @Test
+   public void testPrePassivate() throws Throwable
+   {
+      InitialContext ctx = new InitialContext();
+      TransactionManager tm = (TransactionManager) ctx.lookup("java:/TransactionManager");
+      tm.begin();
+      try
+      {
+         container.invokeCallback(instance, PrePassivate.class);
+         
+         assertTrue(instance.getInstance().prePassivateRan);
+      }
+      finally
+      {
+         tm.rollback();
+      }
+   }
+   
    /**
     * Test method for {@link org.jboss.ejb3.test.tx.getrollback.GetRollbackTestBean#required()}.
     * @throws Throwable 
