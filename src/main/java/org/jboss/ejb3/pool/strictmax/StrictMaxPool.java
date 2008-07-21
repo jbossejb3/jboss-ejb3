@@ -108,12 +108,12 @@ public class StrictMaxPool<T> implements Pool<T>
 
    public void stop()
    {
-      for(T obj : pool)
-      {
-         factory.destroy(obj);
-      }
       synchronized (pool)
       {
+         for (T obj : pool)
+         {
+            factory.destroy(obj);
+         }
          pool.clear();
       }
    }
