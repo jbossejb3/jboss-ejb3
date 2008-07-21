@@ -33,7 +33,7 @@ import org.jboss.ejb3.pool.StatelessObjectFactory;
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  * @author <a href="mailto:kabir.khan@jboss.org">Kabir Khan</a>
- * @version $Revision: $
+ * @version $Revision$
  */
 public class StrictMaxPool<T> implements Pool<T>
 {
@@ -42,6 +42,7 @@ public class StrictMaxPool<T> implements Pool<T>
    private int maxSize;
    private long timeout;
    private TimeUnit timeUnit;
+   // Guarded by the implicit lock for "pool"
    private LinkedList<T> pool = new LinkedList<T>();
    
    public StrictMaxPool(StatelessObjectFactory<T> factory, int maxSize, long timeout, TimeUnit timeUnit)
@@ -111,7 +112,10 @@ public class StrictMaxPool<T> implements Pool<T>
       {
          factory.destroy(obj);
       }
-      pool.clear();
+      synchronized (pool)
+      {
+         pool.clear();
+      }
    }
 
 }
