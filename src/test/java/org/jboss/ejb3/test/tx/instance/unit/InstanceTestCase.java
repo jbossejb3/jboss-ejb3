@@ -83,7 +83,7 @@ public class InstanceTestCase
    @Test
    public void testInstance() throws Throwable
    {
-      SimpleContainer container = bootstrap.lookup("TestContainer", SimpleContainer.class);
+      SimpleContainer<?> container = bootstrap.lookup("TestContainer", SimpleContainer.class);
       
       InstanceTest bean = container.constructProxy(InstanceTest.class);
       
@@ -110,7 +110,7 @@ public class InstanceTestCase
    @Test
    public void testTransactionMandatory() throws Throwable
    {
-      SimpleContainer container = bootstrap.lookup("TestContainer", SimpleContainer.class);
+      SimpleContainer<?> container = bootstrap.lookup("TestContainer", SimpleContainer.class);
       
       InstanceTest bean = container.constructProxy(InstanceTest.class);
       
@@ -130,7 +130,7 @@ public class InstanceTestCase
    @Test
    public void testTransactionMandatoryIllegal() throws Throwable
    {
-      SimpleContainer container = bootstrap.lookup("TestContainer", SimpleContainer.class);
+      SimpleContainer<?> container = bootstrap.lookup("TestContainer", SimpleContainer.class);
       
       InstanceTest bean = container.constructProxy(InstanceTest.class);
       try

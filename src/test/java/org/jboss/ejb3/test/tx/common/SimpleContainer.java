@@ -27,20 +27,20 @@ package org.jboss.ejb3.test.tx.common;
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  * @version $Revision: $
  */
-public class SimpleContainer
+public class SimpleContainer<T extends Object>
 {
    private String name;
    private String domainName;
-   private Class<Object> beanClass;
+   private Class<T> beanClass;
    
-   private StatefulContainer<Object> beanContainer;
+   private StatefulContainer<T> beanContainer;
    
    /**
     * @param name
     * @param domainName
     * @param beanClass
     */
-   public SimpleContainer(String name, String domainName, Class<Object> beanClass)
+   public SimpleContainer(String name, String domainName, Class<T> beanClass)
    {
       this.name = name;
       this.domainName = domainName;
@@ -54,7 +54,7 @@ public class SimpleContainer
    
    public void start()
    {
-      this.beanContainer = new StatefulContainer<Object>(name, domainName, beanClass);
+      this.beanContainer = new StatefulContainer<T>(name, domainName, beanClass);
    }
    
    public void stop()
