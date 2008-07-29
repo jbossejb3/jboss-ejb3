@@ -96,7 +96,7 @@ public class StatefulContainer<T> extends AbstractContainer<T, StatefulContainer
             Object initargs[] = null;
             T targetObject = getBeanClass().cast(advisor.invokeNew(initargs, idx));
             
-            StatefulBeanContext<T> component = new StatefulBeanContext<T>(targetObject, ejb3Interceptors);
+            StatefulBeanContext<T> component = new StatefulBeanContext<T>(StatefulContainer.this, targetObject, ejb3Interceptors);
             
             // Do injection (sort of)
             try

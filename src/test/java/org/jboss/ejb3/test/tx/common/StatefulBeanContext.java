@@ -48,8 +48,14 @@ import org.jboss.ejb3.tx.TxUtil;
 public class StatefulBeanContext<T> extends DummyBeanContext<T>
    implements Identifiable, org.jboss.ejb3.tx.container.StatefulBeanContext<T>
 {
+   private StatefulContainer<T> container;
    private Object id = UUID.randomUUID();
    private SimpleMetaData metaData = new SimpleMetaData();
+   
+   /**
+    * Is this bean taking part of transaction synchronization?
+    */
+   private boolean txSynchronized = false;
    
    private SessionContext sessionContext = new SessionContext()
    {
@@ -144,11 +150,18 @@ public class StatefulBeanContext<T> extends DummyBeanContext<T>
     * @param instance
     * @param interceptors
     */
-   public StatefulBeanContext(T instance, List<Object> interceptors)
+   public StatefulBeanContext(StatefulContainer<T> container, T instance, List<Object> interceptors)
    {
       super(instance, interceptors);
+      
+      this.container = container;
    }
 
+   protected StatefulContainer<T> getContainer()
+   {
+      return container;
+   }
+   
    public Object getId()
    {
       return id;
@@ -162,5 +175,15 @@ public class StatefulBeanContext<T> extends DummyBeanContext<T>
    protected SessionContext getSessionContext()
    {
       return sessionContext;
+   }
+   
+   protected boolean isTxSynchronized()
+   {
+      return txSynchronized;
+   }
+   
+   protected void setTxSynchronized(boolean b)
+   {
+      this.txSynchronized = b;
    }
 }

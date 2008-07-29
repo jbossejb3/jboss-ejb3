@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <aop>
    <interceptor class="org.jboss.aspects.currentinvocation.CurrentInvocationInterceptor" scope="PER_VM"/>
+   <interceptor class="org.jboss.ejb3.test.tx.common.SessionSynchronizationInterceptor" scope="PER_VM"/>
    <interceptor class="org.jboss.ejb3.test.tx.common.StatefulInstanceInterceptor" scope="PER_VM"/>
    <interceptor factory="org.jboss.ejb3.tx.BMTTxInterceptorFactory" scope="PER_CLASS_JOINPOINT"/>
    <interceptor factory="org.jboss.ejb3.tx.CMTTxInterceptorFactory" scope="PER_CLASS_JOINPOINT"/>
@@ -22,10 +23,8 @@
          <interceptor-ref name="org.jboss.ejb3.test.tx.common.StatefulInstanceInterceptor"/>
          <interceptor-ref name="org.jboss.ejb3.tx.BMTTxInterceptorFactory"/>
       </bind>
-      <!--
       <bind pointcut="execution(public * $instanceof{javax.ejb.SessionSynchronization}->*(..))">
-         <interceptor-ref name="org.jboss.ejb3.stateful.SessionSynchronizationInterceptor"/>
+         <interceptor-ref name="org.jboss.ejb3.test.tx.common.SessionSynchronizationInterceptor"/>
       </bind>
-      -->
    </domain>
 </aop>

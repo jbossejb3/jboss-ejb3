@@ -27,6 +27,7 @@ import javax.ejb.ApplicationException;
 import javax.ejb.EJBException;
 import javax.ejb.EJBTransactionRequiredException;
 import javax.ejb.EJBTransactionRolledbackException;
+import javax.transaction.RollbackException;
 import javax.transaction.Transaction;
 
 import org.jboss.aop.joinpoint.Invocation;
@@ -45,6 +46,14 @@ public class Ejb3TxPolicy extends org.jboss.aspects.tx.TxPolicy
       throw new EJBTransactionRequiredException(((MethodInvocation) invocation).getActualMethod().toString());
    }
 
+   @Override
+   public void handleEndTransactionException(Exception e)
+   {
+      if(e instanceof RollbackException)
+         throw new EJBTransactionRolledbackException("Transaction rolled back", e);
+      super.handleEndTransactionException(e);
+   }
+   
    public void handleExceptionInOurTx(Invocation invocation, Throwable t, Transaction tx) throws Throwable
    {
       ApplicationException ae = TxUtil.getApplicationException(t.getClass(), invocation);
