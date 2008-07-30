@@ -97,10 +97,21 @@ public class TxUtil
             throw new IllegalStateException("getRollbackOnly() not allowed without a transaction.");
 
          // EJBTHREE-805, consider an asynchronous rollback due to timeout
+         // This is counter to EJB 3.1 where an asynchronous call does not inherit the transaction context!
+         
          int status = tm.getStatus();
-         return status == Status.STATUS_MARKED_ROLLBACK
-             || status == Status.STATUS_ROLLING_BACK
-             || status == Status.STATUS_ROLLEDBACK;
+         if(log.isTraceEnabled())
+            log.trace("Current transaction status is " + status);
+         switch(status)
+         {
+            case Status.STATUS_COMMITTED:
+            case Status.STATUS_ROLLEDBACK:
+               throw new IllegalStateException("getRollbackOnly() not allowed after transaction is completed (EJBTHREE-1445)");
+            case Status.STATUS_MARKED_ROLLBACK:
+            case Status.STATUS_ROLLING_BACK:
+               return true;
+         }
+         return false;
       }
       catch (SystemException e)
       {
