@@ -107,7 +107,7 @@
     <priority value="INFO"/>
   </category>
   
-  <category name="org.jboss.ejb3.test.sandbox">
+  <category name="org.jboss.ejb3">
     <priority value="ALL"/>
   </category>
   
