@@ -33,6 +33,7 @@ import java.util.List;
 
 import javax.ejb.EJBTransactionRolledbackException;
 import javax.ejb.PrePassivate;
+import javax.ejb.SessionContext;
 import javax.naming.InitialContext;
 import javax.transaction.TransactionManager;
 
@@ -42,6 +43,7 @@ import org.jboss.aop.joinpoint.ConstructionInvocation;
 import org.jboss.ejb3.interceptors.aop.LifecycleCallbacks;
 import org.jboss.ejb3.interceptors.container.BeanContext;
 import org.jboss.ejb3.interceptors.direct.DirectContainer;
+import org.jboss.ejb3.test.tx.common.MockSessionContext;
 import org.jboss.ejb3.test.tx.getrollback.GetRollbackTestBean;
 import org.jboss.ejb3.test.tx.mc.UnitTestBootstrap;
 import org.junit.After;
@@ -70,6 +72,13 @@ public class GetRollbackTestCase
          super(name, domainName, beanClass);
       }
       
+      /**
+       * Emulate a callback invocation. The real thing is still in ejb3-core.
+       * 
+       * @param component
+       * @param lifecycleAnnotationType
+       * @throws Throwable
+       */
       protected void invokeCallback(BeanContext<?> component, Class<? extends Annotation> lifecycleAnnotationType) throws Throwable
       {
          List<Class<?>> lifecycleInterceptorClasses = getInterceptorRegistry().getLifecycleInterceptorClasses();
@@ -152,6 +161,22 @@ public class GetRollbackTestCase
          container.destroy(instance);
    }
    
+   @Test
+   public void testInjection() throws Throwable
+   {
+      SessionContext ctx = new MockSessionContext();
+      
+      try
+      {
+         instance.getInstance().setSessionContext(ctx);
+         
+         fail("EJB3 4.5.2 getRollbackOnly during injection is not allowed");
+      }
+      catch(IllegalStateException e)
+      {
+         // Good
+      }
+   }
 
    /**
     * Test method for {@link org.jboss.ejb3.test.tx.getrollback.GetRollbackTestBean#mandatory()}.

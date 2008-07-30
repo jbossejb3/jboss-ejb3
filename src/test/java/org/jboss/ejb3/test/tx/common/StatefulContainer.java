@@ -205,7 +205,7 @@ public class StatefulContainer<T> extends AbstractContainer<T, StatefulContainer
       }
    }
    
-   public StatefulContainer(String name, String domainName, Class<T> beanClass)
+   public StatefulContainer(String name, String domainName, Class<? extends T> beanClass)
    {
       super(name, domainName, beanClass);
       setBeanContextFactory(beanContextFactory);

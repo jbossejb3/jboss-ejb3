@@ -72,8 +72,12 @@ public class TxUtil
 
    public static boolean getRollbackOnly()
    {
+      // getRollbackOnly is not allowed during construction and injection EJB 3 4.4.1 and EJB 3 4.5.2
       Invocation currentInvocation = CurrentInvocation.getCurrentInvocation();
+      if(currentInvocation == null)
+         throw new IllegalStateException("It's not allowed to do getRollbackOnly() during construction and injection");
       Advisor advisor = currentInvocation.getAdvisor();
+      
       // EJB1.1 11.6.1: Must throw IllegalStateException if BMT
       TransactionManagementType type = TxUtil.getTransactionManagementType(advisor);
       if (type != TransactionManagementType.CONTAINER)
@@ -155,7 +159,12 @@ public class TxUtil
    
    public static void setRollbackOnly()
    {
-      Advisor advisor = CurrentInvocation.getCurrentInvocation().getAdvisor();
+      // getRollbackOnly is not allowed during construction and injection EJB 3 4.4.1 and EJB 3 4.5.2
+      Invocation currentInvocation = CurrentInvocation.getCurrentInvocation();
+      if(currentInvocation == null)
+         throw new IllegalStateException("It's not allowed to do setRollbackOnly() during construction and injection");
+      Advisor advisor = currentInvocation.getAdvisor();
+      
       // EJB1.1 11.6.1: Must throw IllegalStateException if BMT
       TransactionManagementType type = TxUtil.getTransactionManagementType(advisor);
       if (type != TransactionManagementType.CONTAINER) throw new IllegalStateException("Container " + advisor.getName() + ": it is illegal to call setRollbackOnly from BMT: " + type);

@@ -25,9 +25,11 @@ import static javax.ejb.TransactionAttributeType.MANDATORY;
 import static javax.ejb.TransactionAttributeType.NEVER;
 import static javax.ejb.TransactionAttributeType.REQUIRED;
 
+import javax.annotation.Resource;
 import javax.ejb.EJBContext;
 import javax.ejb.PrePassivate;
-import javax.ejb.Stateless;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateful;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
@@ -37,7 +39,7 @@ import org.jboss.ejb3.test.tx.common.MockEJBContext;
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  * @version $Revision: $
  */
-@Stateless
+@Stateful
 public class GetRollbackTestBean
 {
    private EJBContext ctx = new MockEJBContext();
@@ -80,6 +82,12 @@ public class GetRollbackTestBean
    public boolean requiresNew()
    {
       return ctx.getRollbackOnly();
+   }
+   
+   @Resource
+   public void setSessionContext(SessionContext ctx)
+   {
+      ctx.getRollbackOnly();
    }
    
    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
