@@ -283,4 +283,14 @@ public class MockContainer implements Container
 
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.jboss.ejb3.Container#getName()
+    */
+   public String getName()
+   {
+      // TODO Auto-generated method stub
+      return null;
+   }
+
 }
