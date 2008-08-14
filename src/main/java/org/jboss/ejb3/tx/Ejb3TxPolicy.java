@@ -21,6 +21,7 @@
  */
 package org.jboss.ejb3.tx;
 
+import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 
 import javax.ejb.ApplicationException;
@@ -103,7 +104,13 @@ public class Ejb3TxPolicy extends org.jboss.aspects.tx.TxPolicy
          {
             t = new EJBTransactionRolledbackException(formatException("Unexpected Error", t));
          }
-         else if(t instanceof RuntimeException || t instanceof RemoteException)
+         // If this is an EJBException, pass through to the caller
+         else if (t instanceof EJBException || t instanceof RemoteException)
+         {
+            // Leave Exception as-is (this is in place to handle specifically, and not
+            // as a generic RuntimeException
+         }
+         else if(t instanceof RuntimeException)
          {
             t = new EJBTransactionRolledbackException(t.getMessage(), (Exception) t);
          }
