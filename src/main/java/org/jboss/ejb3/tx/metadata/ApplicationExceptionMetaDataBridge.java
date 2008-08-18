@@ -28,6 +28,7 @@ import javax.ejb.ApplicationException;
 import org.jboss.ejb3.annotation.impl.ApplicationExceptionImpl;
 import org.jboss.ejb3.metadata.MetaDataBridge;
 import org.jboss.metadata.ejb.spec.ApplicationExceptionMetaData;
+import org.jboss.metadata.spi.signature.DeclaredMethodSignature;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -46,7 +47,7 @@ public class ApplicationExceptionMetaDataBridge implements MetaDataBridge<Applic
    }
 
    public <A extends Annotation> A retrieveAnnotation(Class<A> annotationClass, ApplicationExceptionMetaData metaData,
-         ClassLoader classLoader, String methodName, String... parameterNames)
+         ClassLoader classLoader, DeclaredMethodSignature method)
    {
       if(annotationClass == ApplicationException.class)
       {
