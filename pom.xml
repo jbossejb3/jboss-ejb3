@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jboss.ejb3</groupId>
     <artifactId>jboss-ejb3-build</artifactId>
-    <version>0.13.14-SNAPSHOT</version>
+    <version>0.13.14</version>
     <relativePath>../build/pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -93,7 +93,7 @@
     <dependency>
       <groupId>org.jboss.ejb3</groupId>
       <artifactId>jboss-ejb3-interceptors</artifactId>
-      <version>0.13.4-SNAPSHOT</version>
+      <version>0.13.4</version>
     </dependency>
     <dependency>
       <groupId>org.jboss.javaee</groupId>
