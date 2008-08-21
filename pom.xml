@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jboss.ejb3</groupId>
     <artifactId>jboss-ejb3-build</artifactId>
-    <version>0.13.9</version>
+    <version>0.13.14-SNAPSHOT</version>
     <relativePath>../build/pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -19,16 +19,6 @@
     specified in Chapter 13 (Support for Transactions) of the EJB 3.0
     specification.
   </description>
-  
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.jboss</groupId>
-        <artifactId>jboss-mdr</artifactId>
-        <version>2.0.0-SNAPSHOT</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
   
   <dependencies>
     <dependency>
