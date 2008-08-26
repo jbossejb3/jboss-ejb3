@@ -38,6 +38,7 @@ import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.aspects.currentinvocation.CurrentInvocation;
 import org.jboss.ejb3.interceptors.container.BeanContext;
+import org.jboss.ejb3.interceptors.container.InvocationHelper;
 import org.jboss.logging.Logger;
 import org.jboss.tm.TransactionManagerLocator;
 
@@ -83,6 +84,9 @@ public class TxUtil
       if (type != TransactionManagementType.CONTAINER)
          throw new IllegalStateException("Container " + advisor.getName() + ": it is illegal to call getRollbackOnly from BMT: " + type);
 
+      if(isLifecycleCallback(currentInvocation))
+         throw new IllegalStateException("getRollbackOnly() not allowed during lifecycle callbacks (EJB3 4.4.1 & 4.5.2)");
+      
       // TODO: we should really ask a TxType object to handle getRollbackOnly()
       if(getTxType(currentInvocation) == TransactionAttributeType.SUPPORTS)
          throw new IllegalStateException("getRollbackOnly() not allowed with TransactionAttributeType.SUPPORTS (EJB 3 13.6.2.9)");
@@ -168,6 +172,11 @@ public class TxUtil
       return new UserTransactionImpl();   
    }
    
+   private static boolean isLifecycleCallback(Invocation inv)
+   {
+      return InvocationHelper.isLifecycleCallback(inv);
+   }
+   
    public static void setRollbackOnly()
    {
       // getRollbackOnly is not allowed during construction and injection EJB 3 4.4.1 and EJB 3 4.5.2
@@ -180,6 +189,9 @@ public class TxUtil
       TransactionManagementType type = TxUtil.getTransactionManagementType(advisor);
       if (type != TransactionManagementType.CONTAINER) throw new IllegalStateException("Container " + advisor.getName() + ": it is illegal to call setRollbackOnly from BMT: " + type);
 
+      if(isLifecycleCallback(currentInvocation))
+         throw new IllegalStateException("setRollbackOnly() not allowed during lifecycle callbacks (EJB3 4.4.1 & 4.5.2)");
+      
       try
       {
          TransactionManager tm = TxUtil.getTransactionManager();

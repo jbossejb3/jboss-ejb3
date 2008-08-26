@@ -235,6 +235,11 @@ public class GetRollbackTestCase
          
          assertTrue(instance.getInstance().prePassivateRan);
       }
+      catch(IllegalStateException e)
+      {
+         // The original intent of the test is document above, but
+         // since we're now following spec you get an IllegalStateException
+      }
       finally
       {
          tm.rollback();
