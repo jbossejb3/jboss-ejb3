@@ -80,13 +80,7 @@ public abstract class AbstractPool implements Pool
       container.pushContext(ctx);
       try
       {
-         if (injectors != null)
-         {
-            for (int i = 0; i < injectors.length; i++)
-            {
-               injectors[i].inject(ctx);
-            }
-         }
+         container.injectBeanContext(ctx);
 
          ctx.initialiseInterceptorInstances();
 

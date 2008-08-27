@@ -184,6 +184,15 @@ public class MockContainer implements Container
    }
 
    /* (non-Javadoc)
+    * @see org.jboss.ejb3.Container#injectContext(org.jboss.ejb3.BeanContext)
+    */
+   public void injectBeanContext(BeanContext<?> beanContext)
+   {
+      // TODO Auto-generated method stub
+      
+   }
+   
+   /* (non-Javadoc)
     * @see org.jboss.ejb3.Container#invokeInit(java.lang.Object)
     */
    public void invokeInit(Object bean)
