@@ -156,14 +156,10 @@ public class TxUtil
    {
       Invocation invocation = CurrentInvocation.getCurrentInvocation();
       
-      // TODO: these checks are real ugly
-      // getUserTransaction is not allowed during construction and injection EJB 3 4.4.1 and EJB 3 4.5.2
-      // We're constructing the bean
-      if(invocation == null)
-         throw new IllegalStateException("It's not allowed to get the UserTransaction during construction and injection " + ctx);
-      // Is construction happening from within another bean?
-      if(ctx.getInstance() != invocation.getTargetObject())
-         throw new IllegalStateException("It's not allowed to get the UserTransaction during construction and injection " + ctx);
+      // TODO: also not allowed during construction
+      
+      if(InvocationHelper.isInjection(invocation))
+         throw new IllegalStateException("getUserTransaction() not allowed during injection (EJB3 4.4.1 & 4.5.2)");
       
       Advisor advisor = invocation.getAdvisor();
       TransactionManagementType type = TxUtil.getTransactionManagementType(advisor);
