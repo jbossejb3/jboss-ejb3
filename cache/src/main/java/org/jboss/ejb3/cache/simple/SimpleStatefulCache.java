@@ -34,6 +34,8 @@ import org.jboss.ejb3.EJBContainer;
 import org.jboss.ejb3.annotation.CacheConfig;
 import org.jboss.ejb3.annotation.PersistenceManager;
 import org.jboss.ejb3.cache.StatefulCache;
+import org.jboss.ejb3.cache.persistence.PersistenceManagerFactory;
+import org.jboss.ejb3.cache.persistence.PersistenceManagerFactoryRegistry;
 import org.jboss.ejb3.stateful.StatefulBeanContext;
 import org.jboss.ejb3.stateful.StatefulContainer;
 import org.jboss.logging.Logger;
@@ -245,8 +247,11 @@ public class SimpleStatefulCache implements StatefulCache
       cacheMap = new CacheMap();
       PersistenceManager pmConfig = (PersistenceManager) advisor.resolveAnnotation(PersistenceManager.class);
       EJBContainer ejbContainer = (EJBContainer)container;
-      this.pm = ejbContainer.getDeployment().getPersistenceManagerFactoryRegistry().getPersistenceManagerFactory(
-            pmConfig.value()).createPersistenceManager();
+      String pmConfigValue = pmConfig.value();
+      PersistenceManagerFactoryRegistry pmFactoryRegistry = ejbContainer.getDeployment()
+            .getPersistenceManagerFactoryRegistry();
+      PersistenceManagerFactory pmFactory = pmFactoryRegistry.getPersistenceManagerFactory(pmConfigValue);
+      this.pm = pmFactory.createPersistenceManager();
       pm.initialize(container);
       CacheConfig config = (CacheConfig) advisor.resolveAnnotation(CacheConfig.class);
       maxSize = config.maxSize();
