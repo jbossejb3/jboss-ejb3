@@ -174,7 +174,14 @@ public class StatefulSessionFilePersistenceManager implements StatefulSessionPer
       String ejbName = con.getEjbName();
 
       // Get the system data directory
-      File dir = ServerConfigLocator.locate().getServerTempDir();
+      String sysPropJBossTempDir = "jboss.server.temp.dir";
+      String sysPropJavaTempDir = "java.io.tmpdir";
+      String tempDir = System.getProperty(sysPropJBossTempDir);
+      if(tempDir==null||tempDir.trim().length()==0)
+      {
+         tempDir = System.getProperty(sysPropJavaTempDir);
+      }
+      File dir = new File(tempDir);
 
       // Setup the reference to the session data store directory
       dir = new File(dir, storeDirName);
