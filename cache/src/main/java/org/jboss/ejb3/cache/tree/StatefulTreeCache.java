@@ -486,7 +486,7 @@ public class StatefulTreeCache implements ClusteredStatefulCache
 
    public int getMaxSize()
    {
-      return -1;
+      return (cacheConfig == null) ? -1 : cacheConfig.maxSize();
    }
 
    public int getCurrentSize()
