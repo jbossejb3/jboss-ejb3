@@ -63,7 +63,7 @@ public class SimpleStatefulCache implements StatefulCache
    private int passivatedCount = 0;
    private int removeCount = 0;
 
-   private class CacheMap extends LinkedHashMap
+   protected class CacheMap extends LinkedHashMap
    {
       private static final long serialVersionUID = 4514182777643616159L;
 
@@ -250,9 +250,36 @@ public class SimpleStatefulCache implements StatefulCache
                               centry.markedForPassivation = true;                              
                               assert centry.isInUse() : centry + " is not in use, and thus will never be passivated";
                            }
+                           
+                           
                            // its ok to evict because it will be passivated
                            // or we determined above that we can remove it
+                           
+                           // Remove from the copy
                            it.remove();
+                           
+                           /*
+                            * EJBTHREE-1549
+                            */
+                           
+                           // Remove from the internal cacheMap
+                           
+                           Object removed = null;
+                           Object key = entry.getKey();
+                           synchronized (cacheMap)
+                           {
+                              removed = cacheMap.remove(key);
+                           }
+   
+                           // Perform some assertions
+                           assert removed != null : "Could not remove key " + key
+                                 + " from internal cacheMap as there was no corresponding entry";
+                           assert removed == centry : "Removed " + removed
+                                 + " from internal cacheMap did not match the object we were expecting: " + centry;
+                           
+                           /*
+                            * End EJBTHREE-1549
+                            */
                         }
                      }
                      else if (trace)
