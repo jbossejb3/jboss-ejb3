@@ -51,7 +51,7 @@ public class SimpleStatefulCache implements StatefulCache
    private Logger log = Logger.getLogger(SimpleStatefulCache.class);
 
    private StatefulContainer container;
-   private CacheMap cacheMap;
+   protected CacheMap cacheMap;
    private int maxSize = 1000;
    private StatefulSessionPersistenceManager pm;
    private long sessionTimeout = 300; // 5 minutes
@@ -70,6 +70,11 @@ public class SimpleStatefulCache implements StatefulCache
       public CacheMap()
       {
          super(maxSize, 0.75F, true);
+      }
+      
+      public CacheMap(Map original)
+      {
+         super(original);
       }
 
       public boolean removeEldestEntry(Map.Entry entry)
@@ -193,12 +198,33 @@ public class SimpleStatefulCache implements StatefulCache
             }
             try
             {
-               synchronized (cacheMap)
-               {                  
+               
+               /*
+                * EJBTHREE-1549
+                * 
+                * Passivation is potentially a long-running
+                * operation, so copy the contents quickly and 
+                * perform passivation on the unpublished 
+                * local stack variable copy
+                */
+               
+               // Initialize
+               CacheMap newMap = null;
+               
+               // Copy the contents of the internal map
+               synchronized(cacheMap)
+               {
+                  newMap = new CacheMap(cacheMap);
+               }
+               
+               /*
+                * End EJBTHREE-1549
+                */
+
                   if (!running) return;
                   
                   boolean trace = log.isTraceEnabled();
-                  Iterator it = cacheMap.entrySet().iterator();
+                  Iterator it = newMap.entrySet().iterator();
                   long now = System.currentTimeMillis();
                   while (it.hasNext())
                   {
@@ -236,12 +262,12 @@ public class SimpleStatefulCache implements StatefulCache
                      }
                   }
                }
-            }
+            
             catch (Exception ex)
             {
                log.error("problem passivation thread", ex);
             }
-         }
+      }
       }
    }
 
