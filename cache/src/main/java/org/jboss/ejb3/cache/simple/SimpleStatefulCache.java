@@ -56,7 +56,7 @@ public class SimpleStatefulCache implements StatefulCache
    private StatefulSessionPersistenceManager pm;
    private long sessionTimeout = 300; // 5 minutes
    private long removalTimeout = 0; 
-   private SessionTimeoutTask timeoutTask;
+   private Thread timeoutTask;
    private RemovalTimeoutTask removalTask = null;
    private boolean running = true;
    private int createCount = 0;
@@ -166,11 +166,16 @@ public class SimpleStatefulCache implements StatefulCache
       }
    }
 
-   private class SessionTimeoutTask extends Thread
+   protected class SessionTimeoutTask extends Thread
    {
       public SessionTimeoutTask(String name)
       {
          super(name);
+      }
+      
+      public void block() throws InterruptedException
+      {
+         Thread.sleep(sessionTimeout * 1000);
       }
 
       public void run()
@@ -179,7 +184,7 @@ public class SimpleStatefulCache implements StatefulCache
          {
             try
             {
-               Thread.sleep(sessionTimeout * 1000);
+               block();
             }
             catch (InterruptedException e)
             {
@@ -189,7 +194,7 @@ public class SimpleStatefulCache implements StatefulCache
             try
             {
                synchronized (cacheMap)
-               {
+               {                  
                   if (!running) return;
                   
                   boolean trace = log.isTraceEnabled();
@@ -488,5 +493,15 @@ public class SimpleStatefulCache implements StatefulCache
    public boolean isStarted()
    {
       return this.running;
+   }
+
+   protected Thread getTimeoutTask()
+   {
+      return timeoutTask;
+   }
+   
+   protected void setTimeoutTask(Thread timeoutTask)
+   {
+      this.timeoutTask = timeoutTask;
    }
 }
