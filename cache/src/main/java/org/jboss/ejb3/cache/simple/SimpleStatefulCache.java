@@ -177,7 +177,7 @@ public class SimpleStatefulCache implements StatefulCache
       {
          super(name);
       }
-      
+
       public void block() throws InterruptedException
       {
          Thread.sleep(sessionTimeout * 1000);
@@ -198,7 +198,7 @@ public class SimpleStatefulCache implements StatefulCache
             }
             try
             {
-               
+
                /*
                 * EJBTHREE-1549
                 * 
@@ -207,94 +207,93 @@ public class SimpleStatefulCache implements StatefulCache
                 * perform passivation on the unpublished 
                 * local stack variable copy
                 */
-               
+
                // Initialize
                CacheMap newMap = null;
-               
+
                // Copy the contents of the internal map
-               synchronized(cacheMap)
+               synchronized (cacheMap)
                {
                   newMap = new CacheMap(cacheMap);
                }
-               
+
                /*
                 * End EJBTHREE-1549
                 */
 
-                  if (!running) return;
-                  
-                  boolean trace = log.isTraceEnabled();
-                  Iterator it = newMap.entrySet().iterator();
-                  long now = System.currentTimeMillis();
-                  while (it.hasNext())
+               if (!running)
+                  return;
+
+               boolean trace = log.isTraceEnabled();
+               Iterator it = newMap.entrySet().iterator();
+               long now = System.currentTimeMillis();
+               while (it.hasNext())
+               {
+                  Map.Entry entry = (Map.Entry) it.next();
+                  StatefulBeanContext centry = (StatefulBeanContext) entry.getValue();
+                  if (now - centry.lastUsed >= sessionTimeout * 1000)
                   {
-                     Map.Entry entry = (Map.Entry) it.next();
-                     StatefulBeanContext centry = (StatefulBeanContext) entry.getValue();
-                     if (now - centry.lastUsed >= sessionTimeout * 1000)
+                     synchronized (centry)
                      {
-                        synchronized (centry)
-                        {                     
-                           if (centry.getCanPassivate())
+                        if (centry.getCanPassivate())
+                        {
+                           if (!centry.getCanRemoveFromCache())
                            {
-                              if (!centry.getCanRemoveFromCache())
-                              {
-                                 passivate(centry);
-                              }
-                              else if (trace)
-                              {
-                                 log.trace("Removing " + entry.getKey() + " from cache");
-                              }
+                              passivate(centry);
                            }
-                           else
+                           else if (trace)
                            {
-                              centry.markedForPassivation = true;                              
-                              assert centry.isInUse() : centry + " is not in use, and thus will never be passivated";
+                              log.trace("Removing " + entry.getKey() + " from cache");
                            }
-                           
-                           
-                           // its ok to evict because it will be passivated
-                           // or we determined above that we can remove it
-                           
-                           // Remove from the copy
-                           it.remove();
-                           
-                           /*
-                            * EJBTHREE-1549
-                            */
-                           
-                           // Remove from the internal cacheMap
-                           
-                           Object removed = null;
-                           Object key = entry.getKey();
-                           synchronized (cacheMap)
-                           {
-                              removed = cacheMap.remove(key);
-                           }
-   
-                           // Perform some assertions
-                           assert removed != null : "Could not remove key " + key
-                                 + " from internal cacheMap as there was no corresponding entry";
-                           assert removed == centry : "Removed " + removed
-                                 + " from internal cacheMap did not match the object we were expecting: " + centry;
-                           
-                           /*
-                            * End EJBTHREE-1549
-                            */
                         }
-                     }
-                     else if (trace)
-                     {
-                        log.trace("Not passivating; id=" + centry.getId() +
-                              " only inactive " + Math.max(0, now - centry.lastUsed) + " ms");
+                        else
+                        {
+                           centry.markedForPassivation = true;
+                           assert centry.isInUse() : centry + " is not in use, and thus will never be passivated";
+                        }
+
+                        // its ok to evict because it will be passivated
+                        // or we determined above that we can remove it
+
+                        // Remove from the copy
+                        it.remove();
+
+                        /*
+                         * EJBTHREE-1549
+                         */
+
+                        // Remove from the internal cacheMap
+                        Object removed = null;
+                        Object key = entry.getKey();
+                        synchronized (cacheMap)
+                        {
+                           removed = cacheMap.remove(key);
+                        }
+
+                        // Perform some assertions
+                        assert removed != null : "Could not remove key " + key
+                              + " from internal cacheMap as there was no corresponding entry";
+                        assert removed == centry : "Removed " + removed
+                              + " from internal cacheMap did not match the object we were expecting: " + centry;
+
+                        /*
+                         * End EJBTHREE-1549
+                         */
                      }
                   }
+                  else if (trace)
+                  {
+                     log.trace("Not passivating; id=" + centry.getId() + " only inactive "
+                           + Math.max(0, now - centry.lastUsed) + " ms");
+                  }
                }
-            
+            }
+
             catch (Exception ex)
             {
                log.error("problem passivation thread", ex);
             }
-      }
+         }
       }
    }
 
