@@ -284,9 +284,6 @@ public class SimpleStatefulCache implements StatefulCache
                         assert removed == centry : "Removed " + removed
                               + " from internal cacheMap did not match the object we were expecting: " + centry;
 
-                        // Make internal callback that we're done
-                        this.passivationCompleted();
-                        
                         /*
                          * End EJBTHREE-1549
                          */
@@ -298,6 +295,8 @@ public class SimpleStatefulCache implements StatefulCache
                            + Math.max(0, now - centry.lastUsed) + " ms");
                   }
                }
+               // Make internal callback that we're done
+               this.passivationCompleted();
             }
 
             catch (Exception ex)
