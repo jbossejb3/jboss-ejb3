@@ -25,6 +25,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.Map.Entry;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.ejb.EJBException;
 import javax.ejb.NoSuchEJBException;
@@ -62,8 +65,10 @@ public class SimpleStatefulCache implements StatefulCache
    private int createCount = 0;
    private int passivatedCount = 0;
    private int removeCount = 0;
+   
+   private Queue<StatefulBeanContext> passivationQueue = new LinkedBlockingQueue<StatefulBeanContext>();
 
-   protected class CacheMap extends LinkedHashMap
+   protected class CacheMap extends LinkedHashMap<Object, StatefulBeanContext>
    {
       private static final long serialVersionUID = 4514182777643616159L;
 
@@ -72,12 +77,13 @@ public class SimpleStatefulCache implements StatefulCache
          super(maxSize, 0.75F, true);
       }
       
-      public CacheMap(Map original)
+      public CacheMap(Map<? extends Object, ? extends StatefulBeanContext> original)
       {
          super(original);
       }
 
-      public boolean removeEldestEntry(Map.Entry entry)
+      @Override
+      public boolean removeEldestEntry(Entry<Object, StatefulBeanContext> entry)
       {
          boolean removeIt = size() > maxSize;
          if (removeIt)
@@ -136,11 +142,11 @@ public class SimpleStatefulCache implements StatefulCache
                {
                   if (!running) return;
                    
-                  Iterator it = cacheMap.entrySet().iterator();
+                  Iterator<Entry<Object, StatefulBeanContext>> it = cacheMap.entrySet().iterator();
                   while (it.hasNext())
                   {
-                     Map.Entry entry = (Map.Entry) it.next();
-                     StatefulBeanContext centry = (StatefulBeanContext) entry.getValue();
+                     Entry<Object, StatefulBeanContext> entry = it.next();
+                     StatefulBeanContext centry = entry.getValue();
                      if (now - centry.lastUsed >= removalTimeout * 1000)
                      {
                         synchronized (centry)
@@ -184,9 +190,17 @@ public class SimpleStatefulCache implements StatefulCache
       }
       
       /**
-       * Just provides a hook
+       * I'm done passivating.
        */
-      public void passivationCompleted()
+      protected void passivationCompleted()
+      {
+         
+      }
+      
+      /**
+       * I'm done selecting candidates for passivation.
+       */
+      protected void prePassivationCompleted()
       {
          
       }
@@ -206,95 +220,65 @@ public class SimpleStatefulCache implements StatefulCache
             }
             try
             {
-
                /*
                 * EJBTHREE-1549
                 * 
                 * Passivation is potentially a long-running
                 * operation, so copy the contents quickly and 
-                * perform passivation on the unpublished 
-                * local stack variable copy
+                * perform passivation off a queue.
                 */
-
-               // Initialize
-               CacheMap newMap = null;
-
-               // Copy the contents of the internal map
                synchronized (cacheMap)
                {
-                  newMap = new CacheMap(cacheMap);
-               }
-
-               /*
-                * End EJBTHREE-1549
-                */
-
-               if (!running)
-                  return;
-
-               boolean trace = log.isTraceEnabled();
-               Iterator it = newMap.entrySet().iterator();
-               long now = System.currentTimeMillis();
-               while (it.hasNext())
-               {
-                  Map.Entry entry = (Map.Entry) it.next();
-                  StatefulBeanContext centry = (StatefulBeanContext) entry.getValue();
-                  if (now - centry.lastUsed >= sessionTimeout * 1000)
+                  if (!running) return;
+                  
+                  boolean trace = log.isTraceEnabled();
+                  Iterator<Entry<Object, StatefulBeanContext>> it = cacheMap.entrySet().iterator();
+                  long now = System.currentTimeMillis();
+                  while (it.hasNext())
                   {
-                     synchronized (centry)
+                     Entry<Object, StatefulBeanContext> entry = it.next();
+                     StatefulBeanContext centry = entry.getValue();
+                     if (now - centry.lastUsed >= sessionTimeout * 1000)
                      {
-                        if (centry.getCanPassivate())
-                        {
-                           if (!centry.getCanRemoveFromCache())
+                        synchronized (centry)
+                        {                     
+                           if (centry.getCanPassivate())
                            {
-                              passivate(centry);
+                              if (!centry.getCanRemoveFromCache())
+                              {
+                                 passivationQueue.add(centry);
+                              }
+                              else if (trace)
+                              {
+                                 log.trace("Removing " + entry.getKey() + " from cache");
+                              }
                            }
-                           else if (trace)
+                           else
                            {
-                              log.trace("Removing " + entry.getKey() + " from cache");
+                              centry.markedForPassivation = true;                              
+                              assert centry.isInUse() : centry + " is not in use, and thus will never be passivated";
                            }
+                           // its ok to evict because it will be passivated
+                           // or we determined above that we can remove it
+                           it.remove();
                         }
-                        else
-                        {
-                           centry.markedForPassivation = true;
-                           assert centry.isInUse() : centry + " is not in use, and thus will never be passivated";
-                        }
-
-                        // its ok to evict because it will be passivated
-                        // or we determined above that we can remove it
-
-                        // Remove from the copy
-                        it.remove();
-
-                        /*
-                         * EJBTHREE-1549
-                         */
-
-                        // Remove from the internal cacheMap
-                        Object removed = null;
-                        Object key = entry.getKey();
-                        synchronized (cacheMap)
-                        {
-                           removed = cacheMap.remove(key);
-                        }
-
-                        // Perform some assertions
-                        assert removed != null : "Could not remove key " + key
-                              + " from internal cacheMap as there was no corresponding entry";
-                        assert removed == centry : "Removed " + removed
-                              + " from internal cacheMap did not match the object we were expecting: " + centry;
-
-                        /*
-                         * End EJBTHREE-1549
-                         */
                      }
-                  }
-                  else if (trace)
-                  {
-                     log.trace("Not passivating; id=" + centry.getId() + " only inactive "
-                           + Math.max(0, now - centry.lastUsed) + " ms");
-                  }
+                     else if (trace)
+                     {
+                        log.trace("Not passivating; id=" + centry.getId() +
+                              " only inactive " + Math.max(0, now - centry.lastUsed) + " ms");
+                     }
+                  }                  
                }
+               
+               prePassivationCompleted();
+               
+               StatefulBeanContext ctx;
+               while((ctx = passivationQueue.poll()) != null)
+               {
+                  passivate(ctx);
+               }
+               
                // Make internal callback that we're done
                this.passivationCompleted();
             }
@@ -372,7 +356,10 @@ public class SimpleStatefulCache implements StatefulCache
       try
       {
          Thread.currentThread().setContextClassLoader(((EJBContainer) ctx.getContainer()).getClassloader());
-         pm.passivateSession(ctx);
+         synchronized(pm)
+         {
+            pm.passivateSession(ctx);
+         }
          ++passivatedCount;
       }
       finally
@@ -399,9 +386,9 @@ public class SimpleStatefulCache implements StatefulCache
          synchronized (cacheMap)
          {
             cacheMap.put(ctx.getId(), ctx);
+            ctx.setInUse(true);
+            ctx.lastUsed = System.currentTimeMillis();
          }
-         ctx.setInUse(true);
-         ctx.lastUsed = System.currentTimeMillis();
          ++createCount;
       }
       catch (EJBException e)
@@ -427,27 +414,63 @@ public class SimpleStatefulCache implements StatefulCache
       StatefulBeanContext entry = null;
       synchronized (cacheMap)
       {
-         entry = (StatefulBeanContext) cacheMap.get(key);
+         entry = cacheMap.get(key);
+      }
+      if(entry == null)
+      {
+         // TODO: optimize
+         synchronized (cacheMap)
+         {
+            entry = cacheMap.get(key);
+            if(entry == null)
+            {
+               Iterator<StatefulBeanContext> i = passivationQueue.iterator();
+               while(i.hasNext())
+               {
+                  StatefulBeanContext ctx = i.next();
+                  if(ctx.getId().equals(key))
+                  {
+                     boolean passivationCanceled = passivationQueue.remove(ctx);
+                     if(passivationCanceled)
+                     {
+                        entry = ctx;
+                        cacheMap.put(key, entry);
+                     }
+                     break;
+                  }
+               }
+            }
+         }
       }
       if (entry == null)
       {
-         entry = (StatefulBeanContext) pm.activateSession(key);
-         if (entry == null)
+         synchronized(pm)
          {
-            throw new NoSuchEJBException("Could not find stateful bean: " + key);
-         }
-         --passivatedCount;
-         
-         // We cache the entry even if we will throw an exception below
-         // as we may still need it for its children and XPC references
-         if (log.isTraceEnabled())
-         {
-            log.trace("Caching activated context " + entry.getId() + " of type " + entry.getClass());
-         }
-         
-         synchronized (cacheMap)
-         {
-            cacheMap.put(key, entry);
+            synchronized (cacheMap)
+            {
+               entry = cacheMap.get(key);
+            }
+            if(entry == null)
+            {
+               entry = pm.activateSession(key);
+               if (entry == null)
+               {
+                  throw new NoSuchEJBException("Could not find stateful bean: " + key);
+               }
+               --passivatedCount;
+               
+               // We cache the entry even if we will throw an exception below
+               // as we may still need it for its children and XPC references
+               if (log.isTraceEnabled())
+               {
+                  log.trace("Caching activated context " + entry.getId() + " of type " + entry.getClass());
+               }
+               
+               synchronized (cacheMap)
+               {
+                  cacheMap.put(key, entry);
+               }
+            }
          }
       }
       
@@ -494,7 +517,7 @@ public class SimpleStatefulCache implements StatefulCache
       StatefulBeanContext ctx = null;
       synchronized (cacheMap)
       {
-         ctx = (StatefulBeanContext) cacheMap.get(key);
+         ctx = cacheMap.get(key);
       }
       if(ctx == null)
          throw new NoSuchEJBException("Could not find Stateful bean: " + key);
