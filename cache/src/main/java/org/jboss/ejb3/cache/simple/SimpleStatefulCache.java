@@ -54,7 +54,7 @@ public class SimpleStatefulCache implements StatefulCache
    protected CacheMap cacheMap;
    private int maxSize = 1000;
    private StatefulSessionPersistenceManager pm;
-   private long sessionTimeout = 300; // 5 minutes
+   protected long sessionTimeout = 300; // 5 minutes
    private long removalTimeout = 0; 
    private Thread timeoutTask;
    private RemovalTimeoutTask removalTask = null;
@@ -182,6 +182,14 @@ public class SimpleStatefulCache implements StatefulCache
       {
          Thread.sleep(sessionTimeout * 1000);
       }
+      
+      /**
+       * Just provides a hook
+       */
+      public void passivationCompleted()
+      {
+         
+      }
 
       public void run()
       {
@@ -276,6 +284,9 @@ public class SimpleStatefulCache implements StatefulCache
                         assert removed == centry : "Removed " + removed
                               + " from internal cacheMap did not match the object we were expecting: " + centry;
 
+                        // Make internal callback that we're done
+                        this.passivationCompleted();
+                        
                         /*
                          * End EJBTHREE-1549
                          */
