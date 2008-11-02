@@ -57,8 +57,8 @@ public class SimpleStatefulCache implements StatefulCache
    protected CacheMap cacheMap;
    private int maxSize = 1000;
    private StatefulSessionPersistenceManager pm;
-   protected long sessionTimeout = 300; // 5 minutes
-   private long removalTimeout = 0; 
+   private long sessionTimeout = 300; // 5 minutes
+   private long removalTimeout = 0; // 0 == Never
    private Thread timeoutTask;
    private RemovalTimeoutTask removalTask = null;
    private boolean running = true;
@@ -114,20 +114,35 @@ public class SimpleStatefulCache implements StatefulCache
       }
    }
    
-   private class RemovalTimeoutTask extends Thread
+   protected class RemovalTimeoutTask extends Thread
    {
       public RemovalTimeoutTask(String name)
       {
          super(name);
       }
+      
+      protected void block() throws InterruptedException
+      {
+         Thread.sleep(removalTimeout * 1000);
+      }
+      
+      protected void preRemoval()
+      {
+         
+      }
+      
+      protected void postRemoval()
+      {
+         
+      }
 
       public void run()
       {
          while (running)
-         {
+         { 
             try
             {
-               Thread.sleep(removalTimeout * 1000);
+               this.block();
             }
             catch (InterruptedException e)
             {
@@ -136,6 +151,9 @@ public class SimpleStatefulCache implements StatefulCache
             }
             try
             {
+               // Invoke pre-removal callback
+               this.preRemoval();
+               
                long now = System.currentTimeMillis();
                
                synchronized (cacheMap)
@@ -166,8 +184,11 @@ public class SimpleStatefulCache implements StatefulCache
                   {
                      get(centry.getId(), false);
                      remove(centry.getId());
-                  }               
+                  }
                }
+               
+               // Invoke post-removal callback
+               this.postRemoval();
             }
             catch (Exception ex)
             {
@@ -274,8 +295,8 @@ public class SimpleStatefulCache implements StatefulCache
                prePassivationCompleted();
                
                StatefulBeanContext ctx;
-               while((ctx = passivationQueue.poll()) != null)
-               {
+               while ((ctx = passivationQueue.poll()) != null)
+               {  
                   passivate(ctx);
                }
                
@@ -588,5 +609,25 @@ public class SimpleStatefulCache implements StatefulCache
    protected void setTimeoutTask(Thread timeoutTask)
    {
       this.timeoutTask = timeoutTask;
+   }
+
+   protected long getSessionTimeout()
+   {
+      return sessionTimeout;
+   }
+
+   protected long getRemovalTimeout()
+   {
+      return removalTimeout;
+   }
+
+   protected RemovalTimeoutTask getRemovalTask()
+   {
+      return removalTask;
+   }
+
+   protected void setRemovalTask(RemovalTimeoutTask removalTask)
+   {
+      this.removalTask = removalTask;
    }
 }
