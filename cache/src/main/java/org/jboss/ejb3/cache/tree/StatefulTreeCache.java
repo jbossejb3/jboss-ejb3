@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import javax.ejb.EJBException;
 import javax.ejb.NoSuchEJBException;
@@ -38,8 +39,7 @@ import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
 import org.jboss.cache.Region;
 import org.jboss.cache.RegionNotEmptyException;
-import org.jboss.cache.config.EvictionPolicyConfig;
-import org.jboss.cache.eviction.LRUConfiguration;
+import org.jboss.cache.config.EvictionRegionConfig;
 import org.jboss.cache.notifications.annotation.CacheListener;
 import org.jboss.cache.notifications.annotation.NodeActivated;
 import org.jboss.cache.notifications.annotation.NodePassivated;
@@ -301,14 +301,21 @@ public class StatefulTreeCache implements ClusteredStatefulCache
          removalTask = new RemovalTimeoutTask("SFSB Removal Thread - " + this.ejbContainer.getObjectName().getCanonicalName());
    }
 
-   protected EvictionPolicyConfig getEvictionPolicyConfig()
+   protected EvictionRegionConfig getEvictionRegionConfig(Fqn fqn)
    {
-      LRUConfiguration epc = new LRUConfiguration();
-      // Override the standard policy class
-      epc.setEvictionPolicyClass(AbortableLRUPolicy.class.getName());
-      epc.setTimeToLiveSeconds((int) cacheConfig.idleTimeoutSeconds());
-      epc.setMaxNodes(cacheConfig.maxSize());
-      return epc;
+      AbortableLRUAlgorithmConfiguration algoCfg = new AbortableLRUAlgorithmConfiguration();
+      EvictionRegionConfig erc = new EvictionRegionConfig(fqn, algoCfg);
+
+      log.debug("Setting time to live to " + cacheConfig.idleTimeoutSeconds() + " seconds and maxNodes to " + cacheConfig.maxSize());
+
+      algoCfg.setTimeToLive((int) cacheConfig.idleTimeoutSeconds(), TimeUnit.SECONDS);
+      algoCfg.setMaxNodes(cacheConfig.maxSize());
+
+      // JBC 2.x used '0' to denote no limit; 3.x uses '-1' since '0' now denotes '0'.  
+      if (algoCfg.getTimeToLive() == 0) algoCfg.setTimeToLive(-1);
+      if (algoCfg.getMaxNodes() == 0) algoCfg.setMaxNodes(-1);
+
+      return erc;
    }
 
    public void start()
@@ -338,8 +345,8 @@ public class StatefulTreeCache implements ClusteredStatefulCache
       
       // Try to create an eviction region per ejb
       region = cache.getRegion(cacheNode, true);
-      EvictionPolicyConfig epc = getEvictionPolicyConfig();
-      region.setEvictionPolicy(epc);
+      EvictionRegionConfig erc = getEvictionRegionConfig(cacheNode);
+      region.setEvictionRegionConfig(erc);
 
       if (cache.getCacheStatus() != CacheStatus.STARTED)
       {

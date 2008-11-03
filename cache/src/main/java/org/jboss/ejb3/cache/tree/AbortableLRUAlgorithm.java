@@ -58,10 +58,9 @@ public class AbortableLRUAlgorithm extends LRUAlgorithm
          log.trace("Attempting to evict cache node with fqn of " + fqn);
       }
       
-      EvictionPolicy policy = region.getEvictionPolicy();
       try
       {
-         policy.evict(fqn);
+         evictionActionPolicy.evict(fqn);
       }
       catch (ContextInUseException e)
       {
