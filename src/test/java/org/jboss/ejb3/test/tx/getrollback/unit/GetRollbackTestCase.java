@@ -28,7 +28,6 @@ import static org.junit.Assert.fail;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.net.URL;
 import java.util.List;
 
 import javax.ejb.EJBTransactionRolledbackException;
@@ -43,11 +42,10 @@ import org.jboss.aop.joinpoint.ConstructionInvocation;
 import org.jboss.ejb3.interceptors.aop.LifecycleCallbacks;
 import org.jboss.ejb3.interceptors.container.BeanContext;
 import org.jboss.ejb3.interceptors.direct.DirectContainer;
+import org.jboss.ejb3.test.tx.common.AbstractTxTestCase;
 import org.jboss.ejb3.test.tx.common.MockSessionContext;
 import org.jboss.ejb3.test.tx.getrollback.GetRollbackTestBean;
-import org.jboss.ejb3.test.tx.mc.UnitTestBootstrap;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -58,10 +56,8 @@ import org.junit.Test;
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  * @version $Revision: $
  */
-public class GetRollbackTestCase
+public class GetRollbackTestCase extends AbstractTxTestCase
 {
-   private static UnitTestBootstrap bootstrap;
-   
    private static TestContainer<GetRollbackTestBean> container;
    private BeanContext<GetRollbackTestBean> instance;
    
@@ -126,26 +122,13 @@ public class GetRollbackTestCase
       }
    }
    
-   private static URL getResource(String name)
-   {
-      return Thread.currentThread().getContextClassLoader().getResource(name);
-   }
-   
    @BeforeClass
    public static void setUpBeforeClass() throws Throwable
    {
-      bootstrap = new UnitTestBootstrap();
-      bootstrap.deploy(getResource("instance/beans.xml"));
+      AbstractTxTestCase.beforeClass();
       
       // TODO: should not use Stateful Container
       container = new TestContainer<GetRollbackTestBean>("GetRollbackTest", "Stateless Container", GetRollbackTestBean.class);
-   }
-
-   @AfterClass
-   public static void tearDownAfterClass() throws Exception
-   {
-      if(bootstrap != null)
-         bootstrap.shutdown();
    }
 
    @Before

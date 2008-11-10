@@ -30,6 +30,13 @@ import org.jboss.deployers.structure.spi.DeploymentUnit;
  */
 public class SimpleClassLoaderDeployer extends AbstractTopLevelClassLoaderDeployer
 {
+   public SimpleClassLoaderDeployer()
+   {
+      super();
+      // This is not in 2.0.0.Beta14
+      setOutput(ClassLoader.class);
+   }
+   
    @Override
    protected ClassLoader createTopLevelClassLoader(DeploymentUnit unit) throws Exception
    {

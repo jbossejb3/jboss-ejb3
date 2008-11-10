@@ -5,12 +5,12 @@
   <parent>
     <groupId>org.jboss.ejb3</groupId>
     <artifactId>jboss-ejb3-build</artifactId>
-    <version>0.13.14</version>
+    <version>1.0.0-SNAPSHOT</version>
     <relativePath>../build/pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>jboss-ejb3-transactions</artifactId>
-  <version>0.13.7</version>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>JBoss EJB 3.0 Transactions</name>
   <url>http://www.jboss.org</url>
@@ -21,12 +21,14 @@
   </description>
   
   <dependencies>
+    <!-- 
     <dependency>
       <groupId>jboss.aop</groupId>
       <artifactId>jboss-aop-deployer-jdk50</artifactId>
       <version>2.0.0.CR8</version>
       <scope>test</scope>
     </dependency>
+    -->
     <dependency>
       <groupId>org.jboss.aspects</groupId>
       <artifactId>jboss-current-invocation-aspects</artifactId>
@@ -51,6 +53,20 @@
       <artifactId>jboss-transaction-spi</artifactId>
       <version>5.0.0.Beta4</version>
     </dependency>
+    <!-- TODO: remove dependency -->
+    <!-- Bring in the AOP deployers -->
+    <dependency>
+      <groupId>org.jboss.jbossas</groupId>
+      <artifactId>jboss-as-aspects</artifactId>
+      <version>5.0.0-SNAPSHOT</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>jboss</groupId>
+          <artifactId>jboss-test</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
     <dependency>
       <groupId>org.jboss.naming</groupId>
       <artifactId>jnpserver</artifactId>
@@ -65,6 +81,30 @@
       <artifactId>jboss-aop</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.jboss.aop</groupId>
+      <artifactId>jboss-aop-asintegration-mc</artifactId>
+      <version>${version.org.jboss.aop_jboss-aop}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>jboss</groupId>
+          <artifactId>jboss-test</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.aop</groupId>
+      <artifactId>jboss-aop-asintegration-core</artifactId>
+      <version>${version.org.jboss.aop_jboss-aop}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>jboss</groupId>
+          <artifactId>jboss-test</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
       <groupId>org.jboss.aspects</groupId>
       <artifactId>jboss-transaction-aspects</artifactId>
       <version>1.0.0.Beta1</version>
@@ -72,12 +112,12 @@
     <dependency>
       <groupId>org.jboss.deployers</groupId>
       <artifactId>jboss-deployers-vfs</artifactId>
-      <version>2.0.0.Beta14</version>
+      <version>${version.org.jboss.deployers}</version>
     </dependency>
     <dependency>
       <groupId>org.jboss.deployers</groupId>
       <artifactId>jboss-deployers-vfs-spi</artifactId>
-      <version>2.0.0.Beta14</version>
+      <version>${version.org.jboss.deployers}</version>
     </dependency>
     <dependency>
       <groupId>org.jboss.ejb3</groupId>
@@ -102,7 +142,11 @@
     <dependency>
       <groupId>org.jboss.microcontainer</groupId>
       <artifactId>jboss-kernel</artifactId>
-      <version>2.0.0.CR2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.microcontainer</groupId>
+      <artifactId>jboss-aop-mc-int</artifactId>
+      <version>${version.org.jboss.microcontainer}</version>
       <scope>test</scope>
     </dependency>
     <!--

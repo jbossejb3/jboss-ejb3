@@ -23,6 +23,7 @@ package org.jboss.ejb3.test.tx.common;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.transaction.TransactionManager;
 
 import com.arjuna.ats.jta.utils.JNDIManager;
 
@@ -34,14 +35,25 @@ import com.arjuna.ats.jta.utils.JNDIManager;
  */
 public class SimpleTransactionService
 {
+   private static final String TM_JNDI_NAME = "java:/TransactionManager";
+   private InitialContext ctx;
+   private TransactionManager tm;
+
+   public TransactionManager getTransactionManager()
+   {
+      return tm;
+   }
+   
    public void start() throws Exception
    {
+      ctx = new InitialContext();
       JNDIManager.bindJTAImplementation();
+      this.tm = (TransactionManager) ctx.lookup(TM_JNDI_NAME);
    }
    
    public void stop() throws NamingException
    {
-      InitialContext ctx = new InitialContext();
-      ctx.unbind("java:/TransactionManager");
+      ctx.unbind(TM_JNDI_NAME);
+      ctx.close();
    }
 }

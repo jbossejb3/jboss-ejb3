@@ -23,13 +23,10 @@ package org.jboss.ejb3.tx.test.sessionsynchronization.unit;
 
 import static org.junit.Assert.assertEquals;
 
-import java.net.URL;
-
+import org.jboss.ejb3.test.tx.common.AbstractTxTestCase;
 import org.jboss.ejb3.test.tx.common.Greeter;
 import org.jboss.ejb3.test.tx.common.StatefulContainer;
-import org.jboss.ejb3.test.tx.mc.UnitTestBootstrap;
 import org.jboss.ejb3.tx.test.sessionsynchronization.AfterCompletionTestBean;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -37,30 +34,16 @@ import org.junit.Test;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @version $Revision: $
  */
-public class AfterCompletionTestCase
+public class AfterCompletionTestCase extends AbstractTxTestCase
 {
-   private static UnitTestBootstrap bootstrap;
    private static StatefulContainer<AfterCompletionTestBean> container;
-   
-   private static URL getResource(String name)
-   {
-      return Thread.currentThread().getContextClassLoader().getResource(name);
-   }
    
    @BeforeClass
    public static void setUpBeforeClass() throws Throwable
    {
-      bootstrap = new UnitTestBootstrap();
-      bootstrap.deploy(getResource("instance/beans.xml"));
+      AbstractTxTestCase.beforeClass();
       
       container = new StatefulContainer<AfterCompletionTestBean>("AfterCompletionTest", "Stateful Container", AfterCompletionTestBean.class);
-   }
-
-   @AfterClass
-   public static void tearDownAfterClass() throws Exception
-   {
-      if(bootstrap != null)
-         bootstrap.shutdown();
    }
 
    @Test

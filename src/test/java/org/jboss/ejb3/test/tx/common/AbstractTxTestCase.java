@@ -19,48 +19,42 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.tx.test.sessionsynchronization.unit;
+package org.jboss.ejb3.test.tx.common;
 
-import static org.junit.Assert.fail;
+import java.net.URL;
 
-import javax.ejb.EJBTransactionRolledbackException;
-
-import org.jboss.ejb3.test.tx.common.AbstractTxTestCase;
-import org.jboss.ejb3.test.tx.common.StatefulContainer;
-import org.jboss.ejb3.tx.test.sessionsynchronization.SessionSyncTest;
-import org.jboss.ejb3.tx.test.sessionsynchronization.SessionSyncTestBean;
+import org.jboss.ejb3.test.tx.mc.UnitTestBootstrap;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @version $Revision: $
  */
-public class SessionSyncTestCase extends AbstractTxTestCase
+public abstract class AbstractTxTestCase
 {
-   private static StatefulContainer<SessionSyncTestBean> container;
+   // don't muck into this field
+   protected static UnitTestBootstrap bootstrap = null;
+   
+   @AfterClass
+   public static void afterClass()
+   {
+      if(bootstrap != null)
+         bootstrap.shutdown();
+   }
    
    @BeforeClass
-   public static void setUpBeforeClass() throws Throwable
+   public static void beforeClass() throws Throwable
    {
-      AbstractTxTestCase.beforeClass();
-      
-      container = new StatefulContainer<SessionSyncTestBean>("SessionSyncTest", "Stateful Container", SessionSyncTestBean.class);
+      bootstrap = new UnitTestBootstrap();
+      bootstrap.deploy(getResource("instance/classloader.xml"));
+      bootstrap.deploy(getResource("instance/aop.xml"));
+      bootstrap.deploy(getResource("instance/deployers.xml"));
+      bootstrap.deploy(getResource("instance/beans.xml"));
    }
-
-   @Test
-   public void test1() throws Throwable
+   
+   protected static URL getResource(String name)
    {
-      SessionSyncTest bean = container.constructProxy(SessionSyncTest.class);
-      
-      try
-      {
-         bean.sayHi("me");
-         fail("Should have thrown an EJBTransactionRolledbackException");
-      }
-      catch(EJBTransactionRolledbackException e)
-      {
-         // whoopie
-      }
+      return Thread.currentThread().getContextClassLoader().getResource(name);
    }
 }

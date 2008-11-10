@@ -24,15 +24,13 @@ package org.jboss.ejb3.tx.test.metadata.unit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import java.net.URL;
-
 import javax.ejb.EJBTransactionRolledbackException;
 import javax.naming.InitialContext;
 import javax.transaction.Status;
 import javax.transaction.TransactionManager;
 
+import org.jboss.ejb3.test.tx.common.AbstractTxTestCase;
 import org.jboss.ejb3.test.tx.common.StatefulContainer;
-import org.jboss.ejb3.test.tx.mc.UnitTestBootstrap;
 import org.jboss.ejb3.tx.test.metadata.AppRuntimeException;
 import org.jboss.ejb3.tx.test.metadata.MyStateful;
 import org.jboss.ejb3.tx.test.metadata.MyStatefulBean;
@@ -42,9 +40,7 @@ import org.jboss.metadata.ejb.jboss.JBossEnterpriseBeansMetaData;
 import org.jboss.metadata.ejb.jboss.JBossSessionBeanMetaData;
 import org.jboss.metadata.ejb.spec.ApplicationExceptionMetaData;
 import org.jboss.metadata.ejb.spec.ApplicationExceptionsMetaData;
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -52,25 +48,17 @@ import org.junit.Test;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @version $Revision: $
  */
-public class MetaDataTestCase
+public class MetaDataTestCase extends AbstractTxTestCase
 {
-   private static UnitTestBootstrap bootstrap;
-   
    private static InitialContext ctx;
    private static TransactionManager tm;
    
    private StatefulContainer<?> container;
    
-   private static URL getResource(String name)
-   {
-      return Thread.currentThread().getContextClassLoader().getResource(name);
-   }
-   
    @BeforeClass
    public static void setUpBeforeClass() throws Throwable
    {
-      bootstrap = new UnitTestBootstrap();
-      bootstrap.deploy(getResource("instance/beans.xml"));
+      AbstractTxTestCase.beforeClass();
       
       ctx = new InitialContext();
       tm = (TransactionManager) ctx.lookup("java:/TransactionManager");
@@ -82,18 +70,7 @@ public class MetaDataTestCase
       if(ctx != null)
          ctx.close();
       
-      if(bootstrap != null)
-         bootstrap.shutdown();
-   }
-
-   @Before
-   public void setUp() throws Exception
-   {
-   }
-
-   @After
-   public void tearDown() throws Exception
-   {
+      AbstractTxTestCase.afterClass();
    }
 
    @Test

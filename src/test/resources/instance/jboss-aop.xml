@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<aop>
+<aop xmlns="urn:jboss:aop-beans:1.0">
    <interceptor class="org.jboss.aspects.currentinvocation.CurrentInvocationInterceptor" scope="PER_VM"/>
    <interceptor class="org.jboss.ejb3.test.tx.common.SessionSynchronizationInterceptor" scope="PER_VM"/>
    <interceptor class="org.jboss.ejb3.test.tx.common.StatefulInstanceInterceptor" scope="PER_VM"/>

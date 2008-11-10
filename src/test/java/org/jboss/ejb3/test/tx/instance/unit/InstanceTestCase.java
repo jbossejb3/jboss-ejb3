@@ -23,59 +23,22 @@ package org.jboss.ejb3.test.tx.instance.unit;
 
 import static org.junit.Assert.fail;
 
-import java.net.URL;
-
 import javax.ejb.EJBException;
 import javax.ejb.EJBTransactionRequiredException;
 import javax.naming.InitialContext;
 import javax.transaction.TransactionManager;
 
+import org.jboss.ejb3.test.tx.common.AbstractTxTestCase;
 import org.jboss.ejb3.test.tx.common.SimpleContainer;
 import org.jboss.ejb3.test.tx.instance.InstanceTest;
-import org.jboss.ejb3.test.tx.mc.UnitTestBootstrap;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  * @version $Revision: $
  */
-public class InstanceTestCase
+public class InstanceTestCase extends AbstractTxTestCase
 {
-   private static UnitTestBootstrap bootstrap;
-   
-   private static URL getResource(String name)
-   {
-      return Thread.currentThread().getContextClassLoader().getResource(name);
-   }
-   
-   @BeforeClass
-   public static void setUpBeforeClass() throws Throwable
-   {
-      bootstrap = new UnitTestBootstrap();
-      bootstrap.deploy(getResource("instance/beans.xml"));
-   }
-
-   @AfterClass
-   public static void tearDownAfterClass() throws Exception
-   {
-      if(bootstrap != null)
-         bootstrap.shutdown();
-   }
-
-   @Before
-   public void setUp() throws Exception
-   {
-   }
-
-   @After
-   public void tearDown() throws Exception
-   {
-   }
-
    /**
     * Test whether the stateful bean is still alive after a transaction
     * guard failure.
