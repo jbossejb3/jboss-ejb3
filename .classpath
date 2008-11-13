@@ -3,5 +3,5 @@
   <classpathentry kind="src" path="src/test/java" output="eclipse-target/tests-classes"/>
   <classpathentry kind="output" path="eclipse-target/classes"/>
   <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-  <classpathentry kind="var" path="M2_REPO/junit/junit/4.4/junit-4.4.jar" sourcepath="M2_REPO/junit/junit/4.4/junit-4.4-sources.jar"/>
+  <classpathentry kind="con" path="org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER"/>
 </classpath>
