@@ -6,10 +6,10 @@
   <projects/>
   <buildSpec>
     <buildCommand>
-      <name>org.maven.ide.eclipse.maven2Builder</name>
+      <name>org.eclipse.jdt.core.javabuilder</name>
     </buildCommand>
     <buildCommand>
-      <name>org.eclipse.jdt.core.javabuilder</name>
+      <name>org.maven.ide.eclipse.maven2Builder</name>
     </buildCommand>
   </buildSpec>
   <natures>
