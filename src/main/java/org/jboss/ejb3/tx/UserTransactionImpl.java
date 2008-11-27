@@ -24,6 +24,7 @@ package org.jboss.ejb3.tx;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
 import javax.transaction.NotSupportedException;
@@ -32,6 +33,7 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
+
 import org.jboss.logging.Logger;
 
 /**
@@ -69,6 +71,7 @@ public final class UserTransactionImpl implements UserTransaction, java.io.Exter
       if (log.isDebugEnabled())
          log.debug("UserTx begin: " + tx);
 
+      EJB3UserTransactionProvider.getSingleton().userTransactionStarted();
    }
 
    public void commit()

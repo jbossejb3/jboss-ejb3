@@ -26,6 +26,16 @@
       </constructor>
    </bean>
    
+   <!-- Handles user transaction providers and listeners -->
+   <bean name="UserTransactionRegistry" class="org.jboss.tm.usertx.UserTransactionRegistry">
+      <!-- Register providers -->
+      <incallback method="addProvider"/>
+      <uncallback method="removeProvider"/>
+      <!-- Register listeners -->
+      <incallback method="addListener"/>
+      <uncallback method="removeListener"/>
+   </bean>
+   
    <bean name="AspectDeployment" class="org.jboss.ejb3.test.tx.common.AspectDeployment">
       <property name="mainDeployer"><inject bean="MainDeployer"/></property>
       <property name="resource">instance/jboss-aop.xml</property>
@@ -40,5 +50,11 @@
       </constructor>
       <depends>AspectDeployment</depends>
       <!-- depends>TransactionManager</depends -->
+   </bean>
+   
+   <!-- The provider for EJB3 UserTransactions -->
+   <bean name="EJB3UserTransactionprovider" class="org.jboss.ejb3.tx.EJB3UserTransactionProvider">
+      <depends>UserTransactionRegistry</depends>
+      <constructor factoryClass="org.jboss.ejb3.tx.EJB3UserTransactionProvider" factoryMethod="getSingleton"/>
    </bean>
 </deployment>

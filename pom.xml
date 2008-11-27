@@ -35,6 +35,11 @@
       <version>1.0.0.CR1</version>
     </dependency>
     <dependency>
+      <groupId>org.jboss.integration</groupId>
+      <artifactId>jboss-transaction-spi</artifactId>
+      <version>5.0.3.GA</version>
+    </dependency>
+    <dependency>
       <groupId>org.jboss.logging</groupId>
       <artifactId>jboss-logging-spi</artifactId>
     </dependency>
@@ -47,11 +52,6 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss</groupId>
-      <artifactId>jboss-transaction-spi</artifactId>
-      <version>5.0.0.Beta4</version>
     </dependency>
     <!-- TODO: remove dependency -->
     <!-- Bring in the AOP deployers -->
@@ -108,6 +108,12 @@
       <groupId>org.jboss.aspects</groupId>
       <artifactId>jboss-transaction-aspects</artifactId>
       <version>1.0.0.Beta1</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jboss</groupId>
+          <artifactId>jboss-transaction-spi</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.jboss.deployers</groupId>
