@@ -54,7 +54,7 @@
       <scope>test</scope>
     </dependency>
     <!-- TODO: remove dependency -->
-    <!-- Bring in the AOP deployers -->
+    <!-- Bring in the AOP deployers 
     <dependency>
       <groupId>org.jboss.jbossas</groupId>
       <artifactId>jboss-as-aspects</artifactId>
@@ -66,7 +66,7 @@
           <artifactId>jboss-test</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
+    </dependency> -->
     <dependency>
       <groupId>org.jboss.naming</groupId>
       <artifactId>jnpserver</artifactId>
