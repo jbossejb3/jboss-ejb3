@@ -4,5 +4,87 @@
   <classpathentry kind="src" path="src/test/resources" output="eclipse-target/tests-classes" excluding="**/*.java"/>
   <classpathentry kind="output" path="eclipse-target/classes"/>
   <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-  <classpathentry kind="con" path="org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER"/>
+  <classpathentry kind="var" path="M2_REPO/javax/activation/activation/1.0.2/activation-1.0.2.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/ant/ant/1.7.0/ant-1.7.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/ant/ant-junit/1.7.0/ant-junit-1.7.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/ant/ant-launcher/1.7.0/ant-launcher-1.7.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/bcel/bcel/5.1/bcel-5.1.jar" sourcepath="M2_REPO/bcel/bcel/5.1/bcel-5.1-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/apache-logging/commons-logging/1.1.0.jboss/commons-logging-1.1.0.jboss.jar" sourcepath="M2_REPO/apache-logging/commons-logging/1.1.0.jboss/commons-logging-1.1.0.jboss-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/oswego-concurrent/concurrent/1.3.4-jboss-update1/concurrent-1.3.4-jboss-update1.jar" sourcepath="M2_REPO/oswego-concurrent/concurrent/1.3.4-jboss-update1/concurrent-1.3.4-jboss-update1-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar" sourcepath="M2_REPO/dom4j/dom4j/1.6.1/dom4j-1.6.1-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/wutka-dtdparser/dtdparser121/1.2.1/dtdparser121-1.2.1.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/hibernate/ejb3-persistence/1.0.2.GA/ejb3-persistence-1.0.2.GA.jar" sourcepath="M2_REPO/org/hibernate/ejb3-persistence/1.0.2.GA/ejb3-persistence-1.0.2.GA-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/urbanophile/java-getopt/1.0.9/java-getopt-1.0.9.jar"/>
+  <classpathentry kind="var" path="M2_REPO/javassist/javassist/3.9.0.GA/javassist-3.9.0.GA.jar" sourcepath="M2_REPO/javassist/javassist/3.9.0.GA/javassist-3.9.0.GA-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/sun-jaxb/jaxb-api/2.1.4/jaxb-api-2.1.4.jar" sourcepath="M2_REPO/sun-jaxb/jaxb-api/2.1.4/jaxb-api-2.1.4-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/aop/jboss-aop/2.0.0.GA/jboss-aop-2.0.0.GA.jar" sourcepath="M2_REPO/org/jboss/aop/jboss-aop/2.0.0.GA/jboss-aop-2.0.0.GA-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/aop/jboss-aop-asintegration-core/2.0.0.GA/jboss-aop-asintegration-core-2.0.0.GA.jar" sourcepath="M2_REPO/org/jboss/aop/jboss-aop-asintegration-core/2.0.0.GA/jboss-aop-asintegration-core-2.0.0.GA-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/aop/jboss-aop-asintegration-mc/2.0.0.GA/jboss-aop-asintegration-mc-2.0.0.GA.jar" sourcepath="M2_REPO/org/jboss/aop/jboss-aop-asintegration-mc/2.0.0.GA/jboss-aop-asintegration-mc-2.0.0.GA-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/microcontainer/jboss-aop-mc-int/2.0.0.CR5/jboss-aop-mc-int-2.0.0.CR5.jar" sourcepath="M2_REPO/org/jboss/microcontainer/jboss-aop-mc-int/2.0.0.CR5/jboss-aop-mc-int-2.0.0.CR5-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/jbossas/jboss-as-bootstrap/5.0.0.CR2/jboss-as-bootstrap-5.0.0.CR2.jar" sourcepath="M2_REPO/org/jboss/jbossas/jboss-as-bootstrap/5.0.0.CR2/jboss-as-bootstrap-5.0.0.CR2-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/jbossas/jboss-as-j2se/5.0.0.CR2/jboss-as-j2se-5.0.0.CR2.jar" sourcepath="M2_REPO/org/jboss/jbossas/jboss-as-j2se/5.0.0.CR2/jboss-as-j2se-5.0.0.CR2-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/jbossas/jboss-as-j2se/5.0.0.CR2/jboss-as-j2se-5.0.0.CR2-tests.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/jbossas/jboss-as-jmx/5.0.0.CR2/jboss-as-jmx-5.0.0.CR2.jar" sourcepath="M2_REPO/org/jboss/jbossas/jboss-as-jmx/5.0.0.CR2/jboss-as-jmx-5.0.0.CR2-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/jbossas/jboss-as-main/5.0.0.CR2/jboss-as-main-5.0.0.CR2.jar" sourcepath="M2_REPO/org/jboss/jbossas/jboss-as-main/5.0.0.CR2/jboss-as-main-5.0.0.CR2-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/jbossas/jboss-as-mbeans/5.0.0.CR2/jboss-as-mbeans-5.0.0.CR2.jar" sourcepath="M2_REPO/org/jboss/jbossas/jboss-as-mbeans/5.0.0.CR2/jboss-as-mbeans-5.0.0.CR2-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/jbossas/jboss-as-system/5.0.0.CR2/jboss-as-system-5.0.0.CR2.jar" sourcepath="M2_REPO/org/jboss/jbossas/jboss-as-system/5.0.0.CR2/jboss-as-system-5.0.0.CR2-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/jbossas/jboss-as-system-jmx/5.0.0.CR2/jboss-as-system-jmx-5.0.0.CR2.jar" sourcepath="M2_REPO/org/jboss/jbossas/jboss-as-system-jmx/5.0.0.CR2/jboss-as-system-jmx-5.0.0.CR2-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/cl/jboss-classloader/2.0.0.CR5/jboss-classloader-2.0.0.CR5.jar" sourcepath="M2_REPO/org/jboss/cl/jboss-classloader/2.0.0.CR5/jboss-classloader-2.0.0.CR5-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/cl/jboss-classloading/2.0.0.CR5/jboss-classloading-2.0.0.CR5.jar" sourcepath="M2_REPO/org/jboss/cl/jboss-classloading/2.0.0.CR5/jboss-classloading-2.0.0.CR5-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/integration/jboss-classloading-spi/5.0.0.CR2/jboss-classloading-spi-5.0.0.CR2.jar" sourcepath="M2_REPO/org/jboss/integration/jboss-classloading-spi/5.0.0.CR2/jboss-classloading-spi-5.0.0.CR2-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/cl/jboss-classloading-vfs/2.0.0.CR5/jboss-classloading-vfs-2.0.0.CR5.jar" sourcepath="M2_REPO/org/jboss/cl/jboss-classloading-vfs/2.0.0.CR5/jboss-classloading-vfs-2.0.0.CR5-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/jboss-common-core/2.2.5.GA/jboss-common-core-2.2.5.GA.jar" sourcepath="M2_REPO/org/jboss/jboss-common-core/2.2.5.GA/jboss-common-core-2.2.5.GA-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/aspects/jboss-current-invocation-aspects/1.0.0.CR1/jboss-current-invocation-aspects-1.0.0.CR1.jar" sourcepath="M2_REPO/org/jboss/aspects/jboss-current-invocation-aspects/1.0.0.CR1/jboss-current-invocation-aspects-1.0.0.CR1-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/microcontainer/jboss-dependency/2.0.0.CR5/jboss-dependency-2.0.0.CR5.jar" sourcepath="M2_REPO/org/jboss/microcontainer/jboss-dependency/2.0.0.CR5/jboss-dependency-2.0.0.CR5-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/deployers/jboss-deployers-client/2.0.0.CR5/jboss-deployers-client-2.0.0.CR5.jar" sourcepath="M2_REPO/org/jboss/deployers/jboss-deployers-client/2.0.0.CR5/jboss-deployers-client-2.0.0.CR5-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/deployers/jboss-deployers-client-spi/2.0.0.CR5/jboss-deployers-client-spi-2.0.0.CR5.jar" sourcepath="M2_REPO/org/jboss/deployers/jboss-deployers-client-spi/2.0.0.CR5/jboss-deployers-client-spi-2.0.0.CR5-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/deployers/jboss-deployers-core/2.0.0.CR5/jboss-deployers-core-2.0.0.CR5.jar" sourcepath="M2_REPO/org/jboss/deployers/jboss-deployers-core/2.0.0.CR5/jboss-deployers-core-2.0.0.CR5-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/deployers/jboss-deployers-core-spi/2.0.0.CR5/jboss-deployers-core-spi-2.0.0.CR5.jar" sourcepath="M2_REPO/org/jboss/deployers/jboss-deployers-core-spi/2.0.0.CR5/jboss-deployers-core-spi-2.0.0.CR5-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/deployers/jboss-deployers-impl/2.0.0.CR5/jboss-deployers-impl-2.0.0.CR5.jar" sourcepath="M2_REPO/org/jboss/deployers/jboss-deployers-impl/2.0.0.CR5/jboss-deployers-impl-2.0.0.CR5-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/deployers/jboss-deployers-spi/2.0.0.CR5/jboss-deployers-spi-2.0.0.CR5.jar" sourcepath="M2_REPO/org/jboss/deployers/jboss-deployers-spi/2.0.0.CR5/jboss-deployers-spi-2.0.0.CR5-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/deployers/jboss-deployers-structure-spi/2.0.0.CR5/jboss-deployers-structure-spi-2.0.0.CR5.jar" sourcepath="M2_REPO/org/jboss/deployers/jboss-deployers-structure-spi/2.0.0.CR5/jboss-deployers-structure-spi-2.0.0.CR5-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/deployers/jboss-deployers-vfs/2.0.0.CR5/jboss-deployers-vfs-2.0.0.CR5.jar" sourcepath="M2_REPO/org/jboss/deployers/jboss-deployers-vfs/2.0.0.CR5/jboss-deployers-vfs-2.0.0.CR5-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/deployers/jboss-deployers-vfs-spi/2.0.0.CR5/jboss-deployers-vfs-spi-2.0.0.CR5.jar" sourcepath="M2_REPO/org/jboss/deployers/jboss-deployers-vfs-spi/2.0.0.CR5/jboss-deployers-vfs-spi-2.0.0.CR5-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/javaee/jboss-ejb-api/3.0.0.CR1/jboss-ejb-api-3.0.0.CR1.jar" sourcepath="M2_REPO/org/jboss/javaee/jboss-ejb-api/3.0.0.CR1/jboss-ejb-api-3.0.0.CR1-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/ejb3/jboss-ejb3-cache/0.13.0/jboss-ejb3-cache-0.13.0.jar" sourcepath="M2_REPO/org/jboss/ejb3/jboss-ejb3-cache/0.13.0/jboss-ejb3-cache-0.13.0-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/ejb3/jboss-ejb3-common/0.1.4/jboss-ejb3-common-0.1.4.jar" sourcepath="M2_REPO/org/jboss/ejb3/jboss-ejb3-common/0.1.4/jboss-ejb3-common-0.1.4-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/ejb3/jboss-ejb3-ext-api/0.3/jboss-ejb3-ext-api-0.3.jar" sourcepath="M2_REPO/org/jboss/ejb3/jboss-ejb3-ext-api/0.3/jboss-ejb3-ext-api-0.3-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/ejb3/jboss-ejb3-ext-api-impl/0.3/jboss-ejb3-ext-api-impl-0.3.jar" sourcepath="M2_REPO/org/jboss/ejb3/jboss-ejb3-ext-api-impl/0.3/jboss-ejb3-ext-api-impl-0.3-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/ejb3/jboss-ejb3-interceptors/0.13.5/jboss-ejb3-interceptors-0.13.5.jar" sourcepath="M2_REPO/org/jboss/ejb3/jboss-ejb3-interceptors/0.13.5/jboss-ejb3-interceptors-0.13.5-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/ejb3/jboss-ejb3-metadata/0.13.0/jboss-ejb3-metadata-0.13.0.jar" sourcepath="M2_REPO/org/jboss/ejb3/jboss-ejb3-metadata/0.13.0/jboss-ejb3-metadata-0.13.0-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/jboss/jbossws/jboss-jaxrpc/1.0.4.GA/jboss-jaxrpc-1.0.4.GA.jar"/>
+  <classpathentry kind="var" path="M2_REPO/jboss/jbossws/jboss-jaxws/3.0.1-native-2.0.4.GA/jboss-jaxws-3.0.1-native-2.0.4.GA.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/javaee/jboss-jca-api/1.5.0.CR1/jboss-jca-api-1.5.0.CR1.jar" sourcepath="M2_REPO/org/jboss/javaee/jboss-jca-api/1.5.0.CR1/jboss-jca-api-1.5.0.CR1-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/javaee/jboss-jms-api/1.1.0.CR1/jboss-jms-api-1.1.0.CR1.jar" sourcepath="M2_REPO/org/jboss/javaee/jboss-jms-api/1.1.0.CR1/jboss-jms-api-1.1.0.CR1-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/microcontainer/jboss-kernel/2.0.0.CR5/jboss-kernel-2.0.0.CR5.jar" sourcepath="M2_REPO/org/jboss/microcontainer/jboss-kernel/2.0.0.CR5/jboss-kernel-2.0.0.CR5-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/logging/jboss-logging-log4j/2.0.5.GA/jboss-logging-log4j-2.0.5.GA.jar" sourcepath="M2_REPO/org/jboss/logging/jboss-logging-log4j/2.0.5.GA/jboss-logging-log4j-2.0.5.GA-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/logging/jboss-logging-spi/2.0.5.GA/jboss-logging-spi-2.0.5.GA.jar" sourcepath="M2_REPO/org/jboss/logging/jboss-logging-spi/2.0.5.GA/jboss-logging-spi-2.0.5.GA-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/man/jboss-managed/2.0.0.CR4/jboss-managed-2.0.0.CR4.jar" sourcepath="M2_REPO/org/jboss/man/jboss-managed/2.0.0.CR4/jboss-managed-2.0.0.CR4-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/jboss-mdr/2.0.0.CR3/jboss-mdr-2.0.0.CR3.jar" sourcepath="M2_REPO/org/jboss/jboss-mdr/2.0.0.CR3/jboss-mdr-2.0.0.CR3-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/metadata/jboss-metadata/1.0.0.CR8/jboss-metadata-1.0.0.CR8.jar" sourcepath="M2_REPO/org/jboss/metadata/jboss-metadata/1.0.0.CR8/jboss-metadata-1.0.0.CR8-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/man/jboss-metatype/2.0.0.CR4/jboss-metatype-2.0.0.CR4.jar" sourcepath="M2_REPO/org/jboss/man/jboss-metatype/2.0.0.CR4/jboss-metatype-2.0.0.CR4-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/jboss/profiler/jvmti/jboss-profiler-jvmti/1.0.0.CR5/jboss-profiler-jvmti-1.0.0.CR5.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/jboss-reflect/2.0.0.CR1/jboss-reflect-2.0.0.CR1.jar" sourcepath="M2_REPO/org/jboss/jboss-reflect/2.0.0.CR1/jboss-reflect-2.0.0.CR1-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/remoting/jboss-remoting/2.4.0.CR2/jboss-remoting-2.4.0.CR2.jar" sourcepath="M2_REPO/org/jboss/remoting/jboss-remoting/2.4.0.CR2/jboss-remoting-2.4.0.CR2-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/jboss/jboss-serialization/1.0.3.GA/jboss-serialization-1.0.3.GA.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/jbossas/jboss-server-manager/0.1.0.GA/jboss-server-manager-0.1.0.GA.jar" sourcepath="M2_REPO/org/jboss/jbossas/jboss-server-manager/0.1.0.GA/jboss-server-manager-0.1.0.GA-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/test/jboss-test/1.1.0.GA/jboss-test-1.1.0.GA.jar" sourcepath="M2_REPO/org/jboss/test/jboss-test/1.1.0.GA/jboss-test-1.1.0.GA-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/javaee/jboss-transaction-api/1.0.1.CR1/jboss-transaction-api-1.0.1.CR1.jar" sourcepath="M2_REPO/org/jboss/javaee/jboss-transaction-api/1.0.1.CR1/jboss-transaction-api-1.0.1.CR1-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/aspects/jboss-transaction-aspects/1.0.0.Beta1/jboss-transaction-aspects-1.0.0.Beta1.jar" sourcepath="M2_REPO/org/jboss/aspects/jboss-transaction-aspects/1.0.0.Beta1/jboss-transaction-aspects-1.0.0.Beta1-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/integration/jboss-transaction-spi/5.0.3.GA/jboss-transaction-spi-5.0.3.GA.jar" sourcepath="M2_REPO/org/jboss/integration/jboss-transaction-spi/5.0.3.GA/jboss-transaction-spi-5.0.3.GA-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/jboss-vfs/2.0.0.CR5/jboss-vfs-2.0.0.CR5.jar" sourcepath="M2_REPO/org/jboss/jboss-vfs/2.0.0.CR5/jboss-vfs-2.0.0.CR5-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/jboss/jbossts/jbossjta/4.3.0.GA/jbossjta-4.3.0.GA.jar"/>
+  <classpathentry kind="var" path="M2_REPO/jboss/jbossts/jbossts-common/4.3.0.GA/jbossts-common-4.3.0.GA.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/ws/jbossws-spi/1.0.3.GA/jbossws-spi-1.0.3.GA.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/jbossxb/2.0.0.GA/jbossxb-2.0.0.GA.jar" sourcepath="M2_REPO/org/jboss/jbossxb/2.0.0.GA/jbossxb-2.0.0.GA-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/naming/jnpserver/5.0.0.CR1/jnpserver-5.0.0.CR1.jar" sourcepath="M2_REPO/org/jboss/naming/jnpserver/5.0.0.CR1/jnpserver-5.0.0.CR1-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/junit/junit/4.4/junit-4.4.jar" sourcepath="M2_REPO/junit/junit/4.4/junit-4.4-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/apache-log4j/log4j/1.2.14/log4j-1.2.14.jar" sourcepath="M2_REPO/apache-log4j/log4j/1.2.14/log4j-1.2.14-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/log4j/log4j/1.2.14/log4j-1.2.14.jar" sourcepath="M2_REPO/log4j/log4j/1.2.14/log4j-1.2.14-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/aop/pluggable-instrumentor/2.0.0.GA/pluggable-instrumentor-2.0.0.GA.jar" sourcepath="M2_REPO/org/jboss/aop/pluggable-instrumentor/2.0.0.GA/pluggable-instrumentor-2.0.0.GA-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/qdox/qdox/1.6.1/qdox-1.6.1.jar" sourcepath="M2_REPO/qdox/qdox/1.6.1/qdox-1.6.1-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/stax/stax-api/1.0/stax-api-1.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/trove/trove/1.0.2/trove-1.0.2.jar"/>
+  <classpathentry kind="var" path="M2_REPO/apache-xerces/xercesImpl/2.9.1/xercesImpl-2.9.1.jar"/>
+  <classpathentry kind="var" path="M2_REPO/apache-xerces/xml-apis/2.9.1/xml-apis-2.9.1.jar"/>
 </classpath>
