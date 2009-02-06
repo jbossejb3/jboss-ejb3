@@ -23,7 +23,7 @@
   <!-- A time/date based rolling appender -->
   <appender name="FILE" class="org.jboss.logging.appender.DailyRollingFileAppender">
     <param name="File" value="target/test.log"/>
-    <param name="Threshold" value="ALL"/>
+    <param name="Threshold" value="INFO"/>
     <param name="Append" value="false"/>
 
     <!-- Rollover at midnight each day -->
@@ -61,7 +61,7 @@
   <!-- ============================== -->
 
   <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
-    <param name="Threshold" value="DEBUG"/>
+    <param name="Threshold" value="TRACE"/>
     <param name="Target" value="System.out"/>
 
     <layout class="org.apache.log4j.PatternLayout">
@@ -92,10 +92,6 @@
     <priority value="DEBUG"/>
   </category>
   -->
-  
-  <category name="org.jboss.kernel">
-    <priority value="DEBUG"/>
-  </category>
 
   <!--
      | An example of enabling the custom TRACE level priority that is used
@@ -108,7 +104,7 @@
   -->
 
   <category name="org.jboss">
-    <priority value="ALL"/>
+    <priority value="INFO"/>
   </category>
   
   <category name="org.jboss.ejb3">
