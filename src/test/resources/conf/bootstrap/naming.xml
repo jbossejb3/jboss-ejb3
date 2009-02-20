@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deployment xmlns="urn:jboss:bean-deployer:2.0">
+   <!-- JNDI -->
+   <bean name="NamingServer" class="org.jnp.server.SingletonNamingServer"/>
+   
+   <bean name="JavaCompInitializer" class="org.jboss.naming.JavaCompInitializer">
+      <depends>NamingServer</depends>
+   </bean>
+</deployment>

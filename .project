@@ -1,0 +1,18 @@
+<projectDescription>
+  <name>jboss-ejb3-timerservice-mk2</name>
+  <comment>JBoss EJB 3.x TimerService Mark 2 is an implementation based on
+    the venerable JBoss AS timer service meant for use in EJB 2.</comment>
+  <projects/>
+  <buildSpec>
+    <buildCommand>
+      <name>org.eclipse.jdt.core.javabuilder</name>
+    </buildCommand>
+    <buildCommand>
+      <name>org.maven.ide.eclipse.maven2Builder</name>
+    </buildCommand>
+  </buildSpec>
+  <natures>
+    <nature>org.eclipse.jdt.core.javanature</nature>
+    <nature>org.maven.ide.eclipse.maven2Nature</nature>
+  </natures>
+</projectDescription>

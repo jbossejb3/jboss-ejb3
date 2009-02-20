@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deployment xmlns="urn:jboss:bean-deployer:2.0">
+   <bean name="DataSourceDependencyResolver" class="org.jboss.ejb3.timerservice.mk2.test.common.SimpleDataSourceDependencyResolver"/>
+   
+   <bean name="JavaEEModuleInformer" class="org.jboss.ejb3.timerservice.mk2.test.common.SimpleJavaEEModuleInformer"/>
+   
+   <bean name="SpecCompliantSearchStrategy" class="org.jboss.jpa.resolvers.strategy.SpecCompliantSearchStrategy"/>
+   
+   <bean name="PersistenceUnitDependencyResolver" class="org.jboss.jpa.resolvers.DefaultPersistenceUnitDependencyResolver"/>
+   
+   <!-- Do not use this one in a JavaEE environment -->
+   <bean name="XPCResolver" class="org.jboss.jpa.resolvers.DefaultXPCResolver"/>
+   
+   <bean name="PersistenceParsingDeployer" class="org.jboss.jpa.deployers.PersistenceParsingDeployer"/>
+
+   <bean name="PersistenceDeployer" class="org.jboss.jpa.deployers.PersistenceDeployer"/>
+   <bean name="PersistenceUnitDeployer" class="org.jboss.jpa.deployers.PersistenceUnitDeployer">
+      <property name="defaultPersistenceProperties">
+         <map keyClass="java.lang.String" valueClass="java.lang.String">
+            <entry>
+               <key>hibernate.transaction.manager_lookup_class</key>
+               <value>org.hibernate.transaction.JBossTransactionManagerLookup</value>
+            </entry>
+         </map>
+      </property>
+   </bean>
+   
+   <!-- TODO: doesn't belong here -->
+   <bean name="org.jboss.jpa.mcint.annotations.PersistenceUnit" class="org.jboss.jpa.mcint.kernel.plugins.annotations.PersistenceUnitAnnotationPlugin"/>
+</deployment>

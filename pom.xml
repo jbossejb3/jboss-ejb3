@@ -1,0 +1,177 @@
+<!--
+  vi:ts=2:sw=2:expandtab:
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <parent>
+    <groupId>org.jboss.ejb3</groupId>
+    <artifactId>jboss-ejb3-build</artifactId>
+    <version>1.0.2-SNAPSHOT</version>
+    <relativePath>../build/pom.xml</relativePath>
+  </parent>
+
+  <!-- Maven POM Model Version -->
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- Artifact Information -->
+  <artifactId>jboss-ejb3-timerservice-mk2</artifactId>
+  <packaging>jar</packaging>
+  <version>0.1.0-SNAPSHOT</version>
+  <name>JBoss EJB 3.x TimerService Mark 2</name>
+  <description>
+    JBoss EJB 3.x TimerService Mark 2 is an implementation based on
+    the venerable JBoss AS timer service meant for use in EJB 2.
+  </description>
+  <url>http://labs.jboss.com/jbossejb3/</url>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+          <executable>${JDK6_HOME}/bin/javac</executable>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-jdk6</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireProperty>
+                  <property>env.JDK6_HOME</property>
+                  <message>JDK6_HOME is not set</message>
+                </requireProperty>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <forkMode>once</forkMode>
+          <jvm>${JDK6_HOME}/bin/java</jvm>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+    <!-- For 'mocking' a DataSource we use Hypersonic -->
+    <dependency>
+      <groupId>hsqldb</groupId>
+      <artifactId>hsqldb</artifactId>
+      <version>1.8.0.8-brew</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- JPA 1.0 -->
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>ejb3-persistence</artifactId>
+      <version>1.0.2.GA</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.bootstrap</groupId>
+      <artifactId>jboss-bootstrap</artifactId>
+      <version>0.1.0-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.deployers</groupId>
+      <artifactId>jboss-deployers-vfs</artifactId>
+      <version>${version.org.jboss.deployers}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.ejb3</groupId>
+      <artifactId>jboss-ejb3-api</artifactId>
+      <version>3.1.0-SNAPSHOT</version>
+    </dependency>    
+    <dependency>
+      <groupId>org.jboss.ejb3</groupId>
+      <artifactId>jboss-ejb3-jta-profile</artifactId>
+      <version>0.1.0-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>    
+    <dependency>
+      <groupId>org.jboss.ejb3</groupId>
+      <artifactId>jboss-ejb3-timerservice-spi</artifactId>
+      <version>[0,)</version>
+      <exclusions>
+        <!-- Make sure the EJB 3.0 API doesn't get in here -->
+        <exclusion>
+          <groupId>org.jboss.javaee</groupId>
+          <artifactId>jboss-ejb-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.jpa</groupId>
+      <artifactId>jboss-jpa-deployers</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+      <scope>test</scope>
+      <exclusions>
+        <!-- Make sure the EJB 3.0 API doesn't get in here -->
+        <exclusion>
+          <groupId>org.jboss.javaee</groupId>
+          <artifactId>jboss-ejb-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.jpa</groupId>
+      <artifactId>jboss-jpa-mcint</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.logging</groupId>
+      <artifactId>jboss-logging-spi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.logging</groupId>
+      <artifactId>jboss-logging-log4j</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.microcontainer</groupId>
+      <artifactId>jboss-kernel</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.naming</groupId>
+      <artifactId>jnpserver</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.slf4j</groupId>
+      <artifactId>slf4j-jboss-logging</artifactId>
+      <version>1.0.0.GA</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+<!--
+  <profiles>
+    <profile>
+      <id>jdk6</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+    </profile>
+  </profiles>
+-->
+</project>
