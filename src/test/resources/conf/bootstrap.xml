@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bootstrap xmlns="urn:jboss:bootstrap:1.0">
+<!-- 
+   <url>bootstrap/vfs.xml</url>
+   <url>bootstrap/classloader.xml</url>
+   <url>bootstrap/aop.xml</url>
+   <url>bootstrap/jmx.xml</url>
+   <url>bootstrap/deployers.xml</url>
+   <url>bootstrap/bindings.xml</url>
+   <url>bootstrap/profile-service.xml</url>
+-->
+   <url>bootstrap/classloader.xml</url>
+   <url>bootstrap/aop.xml</url>
+   <url>bootstrap/jmx-jdk.xml</url>
+   <url>bootstrap/maindeployer.xml</url>
+   <url>bootstrap/aop-deployers.xml</url>
+   <url>bootstrap/classloader-deployers.xml</url>
+</bootstrap>

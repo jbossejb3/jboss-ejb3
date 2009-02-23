@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deployment xmlns="urn:jboss:bean-deployer:2.0">
+   <bean name="ClassLoadingMetaDataParser" class="org.jboss.deployers.vfs.spi.deployer.SchemaResolverDeployer">
+      <constructor>
+         <parameter>org.jboss.classloading.spi.metadata.ClassLoadingMetaData</parameter>
+      </constructor>
+      <property name="name">jboss-classloading.xml</property>
+      <property name="buildManagedObject">true</property>
+   </bean>
+   <bean name="ClassLoadingDefaultDeployer" class="org.jboss.deployers.plugins.classloading.ClassLoadingDefaultDeployer">
+      <property name="defaultMetaData">
+         <classloading xmlns="urn:jboss:classloading:1.0" export-all="NON_EMPTY" import-all="true"/>
+      </property>
+   </bean>
+   <bean name="InMemoryClassesDeployer" class="org.jboss.deployers.vfs.plugins.classloader.InMemoryClassesDeployer"/>
+   <bean name="ClassLoaderClassPathDeployer" class="org.jboss.deployers.vfs.plugins.classloader.VFSClassLoaderClassPathDeployer"/>
+   <bean name="ClassLoaderDescribeDeployer" class="org.jboss.deployers.vfs.plugins.classloader.VFSClassLoaderDescribeDeployer">
+      <property name="classLoading"><inject bean="ClassLoading"/></property>
+   </bean>
+   <bean name="ClassLoaderDeployer" class="org.jboss.deployers.plugins.classloading.AbstractLevelClassLoaderSystemDeployer">
+      <property name="classLoading"><inject bean="ClassLoading"/></property>
+      <property name="system"><inject bean="ClassLoaderSystem"/></property>
+   </bean>
+</deployment>

@@ -1,0 +1,19 @@
+<projectDescription>
+  <name>jboss-ejb3-concurreny</name>
+  <comment>JBoss EJB 3.x Concurrency provides the mechanism for container
+    manager concurrency as specified in EJB 3.1 PFD2 4.8.5 
+    Singleton Concurrency.</comment>
+  <projects/>
+  <buildSpec>
+    <buildCommand>
+      <name>org.eclipse.jdt.core.javabuilder</name>
+    </buildCommand>
+    <buildCommand>
+      <name>org.maven.ide.eclipse.maven2Builder</name>
+    </buildCommand>
+  </buildSpec>
+  <natures>
+    <nature>org.eclipse.jdt.core.javanature</nature>
+    <nature>org.maven.ide.eclipse.maven2Nature</nature>
+  </natures>
+</projectDescription>
