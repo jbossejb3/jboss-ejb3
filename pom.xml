@@ -20,89 +20,30 @@
     specification.
   </description>
   
+  <properties>
+    <version.org.jboss.deployers>2.0.5.GA</version.org.jboss.deployers>
+  </properties>
+  
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.jboss</groupId>
+        <artifactId>jboss-vfs</artifactId>
+        <version>2.1.0.GA</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.microcontainer</groupId>
+        <artifactId>jboss-kernel</artifactId>
+        <version>2.0.4.GA</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+    
   <dependencies>
-    <!-- 
-    <dependency>
-      <groupId>jboss.aop</groupId>
-      <artifactId>jboss-aop-deployer-jdk50</artifactId>
-      <version>2.0.0.CR8</version>
-      <scope>test</scope>
-    </dependency>
-    -->
-    <dependency>
-      <groupId>org.jboss.aspects</groupId>
-      <artifactId>jboss-current-invocation-aspects</artifactId>
-      <version>1.0.0.CR1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.integration</groupId>
-      <artifactId>jboss-transaction-spi</artifactId>
-      <version>5.0.3.GA</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.logging</groupId>
-      <artifactId>jboss-logging-spi</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.logging</groupId>
-      <artifactId>jboss-logging-log4j</artifactId>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
-    </dependency>
-    <!-- TODO: remove dependency -->
-    <!-- Bring in the AOP deployers 
-    <dependency>
-      <groupId>org.jboss.jbossas</groupId>
-      <artifactId>jboss-as-aspects</artifactId>
-      <version>5.0.0-SNAPSHOT</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>jboss</groupId>
-          <artifactId>jboss-test</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency> -->
-    <dependency>
-      <groupId>org.jboss.naming</groupId>
-      <artifactId>jnpserver</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.metadata</groupId>
-      <artifactId>jboss-metadata</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.aop</groupId>
-      <artifactId>jboss-aop</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.aop</groupId>
-      <artifactId>jboss-aop-asintegration-mc</artifactId>
-      <version>${version.org.jboss.aop_jboss-aop}</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>jboss</groupId>
-          <artifactId>jboss-test</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.aop</groupId>
-      <artifactId>jboss-aop-asintegration-core</artifactId>
-      <version>${version.org.jboss.aop_jboss-aop}</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>jboss</groupId>
-          <artifactId>jboss-test</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.jboss.aspects</groupId>
@@ -119,11 +60,19 @@
       <groupId>org.jboss.deployers</groupId>
       <artifactId>jboss-deployers-vfs</artifactId>
       <version>${version.org.jboss.deployers}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jboss.deployers</groupId>
       <artifactId>jboss-deployers-vfs-spi</artifactId>
       <version>${version.org.jboss.deployers}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.ejb3</groupId>
+      <artifactId>jboss-ejb3-aop-deployers</artifactId>
+      <version>0.1.0-SNAPSHOT</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jboss.ejb3</groupId>
@@ -142,33 +91,39 @@
       <version>1.0.0</version>
     </dependency>
     <dependency>
+      <groupId>org.jboss.integration</groupId>
+      <artifactId>jboss-transaction-spi</artifactId>
+      <version>5.0.3.GA</version>
+    </dependency>
+    <dependency>
       <groupId>org.jboss.javaee</groupId>
       <artifactId>jboss-ejb-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.jboss.microcontainer</groupId>
-      <artifactId>jboss-kernel</artifactId>
+      <groupId>org.jboss.logging</groupId>
+      <artifactId>jboss-logging-spi</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.jboss.microcontainer</groupId>
-      <artifactId>jboss-aop-mc-int</artifactId>
-      <version>${version.org.jboss.microcontainer}</version>
+      <groupId>org.jboss.logging</groupId>
+      <artifactId>jboss-logging-log4j</artifactId>
       <scope>test</scope>
     </dependency>
-    <!--
     <dependency>
-      <groupId>org.jboss.microcontainer</groupId>
-      <artifactId>jboss-managed</artifactId>
-      <version>2.0.0.CR1</version>
+      <groupId>org.jboss.naming</groupId>
+      <artifactId>jnpserver</artifactId>
       <scope>test</scope>
     </dependency>
-    -->
+    <dependency>
+      <groupId>org.jboss.metadata</groupId>
+      <artifactId>jboss-metadata</artifactId>
+    </dependency>
     <dependency>
       <groupId>jboss.jbossts</groupId>
       <artifactId>jbossjta</artifactId>
       <version>4.3.0.GA</version>
       <scope>test</scope>
     </dependency>
+    
     <!-- For Eclipse Maven 2 Plugin -->
     <dependency>
       <groupId>org.jboss</groupId>

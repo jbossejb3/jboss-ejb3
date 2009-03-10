@@ -22,9 +22,11 @@
    </classloader>
 
   <!-- use legacy ordering -->
+   <!-- Can't depend on AS
    <bean name="topContextComparator">
      <constructor factoryClass="org.jboss.system.deployers.LegacyDeploymentContextComparator" factoryMethod="getInstance"/>
    </bean>
+   -->
 
    <!-- The ManagedObjectFactory -->
    <!-- No managed stuff in unit test
@@ -46,14 +48,18 @@
    <bean name="MainDeployer" class="org.jboss.deployers.plugins.main.MainDeployerImpl">
       <property name="structuralDeployers"><inject bean="StructuralDeployers"/></property>
       <property name="deployers"><inject bean="Deployers"/></property>
+      <!-- 
       <property name="mgtDeploymentCreator"><inject bean="ManagedDeploymentCreator"/></property>
       <property name="comparator"><inject bean="topContextComparator"/></property>
+      -->
    </bean>
 
    <!-- The ManagedDeploymentCreator implementation that supports mapping
       attachment types to ManagedDeployment#getTypes
    -->
+   <!-- Can't depend on AS
    <bean name="ManagedDeploymentCreator" class="org.jboss.deployers.plugins.managed.TypedManagedDeploymentCreator" />
+   -->
 
    <!-- The holder for deployers that determine structure -->
    <bean name="StructuralDeployers" class="org.jboss.deployers.vfs.plugins.structure.VFSStructuralDeployersImpl">
