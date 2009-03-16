@@ -33,10 +33,8 @@ import org.jboss.ejb3.endpoint.Endpoint;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @version $Revision: $
  */
-public class EndpointInvocationHandler implements InvocationHandler, Serializable
+public class EndpointInvocationHandler implements InvocationHandler
 {
-   private static final long serialVersionUID = 1L;
-   
    private Endpoint endpoint;
    private Serializable session;
    private Class<?> invokedBusinessInterface;
