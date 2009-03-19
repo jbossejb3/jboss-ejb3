@@ -55,7 +55,8 @@ public class InvocationTestCase
       Class<?> invokedBusinessInterface = null;
       InvocationHandler handler = new EndpointInvocationHandler(endpoint, session, invokedBusinessInterface);
       Object proxy = null;
-      Method method = null;
+      // just make sure method is not null
+      Method method = InvocationTestCase.class.getDeclaredMethod("testInvocation");
       Date now = new Date();
       Object args[] = { now };
       Object result = handler.invoke(proxy, method, args);
