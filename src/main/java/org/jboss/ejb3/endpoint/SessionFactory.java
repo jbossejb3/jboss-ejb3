@@ -37,8 +37,8 @@ public interface SessionFactory
     * Under the hood, the EJB's construct will be called. Followed by injection, calling
     * the post-construct method and finally calling the appropriate init method. 
     * 
-    * @param initTypes the argument types for the init method.
-    * @param initValues the arguments for the init method.
+    * @param initTypes the argument types for the init method or null if its a EJB3 view
+    * @param initValues the arguments for the init method or null if its a EJB3 view
     * @return the session created.
     */
    Serializable createSession(Class<?>[] initTypes, Object[] initValues);
