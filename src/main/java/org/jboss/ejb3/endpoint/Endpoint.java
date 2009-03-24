@@ -27,11 +27,23 @@ import java.lang.reflect.Method;
 /**
  * An endpoint is capable of handling invocation on an EJB instance.
  * 
+ * An endpoint might be session aware, in which case an session has to be
+ * obtained from the session factory. This session can then be used to call
+ * upon the endpoint.
+ * 
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @version $Revision: $
  */
 public interface Endpoint
 {
+   /**
+    * The SessionFactory associated with this Endpoint, if the Endpoint is session aware.
+    * 
+    * @throws IllegalStateException if this Endpoint is not session aware
+    * @return the associated session factory
+    */
+   SessionFactory getSessionFactory() throws IllegalStateException;
+   
    /**
     * Invoke a method on an EJB endpoint.
     * 
@@ -54,4 +66,9 @@ public interface Endpoint
     *   invocation on the EJB instance.
     */
    Object invoke(Serializable session, Class<?> invokedBusinessInterface, Method method, Object args[]) throws Throwable;
+   
+   /**
+    * @return true if this Endpoint is session aware
+    */
+   boolean isSessionAware();
 }

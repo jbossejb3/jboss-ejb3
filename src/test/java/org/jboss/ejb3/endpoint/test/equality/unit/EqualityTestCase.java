@@ -33,6 +33,7 @@ import java.util.UUID;
 
 import javassist.util.proxy.ProxyFactory;
 
+import org.jboss.ejb3.endpoint.AbstractEndpoint;
 import org.jboss.ejb3.endpoint.Endpoint;
 import org.jboss.ejb3.endpoint.reflect.EndpointInvocationHandler;
 import org.jboss.ejb3.endpoint.reflect.EndpointProxy;
@@ -48,7 +49,7 @@ import org.junit.Test;
  */
 public class EqualityTestCase
 {
-   private class SimpleEndpoint implements Endpoint
+   private class SimpleEndpoint extends AbstractEndpoint
    {
       public Object invoke(Serializable session, Class<?> invokedBusinessInterface, Method method, Object[] args)
          throws Throwable
@@ -217,6 +218,20 @@ public class EqualityTestCase
       Class<SimpleInterface> businessInterface = null;
       InvocationHandler handler = new EndpointInvocationHandler(endpoint, session, businessInterface);
       int result = handler.hashCode();
+      assertEquals(createHashCode(endpoint, session, businessInterface), result);
+   }
+
+   @Test
+   public void testHashCodeOnInvoke() throws Throwable
+   {
+      Endpoint endpoint = new SimpleEndpoint();
+      Serializable session = null;
+      Class<SimpleInterface> businessInterface = null;
+      InvocationHandler handler = new EndpointInvocationHandler(endpoint, session, businessInterface);
+      Object proxy = null;
+      Method method = Object.class.getDeclaredMethod("hashCode");
+      Object args[] = null;
+      int result = (Integer) handler.invoke(proxy, method, args);
       assertEquals(createHashCode(endpoint, session, businessInterface), result);
    }
 

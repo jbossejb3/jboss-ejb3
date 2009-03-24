@@ -27,6 +27,7 @@ import static org.junit.Assert.fail;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
+import org.jboss.ejb3.endpoint.AbstractEndpoint;
 import org.jboss.ejb3.endpoint.Endpoint;
 import org.jboss.ejb3.endpoint.reflect.EndpointProxy;
 import org.junit.Test;
@@ -48,7 +49,7 @@ public class EndpointProxyTestCase
    public void test1()
    {
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
-      Endpoint endpoint = new Endpoint() {
+      Endpoint endpoint = new AbstractEndpoint() {
          public Object invoke(Serializable session, Class<?> invokedBusinessInterface, Method method, Object[] args)
             throws Throwable
          {
@@ -67,7 +68,7 @@ public class EndpointProxyTestCase
    public void testNoBusinessInterface()
    {
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
-      Endpoint endpoint = new Endpoint() {
+      Endpoint endpoint = new AbstractEndpoint() {
          public Object invoke(Serializable session, Class<?> invokedBusinessInterface, Method method, Object[] args)
             throws Throwable
          {
