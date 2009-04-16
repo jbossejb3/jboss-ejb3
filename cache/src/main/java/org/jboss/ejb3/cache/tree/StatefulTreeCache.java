@@ -93,17 +93,19 @@ public class StatefulTreeCache implements ClusteredStatefulCache
    public static long MarkInUseWaitTime = 15000;
 
    protected String[] hashBuckets = DEFAULT_HASH_BUCKETS;
-   protected int createCount = 0;
-   protected int passivatedCount = 0;
-   protected int removeCount = 0;
+   protected volatile int createCount = 0;
+   protected volatile int passivatedCount = 0;
+   protected volatile int removeCount = 0;
+   protected volatile int totalSize = -1;
    protected long removalTimeout = 0;
    protected RemovalTimeoutTask removalTask = null;
    protected boolean running = true;
-   protected Map<Object, Long> beans = new ConcurrentHashMap<Object, Long>();
+   protected Map<Object, Long> beans = null;
    protected CacheConfig cacheConfig;
    protected CacheManager cacheManager;
    protected StatefulContainer ejbContainer;
    protected Object shutdownLock = new Object();
+   protected final Object metricsLock = new Object();
 
    public StatefulBeanContext create()
    {      
@@ -124,7 +126,11 @@ public class StatefulTreeCache implements ClusteredStatefulCache
          ctx.setInUse(true);
          ctx.lastUsed = System.currentTimeMillis();
          ++createCount;
-         beans.put(ctx.getId(), new Long(ctx.lastUsed));
+         totalSize = -1;
+         if (beans != null)
+         {
+            beans.put(ctx.getId(), new Long(ctx.lastUsed));
+         }
       }
       catch (EJBException e)
       {
@@ -184,7 +190,10 @@ public class StatefulTreeCache implements ClusteredStatefulCache
          // Note the Fqn we use is relative to the region!
          region.markNodeCurrentlyInUse(new Fqn(key.toString()), MarkInUseWaitTime);
          entry.lastUsed = System.currentTimeMillis();
-         beans.put(key, new Long(entry.lastUsed));
+         if (beans != null)
+         {
+            beans.put(key, new Long(entry.lastUsed));
+         }
       }
 
       if(log.isTraceEnabled())
@@ -239,9 +248,14 @@ public class StatefulTreeCache implements ClusteredStatefulCache
                log.trace("remove: removed bean " +id.toString() + " cannot be removed from cache");
             }
          }
+         
+         if (beans != null)
+         {
+            beans.remove(key);
+         }
 
          ++removeCount;
-         beans.remove(key);
+         totalSize = -1;
       }
       catch (CacheException e)
       {
@@ -256,7 +270,10 @@ public class StatefulTreeCache implements ClusteredStatefulCache
       {
          ctx.setInUse(false);
          ctx.lastUsed = System.currentTimeMillis();
-         beans.put(ctx.getId(), new Long(ctx.lastUsed));
+         if (beans != null)
+         {
+            beans.put(ctx.getId(), new Long(ctx.lastUsed));
+         }
          // OK, it is free to passivate now.
          // Note the Fqn we use is relative to the region!
          region.unmarkNodeCurrentlyInUse(getFqn(ctx.getId(), true));
@@ -291,14 +308,17 @@ public class StatefulTreeCache implements ClusteredStatefulCache
       log = Logger.getLogger(getClass().getName() + "." + this.ejbContainer.getEjbName());
 
       this.classloader = new WeakReference<ClassLoader>(this.ejbContainer.getClassloader());
-      
-      cacheConfig = (CacheConfig) this.ejbContainer.getAnnotation(CacheConfig.class);
 
       this.cacheManager = CacheManagerLocator.getCacheManagerLocator().getCacheManager(null);
+      
+      this.cacheConfig = (CacheConfig) this.ejbContainer.getAnnotation(CacheConfig.class);
 
-      removalTimeout = cacheConfig.removalTimeoutSeconds();
+      removalTimeout = cacheConfig.removalTimeoutSeconds() * 1000L;
       if (removalTimeout > 0)
-         removalTask = new RemovalTimeoutTask("SFSB Removal Thread - " + this.ejbContainer.getObjectName().getCanonicalName());
+      {
+         this.beans = new ConcurrentHashMap<Object, Long>();
+         this.removalTask = new RemovalTimeoutTask("SFSB Removal Thread - " + this.ejbContainer.getObjectName().getCanonicalName());
+      }
    }
 
    protected EvictionRegionConfig getEvictionRegionConfig(Fqn fqn)
@@ -394,6 +414,7 @@ public class StatefulTreeCache implements ClusteredStatefulCache
       if (removalTask != null)
          removalTask.start();
 
+      totalSize = -1;
       running = true;
    }
 
@@ -443,32 +464,47 @@ public class StatefulTreeCache implements ClusteredStatefulCache
 
    public int getCacheSize()
    {
-      int count = 0;
-      try
-      {
-         Set children = null;
-         for (int i = 0; i < hashBuckets.length; i++)
-         {
-            Node node = cache.getRoot().getChild(new Fqn(cacheNode, hashBuckets[i]));
-            if (node != null)
-            {
-               children = node.getChildrenNames();
-               count += (children == null ? 0 : children.size());
-            }
-         }
-         count = count - passivatedCount;
-      }
-      catch (CacheException e)
-      {
-         log.error("Caught exception calculating cache size", e);
-         count = -1;
-      }
-      return count;
+      return getTotalSize() - getPassivatedCount();
    }
 
    public int getTotalSize()
    {
-      return beans.size();
+      int result = (beans != null) ? beans.size() : totalSize;
+      
+      if (result < 0)
+      {     
+         synchronized (metricsLock)
+         {
+            if (totalSize > 0)
+            {
+               result = totalSize;
+            }
+            else
+            {
+               int count = 0;
+               try
+               {
+                  Set children = null;
+                  for (int i = 0; i < hashBuckets.length; i++)
+                  {
+                     Node node = cache.getRoot().getChild(new Fqn(cacheNode, hashBuckets[i]));
+                     if (node != null)
+                     {
+                        children = node.getChildrenNames();
+                        count += (children == null ? 0 : children.size());
+                     }
+                  }
+                  result = totalSize = count;
+               }
+               catch (CacheException e)
+               {
+                  log.error("Caught exception calculating total size", e);
+                  result = -1;
+               }
+            }
+         }
+      }
+      return result;
    }
 
    public int getCreateCount()
@@ -597,6 +633,7 @@ public class StatefulTreeCache implements ClusteredStatefulCache
          }
 
          --passivatedCount;
+         totalSize = -1;
        
          if(log.isTraceEnabled())
          {
@@ -659,6 +696,7 @@ public class StatefulTreeCache implements ClusteredStatefulCache
 
                bean.passivateAfterReplication();
                ++passivatedCount;
+               totalSize = -1;
             }
          }
          catch (NoSuchEJBException e)
@@ -714,7 +752,7 @@ public class StatefulTreeCache implements ClusteredStatefulCache
          {
             try
             {
-               Thread.sleep(removalTimeout * 1000);
+               Thread.sleep(removalTimeout);
             }
             catch (InterruptedException e)
             {
@@ -734,9 +772,20 @@ public class StatefulTreeCache implements ClusteredStatefulCache
                   {
                      Map.Entry<Object, Long> entry = it.next();
                      long lastUsed = entry.getValue().longValue();
-                     if (now - lastUsed >= removalTimeout * 1000)
+                     if (now - lastUsed >= removalTimeout)
                      {
-                        remove(entry.getKey());
+                        try
+                        {
+                           remove(entry.getKey());
+                        }
+                        catch (NoSuchEJBException nosuch)
+                        {
+                           it.remove();
+                        }
+                        catch (Exception e)
+                        {
+                           log.error("problem removing SFSB " + entry.getKey(), e);
+                        }
                      }
                   }
                }
