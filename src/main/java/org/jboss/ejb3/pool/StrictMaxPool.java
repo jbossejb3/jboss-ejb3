@@ -24,6 +24,7 @@ package org.jboss.ejb3.pool;
 import java.util.LinkedList;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+
 import javax.ejb.EJBException;
 
 import org.jboss.ejb3.BeanContext;
@@ -279,4 +280,18 @@ public class StrictMaxPool
 
    // Inner classes -------------------------------------------------
 
+   @Override
+   public void remove(BeanContext ctx)
+   {
+      if (log.isTraceEnabled())
+      {
+         String msg = "Removing instance:" + this + "#" + ctx + "#" + container.getBeanClass();
+         log.trace(msg);
+      }
+
+      strictMaxSize.release();
+      --inUse;
+
+      super.remove(ctx);
+   }
 }
