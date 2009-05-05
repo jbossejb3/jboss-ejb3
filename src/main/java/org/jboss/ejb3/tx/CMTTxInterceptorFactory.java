@@ -84,8 +84,10 @@ public class CMTTxInterceptorFactory extends org.jboss.aspects.tx.TxInterceptorF
       Method method = ((MethodJoinpoint) jp).getMethod();
       int timeout = resolveTransactionTimeout(advisor, method);
 
-      if (policy == null);
+      if (policy == null)
+      {
          super.initialize();
+      }
 
       TransactionAttributeType txType = getTxType(advisor, jp);
       
