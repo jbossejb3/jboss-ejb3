@@ -14,7 +14,7 @@
   <!-- Artifact Configuration -->
   <groupId>org.jboss.ejb3</groupId>
   <artifactId>jboss-ejb3-endpoint</artifactId>
-  <version>0.1.0</version>
+  <version>0.1.1-SNAPSHOT</version>
   <name>JBoss EJB 3.x Endpoint SPI</name>
   <description>JBoss EJB 3.x Endpoint SPI</description>
   <url>http://www.jboss.org/jbossejb3</url>
@@ -44,10 +44,4 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
-  <scm>
-    <connection>scm:svn:http://anonsvn.jboss.org/repos/jbossas/projects/ejb3/tags/jboss-ejb3-endpoint-0.1.0</connection>
-    <developerConnection>scm:svn:https://svn.jboss.org/repos/jbossas/projects/ejb3/tags/jboss-ejb3-endpoint-0.1.0</developerConnection>
-    <url>http://anonsvn.jboss.org/repos/jbossas/projects/ejb3/tags/jboss-ejb3-endpoint-0.1.0</url>
-  </scm>
 </project>
