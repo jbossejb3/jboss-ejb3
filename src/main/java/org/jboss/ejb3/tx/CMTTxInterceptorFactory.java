@@ -43,6 +43,8 @@ public class CMTTxInterceptorFactory extends org.jboss.aspects.tx.TxInterceptorF
 {
    @SuppressWarnings("unused")
    private static final Logger log = Logger.getLogger(CMTTxInterceptorFactory.class);
+   
+   private TransactionManager transactionManager; 
 
    protected TransactionAttributeType getTxType(Advisor advisor, Joinpoint jp)
    {
@@ -79,7 +81,7 @@ public class CMTTxInterceptorFactory extends org.jboss.aspects.tx.TxInterceptorF
       if (type == TransactionManagementType.BEAN)
          return new NullInterceptor();
 
-      TransactionManager tm = TxUtil.getTransactionManager();
+      TransactionManager tm = this.getTransactionManager();
       
       Method method = ((MethodJoinpoint) jp).getMethod();
       int timeout = resolveTransactionTimeout(advisor, method);
@@ -121,5 +123,18 @@ public class CMTTxInterceptorFactory extends org.jboss.aspects.tx.TxInterceptorF
          Object interceptor = super.createPerJoinpoint(advisor, jp);
          return interceptor;
       }
+   }
+   
+   /**
+    * Returns the TransactionManager
+    * @return
+    */
+   private TransactionManager getTransactionManager()
+   {
+      if (this.transactionManager == null)
+      {
+         this.transactionManager = TxUtil.getTransactionManager();
+      }
+      return this.transactionManager;
    }
 }
