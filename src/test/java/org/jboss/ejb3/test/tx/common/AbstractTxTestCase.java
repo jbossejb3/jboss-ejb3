@@ -46,6 +46,11 @@ public abstract class AbstractTxTestCase
    @BeforeClass
    public static void beforeClass() throws Throwable
    {
+      // JBossXB is very strict with xml content ordering. This
+      // is a workaround to prevent failures of testcase because
+      // of xml contents
+      System.setProperty("xb.builder.useUnorderedSequence", "true");
+      
       bootstrap = new UnitTestBootstrap();
       bootstrap.deploy(getResource("instance/classloader.xml"));
       bootstrap.deploy(getResource("instance/aop.xml"));

@@ -17,7 +17,26 @@
    </classloader>
 
    <!-- Integration -->
-   <bean name="AOPJBossIntegration" class="org.jboss.aop.asintegration.jboss5.JBoss5Integration"/>
+   <bean name="AOPClassLoaderScopingPolicy" class="org.jboss.aop.asintegration.jboss5.VFSClassLoaderScopingPolicy"/>
+   
+   <bean name="AOPRegisterModuleCallback" class="org.jboss.aop.asintegration.jboss5.RegisterModuleCallback">
+      <!-- classloader><null/></classloader -->
+      <incallback method="addModule" state="Installed"/>
+      <uncallback method="removeModule" state="Installed"/>
+   </bean>
+   
+   <bean name="AOPClassPoolFactory" class="org.jboss.aop.classpool.jbosscl.JBossClDelegatingClassPoolFactory">
+      <constructor>
+         <parameter><inject bean="AOPClassLoaderScopingPolicy" property="registry"/></parameter>
+         <parameter><inject bean="AOPRegisterModuleCallback"/></parameter>
+      </constructor>
+   </bean>
+   
+   
+   <bean name="AOPJBossIntegration" class="org.jboss.aop.asintegration.jboss5.JBoss5Integration">
+      <property name="classPoolFactory"><inject bean="AOPClassPoolFactory"/></property>
+      <property name="aopClassLoaderScopingPolicy"><inject bean="AOPClassLoaderScopingPolicy"/></property>
+   </bean>
 
    <bean name="DefaultAspectManager" class="org.jboss.aop.microcontainer.beans.metadata.DefaultAspectManager">
       <property name="managerBean">AspectManager</property>
