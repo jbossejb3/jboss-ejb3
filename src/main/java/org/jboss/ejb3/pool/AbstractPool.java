@@ -52,16 +52,16 @@ public abstract class AbstractPool implements Pool
    {
       return createCount;
    }
-   
+
    public int getRemoveCount()
    {
       return removeCount;
    }
-   
+
    public void initialize(Container container, int maxSize, long timeout)
    {
       assert container != null : "container is null";
-      
+
       this.container = container;
    }
 
@@ -72,7 +72,7 @@ public abstract class AbstractPool implements Pool
    {
       return create(null, null);
    }
-   
+
    protected BeanContext<?> create(Class[] initTypes, Object[] initValues)
    {
       BeanContext ctx;
@@ -89,23 +89,44 @@ public abstract class AbstractPool implements Pool
       {
          container.popContext();
       }
-      
+
       container.invokePostConstruct(ctx, initValues);
-      
+
       //TODO This needs to be reimplemented as replacement for create() on home interface
       container.invokeInit(ctx.getInstance(), initTypes, initValues);
-      
+
       ++createCount;
-      
+
       return ctx;
    }
-   
+
    private BeanContext createBeanContext()
    {
       return container.createBeanContext();
    }
-   
+
    public void remove(BeanContext ctx)
+   {
+      this.doRemove(ctx);
+   }
+
+   public void discard(BeanContext<?> ctx)
+   {
+      this.doRemove(ctx);
+   }
+
+   public void setInjectors(Injector[] injectors)
+   {
+      this.injectors = injectors;
+   }
+
+   /**
+    * Remove the bean context and invoke any callbacks
+    * and track the remove count
+    *
+    * @param ctx
+    */
+   protected void doRemove(BeanContext<?> ctx)
    {
       try
       {
@@ -116,15 +137,5 @@ public abstract class AbstractPool implements Pool
          ctx.remove();
          ++removeCount;
       }
-   }
-
-   public void discard(BeanContext<?> ctx)
-   {
-      remove(ctx);
-   }
-
-   public void setInjectors(Injector[] injectors)
-   {
-      this.injectors = injectors;
    }
 }

@@ -83,22 +83,22 @@ public class StrictMaxPool
       this.strictMaxSize = new Semaphore(maxSize, true);
       this.strictTimeout = timeout;
    }
-   
+
    public int getCurrentSize()
    {
       return getCreateCount() - getRemoveCount();
    }
-   
+
    public int getAvailableCount()
    {
       return maxSize - inUse;
    }
-   
+
    public int getMaxSize()
    {
       return maxSize;
    }
-   
+
    public void setMaxSize(int maxSize)
    {
       this.maxSize = maxSize;
@@ -144,7 +144,7 @@ public class StrictMaxPool
       // Pool is empty, create an instance
       ++inUse;
       return create();
-      
+
    }
 
    public BeanContext get(Class[] initTypes, Object[] initValues)
@@ -152,7 +152,7 @@ public class StrictMaxPool
       boolean trace = log.isTraceEnabled();
       if (trace)
          log.trace("Get instance " + this + "#" + pool.size() + "#" + container.getBeanClass());
-  
+
       // Block until an instance is available
       try
       {
@@ -223,14 +223,14 @@ public class StrictMaxPool
       catch (Exception ignored)
       {
       }
-      
+
    }
 
    public void destroy()
    {
       freeAll();
    }
-   
+
    public void discard(BeanContext ctx)
    {
       if (log.isTraceEnabled())
@@ -244,8 +244,8 @@ public class StrictMaxPool
       strictMaxSize.release();
       --inUse;
 
-      // Throw away, unsetContext()
-      super.discard(ctx);
+      // Let the super do any other remove stuff
+      super.doRemove(ctx);
    }
 
    // Package protected ---------------------------------------------
@@ -275,7 +275,7 @@ public class StrictMaxPool
       }
       pool.clear();
       inUse = 0;
-      
+
    }
 
    // Inner classes -------------------------------------------------
@@ -291,7 +291,7 @@ public class StrictMaxPool
 
       strictMaxSize.release();
       --inUse;
-
-      super.remove(ctx);
+      // let the super do the other remove stuff
+      super.doRemove(ctx);
    }
 }
