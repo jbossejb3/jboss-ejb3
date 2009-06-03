@@ -524,7 +524,14 @@ public class StatefulTreeCache implements ClusteredStatefulCache
 
    public int getAvailableCount()
    {
-      return -1;
+      final int maxSize = this.getMaxSize();
+      if (maxSize < 0)
+      {
+         return maxSize;
+      }
+      final int currentSize = this.getCurrentSize();
+      final int available = maxSize - currentSize;
+      return available;
    }
 
    public int getMaxSize()
