@@ -5,6 +5,9 @@
    <interceptor class="org.jboss.ejb3.test.tx.common.StatefulInstanceInterceptor" scope="PER_VM"/>
    <interceptor factory="org.jboss.ejb3.tx.BMTTxInterceptorFactory" scope="PER_CLASS_JOINPOINT"/>
    <interceptor factory="org.jboss.ejb3.tx.CMTTxInterceptorFactory" scope="PER_CLASS_JOINPOINT"/>
+   <interceptor class="org.jboss.ejb3.tx.RetryingInterceptor" scope="PER_VM"/>
+   <interceptor class="org.jboss.ejb3.test.tx.common.SynchronizationActionInterceptor" scope="PER_VM"/>
+   
    
    <domain name="Stateless Container">
       <bind pointcut="execution(public * *->*(..))">
@@ -12,6 +15,21 @@
          <interceptor-ref name="org.jboss.ejb3.tx.CMTTxInterceptorFactory"/>
          <!-- here be an instance interceptor -->
          <interceptor-ref name="org.jboss.ejb3.tx.BMTTxInterceptorFactory"/>
+      </bind>
+   </domain>
+   
+   <domain name="Retrying Stateless Container">
+      <bind pointcut="execution(public * *->*(..))">
+         <interceptor-ref name="org.jboss.aspects.currentinvocation.CurrentInvocationInterceptor"/>
+      </bind>
+      <bind pointcut="execution(public * @org.jboss.ejb3.tx.api.TransactionRetry->*(..))">
+         <interceptor-ref name="org.jboss.ejb3.tx.RetryingInterceptor"/>
+      </bind>
+      <bind pointcut="execution(public * *->*(..))">
+         <interceptor-ref name="org.jboss.ejb3.tx.CMTTxInterceptorFactory"/>
+         <!-- here be an instance interceptor -->
+         <interceptor-ref name="org.jboss.ejb3.tx.BMTTxInterceptorFactory"/>
+         <interceptor-ref name="org.jboss.ejb3.test.tx.common.SynchronizationActionInterceptor"/>
       </bind>
    </domain>
    

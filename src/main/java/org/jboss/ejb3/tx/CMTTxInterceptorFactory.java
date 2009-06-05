@@ -30,6 +30,7 @@ import javax.transaction.TransactionManager;
 import org.jboss.aop.Advisor;
 import org.jboss.aop.joinpoint.Joinpoint;
 import org.jboss.aop.joinpoint.MethodJoinpoint;
+import org.jboss.beans.metadata.api.annotations.Inject;
 import org.jboss.ejb3.annotation.TransactionTimeout;
 import org.jboss.logging.Logger;
 
@@ -46,6 +47,14 @@ public class CMTTxInterceptorFactory extends org.jboss.aspects.tx.TxInterceptorF
    
    private TransactionManager transactionManager; 
 
+   /**
+    * 
+    */
+   public CMTTxInterceptorFactory()
+   {
+      // TODO Auto-generated constructor stub
+   }
+   
    protected TransactionAttributeType getTxType(Advisor advisor, Joinpoint jp)
    {
       Method method = ((MethodJoinpoint) jp).getMethod();
@@ -123,6 +132,12 @@ public class CMTTxInterceptorFactory extends org.jboss.aspects.tx.TxInterceptorF
          Object interceptor = super.createPerJoinpoint(advisor, jp);
          return interceptor;
       }
+   }
+   
+   @Inject
+   public void setSomething(String a)
+   {
+      
    }
    
    /**

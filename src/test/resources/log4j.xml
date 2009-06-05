@@ -107,6 +107,16 @@
     <priority value="INFO"/>
   </category>
   
+  <!--
+  <category name="org.jboss.aop">
+    <priority value="ALL"/>
+  </category>
+  
+  <category name="org.jboss.deployers">
+    <priority value="ALL"/>
+  </category>
+  -->
+  
   <category name="org.jboss.ejb3">
     <priority value="ALL"/>
   </category>

@@ -22,7 +22,7 @@
   
   <properties>
     <version.org.jboss.deployers>2.2.0.M2</version.org.jboss.deployers>
-    <version.org.jboss.aop>2.1.0.CR3</version.org.jboss.aop>
+    <version.org.jboss.aop>2.1.1.GA</version.org.jboss.aop>
     <version.org.jboss.microcontainer>2.2.0.M1</version.org.jboss.microcontainer>
   </properties>
   

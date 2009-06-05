@@ -55,6 +55,7 @@ public abstract class AbstractTxTestCase
       bootstrap.deploy(getResource("instance/classloader.xml"));
       bootstrap.deploy(getResource("instance/aop.xml"));
       bootstrap.deploy(getResource("instance/deployers.xml"));
+      bootstrap.deploy(getResource("instance/pojo.xml"));
       bootstrap.deploy(getResource("instance/beans.xml"));
    }
    
