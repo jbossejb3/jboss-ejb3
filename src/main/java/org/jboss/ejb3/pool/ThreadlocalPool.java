@@ -42,7 +42,6 @@ private static final Logger log = Logger.getLogger(ThreadlocalPool.class);
    protected Pool pool = new InfinitePool();
    protected WeakThreadLocal<BeanContext> currentBeanContext = new WeakThreadLocal<BeanContext>();
    private int inUse = 0;
-   private int maxSize = 30;
    
    public ThreadlocalPool()
    {
@@ -120,7 +119,6 @@ private static final Logger log = Logger.getLogger(ThreadlocalPool.class);
    public void initialize(Container container, int maxSize, long timeout)
    {
       pool.initialize(container, maxSize, timeout);
-      this.maxSize = maxSize;
    }
    
    public void release(BeanContext ctx)
@@ -157,7 +155,7 @@ private static final Logger log = Logger.getLogger(ThreadlocalPool.class);
    
    public int getAvailableCount()
    {
-      return maxSize - inUse;
+      return getMaxSize() - inUse;
    }
    
    public int getCreateCount()
@@ -167,7 +165,9 @@ private static final Logger log = Logger.getLogger(ThreadlocalPool.class);
    
    public int getMaxSize()
    {
-      return maxSize;
+      // the thread local pool dynamically grows for new threads
+      // if a bean is reentrant it'll grow and shrink over the reentrant call
+      return getCurrentSize();
    }
 
    public int getRemoveCount()
@@ -182,6 +182,7 @@ private static final Logger log = Logger.getLogger(ThreadlocalPool.class);
    
    public void setMaxSize(int maxSize)
    {
-      this.maxSize = maxSize;
+      //this.maxSize = maxSize;
+      log.warn("EJBTHREE-1703: setting a max size on ThreadlocalPool is bogus");
    }
 }
