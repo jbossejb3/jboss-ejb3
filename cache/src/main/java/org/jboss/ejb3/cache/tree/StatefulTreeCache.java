@@ -151,7 +151,8 @@ public class StatefulTreeCache implements ClusteredStatefulCache
    public StatefulBeanContext get(Object key, boolean markInUse) throws EJBException
    {
       StatefulBeanContext entry = null;
-      Fqn id = getFqn(key, false);
+      String keyString = key.toString();
+      Fqn id = getFqn(keyString, key, false);
       Boolean active = localActivity.get();
       try
       {
@@ -188,7 +189,7 @@ public class StatefulTreeCache implements ClusteredStatefulCache
 
          // Mark the Fqn telling the eviction thread not to passivate it yet.
          // Note the Fqn we use is relative to the region!
-         region.markNodeCurrentlyInUse(new Fqn(key.toString()), MarkInUseWaitTime);
+         region.markNodeCurrentlyInUse(getFqn(keyString, key, true), MarkInUseWaitTime);
          entry.lastUsed = System.currentTimeMillis();
          if (beans != null)
          {
@@ -562,7 +563,11 @@ public class StatefulTreeCache implements ClusteredStatefulCache
 
    private Fqn getFqn(Object id, boolean regionRelative)
    {
-      String beanId = id.toString();
+      return getFqn(id.toString(), id, regionRelative);
+   }
+
+   private Fqn getFqn(String idString, Object id, boolean regionRelative)
+   {
       int index;
       if (id instanceof GUID)
       {
@@ -570,13 +575,13 @@ public class StatefulTreeCache implements ClusteredStatefulCache
       }
       else
       {
-         index = (beanId.hashCode()& 0x7FFFFFFF) % hashBuckets.length;
+         index = (idString.hashCode()& 0x7FFFFFFF) % hashBuckets.length;
       }
 
       if (regionRelative)
-         return new Fqn( new Object[] {hashBuckets[index], beanId} );
+         return Fqn.fromElements(hashBuckets[index], idString);
       else
-         return new Fqn(cacheNode, hashBuckets[index], beanId);
+         return Fqn.fromRelativeElements(cacheNode, hashBuckets[index], idString);
    }
 
    private void cleanBeanRegion()
