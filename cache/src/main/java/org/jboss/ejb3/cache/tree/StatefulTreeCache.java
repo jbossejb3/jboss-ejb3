@@ -362,7 +362,7 @@ public class StatefulTreeCache implements ClusteredStatefulCache
          throw new RuntimeException("Cannot get cache with name " + name, e1);
       }
 
-      cacheNode = new Fqn(new Object[] { SFSB, this.ejbContainer.getDeploymentPropertyListString() });
+      cacheNode = Fqn.fromElements(SFSB, this.ejbContainer.getDeploymentPropertyListString());
       
       // Try to create an eviction region per ejb
       region = cache.getRegion(cacheNode, true);
@@ -401,6 +401,10 @@ public class StatefulTreeCache implements ClusteredStatefulCache
          regionRoot = cache.getRoot().addChild(cacheNode);
       }
       regionRoot.setResident(true);
+      
+      // EJBTHREE-1901 for perf use identical Fqn instance to what cache tree has
+      // The Fqn in the tree may have been state-transferred over
+      cacheNode = regionRoot.getFqn();
       
       log.debug("started(): created region: " +region + " for ejb: " + ejbContainer.getEjbName());
       
