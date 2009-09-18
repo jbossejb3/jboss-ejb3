@@ -39,6 +39,7 @@ import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
 import org.jboss.cache.Region;
 import org.jboss.cache.RegionNotEmptyException;
+import org.jboss.cache.SuspectException;
 import org.jboss.cache.config.EvictionRegionConfig;
 import org.jboss.cache.notifications.annotation.CacheListener;
 import org.jboss.cache.notifications.annotation.NodeActivated;
@@ -48,7 +49,6 @@ import org.jboss.cache.notifications.event.NodePassivatedEvent;
 import org.jboss.ejb3.EJBContainer;
 import org.jboss.ejb3.annotation.CacheConfig;
 import org.jboss.ejb3.cache.ClusteredStatefulCache;
-import org.jboss.ejb3.pool.Pool;
 import org.jboss.ejb3.stateful.NestedStatefulBeanContext;
 import org.jboss.ejb3.stateful.ProxiedStatefulBeanContext;
 import org.jboss.ejb3.stateful.StatefulBeanContext;
@@ -71,7 +71,9 @@ public class StatefulTreeCache implements ClusteredStatefulCache
    private static final int FQN_SIZE = 4; // depth of fqn that we store the session in.
    private static final String SFSB = "sfsb";
    private static final int DEFAULT_BUCKET_COUNT = 100;
-
+   private static final int CACHE_RETRIES = 3;
+   private static final String CACHE_KEY = "bean";
+   
    private static final String[] DEFAULT_HASH_BUCKETS = new String[DEFAULT_BUCKET_COUNT];
 
    static
@@ -157,14 +159,8 @@ public class StatefulTreeCache implements ClusteredStatefulCache
       try
       {
          localActivity.set(Boolean.TRUE);
-         // If need be, gravitate
-         cache.getInvocationContext().getOptionOverrides().setForceDataGravitation(true);
-         entry = (StatefulBeanContext) cache.get(id, "bean");
-      }
-      catch (CacheException e)
-      {
-         RuntimeException re = convertToRuntimeException(e);
-         throw re;
+
+         entry = this.getFromCache(id);
       }
       finally
       {
@@ -213,56 +209,49 @@ public class StatefulTreeCache implements ClusteredStatefulCache
    public void remove(Object key)
    {
       Fqn id = getFqn(key, false);
-      try
+
+      if(log.isTraceEnabled())
       {
+         log.trace("remove: cache id " +id.toString());
+      }
+      
+      StatefulBeanContext ctx = this.getFromCache(id);
+      
+      if(ctx == null)
+         throw new NoSuchEJBException("Could not find Stateful bean: " + key);
+      
+      if (!ctx.isRemoved())
+      {
+         ejbContainer.destroy(ctx);
+      }
+      else if (log.isTraceEnabled())
+      {
+         log.trace("remove: " +id.toString() + " already removed from pool");
+      }
+
+      if (ctx.getCanRemoveFromCache())
+      {
+         // Do a cluster-wide removal of the ctx
+         this.removeFromCache(id);
+      }
+      else
+      {
+         // We can't remove the ctx as it contains live nested beans
+         // But, we must replicate it so other nodes know the parent is removed!
+         putInCache(ctx);
          if(log.isTraceEnabled())
          {
-            log.trace("remove: cache id " +id.toString());
+            log.trace("remove: removed bean " +id.toString() + " cannot be removed from cache");
          }
-         cache.getInvocationContext().getOptionOverrides().setForceDataGravitation(true);
-         StatefulBeanContext ctx = (StatefulBeanContext) cache.get(id, "bean");
-         
-         if(ctx == null)
-            throw new NoSuchEJBException("Could not find Stateful bean: " + key);
-         
-         if (!ctx.isRemoved())
-         {
-            ejbContainer.destroy(ctx);
-         }
-         else if (log.isTraceEnabled())
-         {
-            log.trace("remove: " +id.toString() + " already removed from pool");
-         }
-
-         if (ctx.getCanRemoveFromCache())
-         {
-            // Do a cluster-wide removal of the ctx
-            cache.removeNode(id);
-         }
-         else
-         {
-            // We can't remove the ctx as it contains live nested beans
-            // But, we must replicate it so other nodes know the parent is removed!
-            putInCache(ctx);
-            if(log.isTraceEnabled())
-            {
-               log.trace("remove: removed bean " +id.toString() + " cannot be removed from cache");
-            }
-         }
-         
-         if (beans != null)
-         {
-            beans.remove(key);
-         }
-
-         ++removeCount;
-         totalSize = -1;
       }
-      catch (CacheException e)
+      
+      if (beans != null)
       {
-         RuntimeException re = convertToRuntimeException(e);
-         throw re;
+         beans.remove(key);
       }
+
+      ++removeCount;
+      totalSize = -1;
    }
 
    public void release(StatefulBeanContext ctx)
@@ -291,15 +280,7 @@ public class StatefulTreeCache implements ClusteredStatefulCache
          throw new IllegalArgumentException("Received unexpected replicate call for nested context " + ctx.getId());
       }
 
-      try
-      {
-         putInCache(ctx);
-      }
-      catch (CacheException e)
-      {
-         RuntimeException re = convertToRuntimeException(e);
-         throw re;
-      }
+      putInCache(ctx);
    }
 
    public void initialize(EJBContainer container) throws Exception
@@ -556,7 +537,7 @@ public class StatefulTreeCache implements ClusteredStatefulCache
       {
          localActivity.set(Boolean.TRUE);
          ctx.preReplicate();
-         cache.put(getFqn(ctx.getId(), false), "bean", ctx);
+         this.putInCache(getFqn(ctx.getId(), false), ctx);
          ctx.markedForReplication = false;
       }
       finally
@@ -615,6 +596,106 @@ public class StatefulTreeCache implements ClusteredStatefulCache
    }
 
    /**
+    * EJBTHREE-1924
+    * Utility method to retry gravitation enabled cache retrieval on suspect
+    * and perform any exception conversion
+    */
+   private StatefulBeanContext getFromCache(Fqn id)
+   {
+      // Gravitate if needed
+      cache.getInvocationContext().getOptionOverrides().setForceDataGravitation(true);
+      
+      CacheException exception = null;
+      
+      try
+      {
+         for (int i = 0; i < CACHE_RETRIES; ++i)
+         {
+            try
+            {
+               return (StatefulBeanContext) cache.get(id, CACHE_KEY);
+            }
+            catch (SuspectException e)
+            {
+               exception = e;
+            }
+         }
+      }
+      catch (CacheException e)
+      {
+         exception = e;
+      }
+      
+      throw this.convertToRuntimeException(exception);
+   }
+
+   /**
+    * EJBTHREE-1924
+    * Utility method to retry cache put on suspect
+    * and perform any exception conversion
+    */
+   private void putInCache(Fqn id, StatefulBeanContext ctx)
+   {
+      CacheException exception = null;
+      
+      try
+      {
+         for (int i = 0; i < CACHE_RETRIES; ++i)
+         {
+            try
+            {
+               cache.put(id, CACHE_KEY, ctx);
+               
+               return;
+            }
+            catch (SuspectException e)
+            {
+               exception = e;
+            }
+         }
+      }
+      catch (CacheException e)
+      {
+         exception = e;
+      }
+      
+      throw this.convertToRuntimeException(exception);
+   }
+   
+   /**
+    * EJBTHREE-1924
+    * Utility method to retry cache removal on suspect
+    * and perform any exception conversion
+    */
+   private void removeFromCache(Fqn id)
+   {
+      CacheException exception = null;
+      
+      try
+      {
+         for (int i = 0; i < CACHE_RETRIES; ++i)
+         {
+            try
+            {
+               cache.removeNode(id);
+               
+               return;
+            }
+            catch (SuspectException e)
+            {
+               exception = e;
+            }
+         }
+      }
+      catch (CacheException e)
+      {
+         exception = e;
+      }
+      
+      throw this.convertToRuntimeException(exception);
+   }
+   
+   /**
     * A CacheListener that allows us to get notifications of passivations and
     * activations and thus notify the cached StatefulBeanContext.
     */
@@ -641,7 +722,7 @@ public class StatefulTreeCache implements ClusteredStatefulCache
             return;
          }
 
-         StatefulBeanContext bean = (StatefulBeanContext) nodeData.get("bean");
+         StatefulBeanContext bean = (StatefulBeanContext) nodeData.get(CACHE_KEY);
 
          if(bean == null)
          {
