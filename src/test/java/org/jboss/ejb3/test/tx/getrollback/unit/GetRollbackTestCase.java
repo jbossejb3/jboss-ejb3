@@ -71,11 +71,13 @@ public class GetRollbackTestCase extends AbstractTxTestCase
       /**
        * Emulate a callback invocation. The real thing is still in ejb3-core.
        * 
+       * @deprecated ejb3-interceptors 1.0.5 introduces a method with the same signature and similar functionality (TODO: refactor this class)
        * @param component
        * @param lifecycleAnnotationType
        * @throws Throwable
        */
-      protected void invokeCallback(BeanContext<?> component, Class<? extends Annotation> lifecycleAnnotationType) throws Throwable
+      @Deprecated
+      protected void invokeCallbackDeprecated(BeanContext<?> component, Class<? extends Annotation> lifecycleAnnotationType) throws Throwable
       {
          List<Class<?>> lifecycleInterceptorClasses = getInterceptorRegistry().getLifecycleInterceptorClasses();
          Advisor advisor = getAdvisor();
@@ -214,7 +216,7 @@ public class GetRollbackTestCase extends AbstractTxTestCase
       tm.begin();
       try
       {
-         container.invokeCallback(instance, PrePassivate.class);
+         container.invokeCallbackDeprecated(instance, PrePassivate.class);
          
          assertTrue(instance.getInstance().prePassivateRan);
       }

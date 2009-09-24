@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jboss.ejb3</groupId>
     <artifactId>jboss-ejb3-build</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.5-SNAPSHOT</version>
     <relativePath>../build/pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -131,7 +131,7 @@
     <dependency>
       <groupId>org.jboss.ejb3</groupId>
       <artifactId>jboss-ejb3-interceptors</artifactId>
-      <version>1.0.0</version>
+      <version>${version.org.jboss.ejb3.jboss-ejb3-interceptors}</version>
     </dependency>
     <dependency>
       <groupId>org.jboss.integration</groupId>
@@ -193,4 +193,22 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <profiles>
+    <profile>
+      <id>default</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <version.org.jboss.ejb3.jboss-ejb3-interceptors>1.0.0</version.org.jboss.ejb3.jboss-ejb3-interceptors>
+      </properties>
+    </profile>
+    <profile>
+      <id>CI</id>
+      <properties>
+        <version.org.jboss.ejb3.jboss-ejb3-interceptors>[0,)</version.org.jboss.ejb3.jboss-ejb3-interceptors>
+      </properties>
+    </profile>
+  </profiles>
 </project>
