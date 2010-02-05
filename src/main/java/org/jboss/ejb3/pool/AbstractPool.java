@@ -92,8 +92,7 @@ public abstract class AbstractPool implements Pool
 
       container.invokePostConstruct(ctx, initValues);
 
-      //TODO This needs to be reimplemented as replacement for create() on home interface
-      container.invokeInit(ctx.getInstance(), initTypes, initValues);
+      // the init method only applies to stateful session beans
 
       ++createCount;
 
