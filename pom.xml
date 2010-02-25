@@ -70,6 +70,39 @@
       <module>base</module>
    </modules>
 
+   <profiles>
+      <profile>
+         <id>ejb3.0</id>
+         <activation>
+            <activeByDefault>true</activeByDefault>
+            <property><name>!dummy</name></property>
+         </activation>
+         <properties>
+            <javax.ejb.groupId>org.jboss.javaee</javax.ejb.groupId>
+            <javax.ejb.artifactId>jboss-ejb-api</javax.ejb.artifactId>
+            <javax.ejb.version>3.0.0.GA</javax.ejb.version>
+            <javax.interceptor.groupId>org.jboss.interceptor</javax.interceptor.groupId>
+            <javax.interceptor.artifactId>jboss-interceptor-api</javax.interceptor.artifactId>
+            <javax.interceptor.version>1.0</javax.interceptor.version>
+         </properties>
+      </profile>
+      <profile>
+         <id>ejb3.1</id>
+         <activation>
+            <activeByDefault>false</activeByDefault>
+            <property><name>ejb3.1</name></property>
+         </activation>
+         <properties>
+            <javax.ejb.groupId>org.jboss.javaee</javax.ejb.groupId>
+            <javax.ejb.artifactId>jboss-ejb-api_3.1</javax.ejb.artifactId>
+            <javax.ejb.version>1.0-alpha-1</javax.ejb.version>
+            <javax.interceptor.groupId>org.jboss.interceptor</javax.interceptor.groupId>
+            <javax.interceptor.artifactId>jboss-interceptor-api</javax.interceptor.artifactId>
+            <javax.interceptor.version>1.1</javax.interceptor.version>
+         </properties>
+      </profile>
+   </profiles>
+
    <properties>
       <!-- per default maven.repo.local is null, so set up a sensible default -->
       <maven.repo.local>${user.home}/.m2/repository</maven.repo.local>

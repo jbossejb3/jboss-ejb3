@@ -110,6 +110,11 @@ public class BaseSessionContext extends BaseEJBContext
       return getCurrentInvocationContext().getMessageContext();
    }
 
+   public boolean wasCancelCalled() throws IllegalStateException
+   {
+      return getCurrentInvocationContext().wasCancelCalled();
+   }
+
    private Object writeReplace() throws ObjectStreamException
    {
       // the manager is never Serializable, so we should only make sure the bean ends up in the stream.

@@ -22,17 +22,16 @@
 package org.jboss.ejb3.context.spi;
 
 import javax.xml.rpc.handler.MessageContext;
+import java.util.concurrent.Future;
 
 /**
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public interface SessionInvocationContext extends InvocationContext, SessionContext
 {
-//   <T> T getBusinessObject(Class<T> businessInterface) throws IllegalStateException;
-//
    SessionContext getEJBContext();
-//
-//   EJBLocalObject getEJBLocalObject();
+
+   void setFuture(Future future) throws IllegalStateException;
    
    void setMessageContext(MessageContext messageContext) throws IllegalStateException;
 }

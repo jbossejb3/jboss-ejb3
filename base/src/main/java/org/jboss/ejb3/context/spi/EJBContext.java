@@ -21,11 +21,18 @@
  */
 package org.jboss.ejb3.context.spi;
 
+import java.util.Map;
+
 /**
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public interface EJBContext extends javax.ejb.EJBContext
 {
+   /**
+    * @since 3.1
+    */
+   Map<String, Object> getContextData();
+
    BeanManager getManager();
    
    Object getTarget();
