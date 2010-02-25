@@ -47,6 +47,7 @@ public class SessionInvocation implements SessionInvocationContext
    private SessionContext instanceContext;
    private Principal callerPrincipal;
    private Class<?> invokedBusinessInterface;
+   private MessageContext messageContext;
 
    public SessionContext getEJBContext()
    {
@@ -126,7 +127,9 @@ public class SessionInvocation implements SessionInvocationContext
 
    public MessageContext getMessageContext() throws IllegalStateException
    {
-      throw new RuntimeException("NYI");      
+      if(messageContext == null)
+         throw new IllegalStateException("No message context on " + this);
+      return messageContext;
    }
 
    public Method getMethod()
@@ -195,6 +198,11 @@ public class SessionInvocation implements SessionInvocationContext
       this.instanceContext = SessionContext.class.cast(instanceContext);
    }
 
+   public void setMessageContext(MessageContext messageContext)
+   {
+      this.messageContext = messageContext;
+   }
+   
    public void setParameters(Object[] params)
    {
       throw new RuntimeException("NYI");

@@ -30,6 +30,7 @@ import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TimerService;
 import javax.transaction.UserTransaction;
+import javax.xml.rpc.handler.MessageContext;
 import java.security.Principal;
 import java.util.concurrent.Callable;
 
@@ -113,8 +114,12 @@ public class GreeterBean
             return ctx.getInvokedBusinessInterface();
          }
       });
-      // FIXME
-      //ctx.getMessageContext();
+      expectIllegalStateException(new Callable<MessageContext>() {
+         public MessageContext call() throws Exception
+         {
+            return ctx.getMessageContext();
+         }
+      });
       expectIllegalStateException(new Callable<Boolean>() {
          public Boolean call() throws Exception
          {

@@ -21,6 +21,8 @@
  */
 package org.jboss.ejb3.context.spi;
 
+import javax.xml.rpc.handler.MessageContext;
+
 /**
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
@@ -31,4 +33,6 @@ public interface SessionInvocationContext extends InvocationContext, SessionCont
    SessionContext getEJBContext();
 //
 //   EJBLocalObject getEJBLocalObject();
+   
+   void setMessageContext(MessageContext messageContext) throws IllegalStateException;
 }

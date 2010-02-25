@@ -116,7 +116,7 @@ public class StatelessContext implements SessionContext, EJBContext
    
    public MessageContext getMessageContext() throws IllegalStateException
    {
-      throw new RuntimeException("NYI");
+      return getCurrentInvocationContext().getMessageContext();
    }
 
    public boolean getRollbackOnly() throws IllegalStateException
