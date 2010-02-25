@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+
+   <groupId>org.jboss.ejb3.context</groupId>
+   <artifactId>jboss-ejb3-context</artifactId>
+   <version>0.1.0-SNAPSHOT</version>
+
+   <packaging>pom</packaging>
+
+   <name>JBoss EJB 3 Context Requirements</name>
+
+   <url>http://www.jboss.org/ejb3</url>
+
+   <build>
+      <plugins>
+         <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+               <source>1.5</source>
+               <target>1.5</target>
+            </configuration>
+         </plugin>
+         <!-- This limits the amount of artifacts you need from this project to just one. -->
+         <plugin>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+               <execution>
+                  <phase>process-resources</phase>
+                  <goals>
+                     <goal>unpack-dependencies</goal>
+                  </goals>
+                  <configuration>
+                     <includeGroupIds>${project.groupId}</includeGroupIds>
+                     <includeScope>runtime</includeScope>
+                     <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <artifactId>maven-release-plugin</artifactId>
+            <version>2.0</version>
+            <configuration>
+               <autoVersionSubmodules>true</autoVersionSubmodules>
+            </configuration>
+         </plugin>
+      </plugins>
+   </build>
+
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.4</version>
+            <scope>test</scope>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
+
+   <issueManagement>
+      <system>jira</system>
+      <url>https://jira.jboss.org/jira/browse/EJBTHREE</url>
+   </issueManagement>
+
+   <modules>
+      <module>base</module>
+   </modules>
+
+   <properties>
+      <!-- per default maven.repo.local is null, so set up a sensible default -->
+      <maven.repo.local>${user.home}/.m2/repository</maven.repo.local>
+   </properties>
+
+   <reporting>
+      <plugins>
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>cobertura-maven-plugin</artifactId>
+         </plugin>
+      </plugins>
+   </reporting>
+
+   <scm>
+      <connection>scm:git:git://github.com/wolfc/jboss-ejb3-context.git</connection>
+      <developerConnection>scm:git:git@github.com:wolfc/jboss-ejb3-context.git</developerConnection>
+      <url>http://github.com/wolfc/jboss-ejb3-context</url>
+   </scm>
+</project>
