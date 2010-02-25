@@ -19,21 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.context.base.stateless;
+package org.jboss.ejb3.context.base;
 
 import org.jboss.ejb3.context.CurrentInvocationContext;
+import org.jboss.ejb3.context.spi.BeanManager;
 import org.jboss.ejb3.context.spi.EJBContext;
-import org.jboss.ejb3.context.spi.SessionBeanManager;
-import org.jboss.ejb3.context.spi.SessionContext;
-import org.jboss.ejb3.context.spi.SessionInvocationContext;
+import org.jboss.ejb3.context.spi.InvocationContext;
 
 import javax.ejb.EJBHome;
 import javax.ejb.EJBLocalHome;
-import javax.ejb.EJBLocalObject;
-import javax.ejb.EJBObject;
 import javax.ejb.TimerService;
 import javax.transaction.UserTransaction;
-import javax.xml.rpc.handler.MessageContext;
 import java.security.Identity;
 import java.security.Principal;
 import java.util.Properties;
@@ -41,21 +37,15 @@ import java.util.Properties;
 /**
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class StatelessContext implements SessionContext, EJBContext
+public class BaseEJBContext implements EJBContext
 {
-   private SessionBeanManager manager;
+   private BeanManager manager;
    private Object instance;
 
-   public StatelessContext(SessionBeanManager manager, Object instance)
+   public BaseEJBContext(BeanManager manager, Object instance)
    {
       this.manager = manager;
       this.instance = instance;
-   }
-
-   public <T> T getBusinessObject(Class<T> businessInterface) throws IllegalStateException
-   {
-      // to allow override per invocation
-      return getCurrentInvocationContext().getBusinessObject(businessInterface);
    }
 
    @SuppressWarnings({"deprecation"})
@@ -70,9 +60,9 @@ public class StatelessContext implements SessionContext, EJBContext
       return getCurrentInvocationContext().getCallerPrincipal();
    }
 
-   protected SessionInvocationContext getCurrentInvocationContext()
+   protected InvocationContext getCurrentInvocationContext()
    {
-      SessionInvocationContext current = CurrentInvocationContext.get(SessionInvocationContext.class);
+      InvocationContext current = CurrentInvocationContext.get(InvocationContext.class);
       assert current.getEJBContext() == this;
       return current;
    }
@@ -87,36 +77,14 @@ public class StatelessContext implements SessionContext, EJBContext
       return manager.getEJBLocalHome();
    }
 
-   public EJBLocalObject getEJBLocalObject() throws IllegalStateException
-   {
-      // to allow override per invocation
-      return getCurrentInvocationContext().getEJBLocalObject();
-   }
-
-   public EJBObject getEJBObject() throws IllegalStateException
-   {
-      // to allow override per invocation
-      return getCurrentInvocationContext().getEJBObject();
-   }
-
    public Properties getEnvironment()
    {
       throw new UnsupportedOperationException("getCallerIdentity is deprecated");
    }
 
-   public Class getInvokedBusinessInterface() throws IllegalStateException
-   {
-      return getCurrentInvocationContext().getInvokedBusinessInterface();
-   }
-
-   public SessionBeanManager getManager()
+   public BeanManager getManager()
    {
       return manager;
-   }
-   
-   public MessageContext getMessageContext() throws IllegalStateException
-   {
-      return getCurrentInvocationContext().getMessageContext();
    }
 
    public boolean getRollbackOnly() throws IllegalStateException
