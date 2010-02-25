@@ -21,13 +21,18 @@
  */
 package org.jboss.ejb3.context.base.stateless.unit;
 
+import org.jboss.ejb3.context.CurrentEJBContext;
 import org.jboss.ejb3.context.CurrentInvocationContext;
 import org.jboss.ejb3.context.base.BaseSessionContext;
 import org.jboss.ejb3.context.base.BaseSessionInvocationContext;
 import org.jboss.ejb3.context.base.stateless.GreeterBean;
 import org.jboss.ejb3.context.base.stateless.StatelessBeanManager;
 import org.jboss.ejb3.context.spi.SessionBeanManager;
+import org.jboss.ejb3.context.spi.SessionContext;
 import org.junit.Test;
+
+import javax.ejb.TimerService;
+import javax.transaction.UserTransaction;
 
 /**
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
@@ -41,19 +46,37 @@ public class StatelessUnitTestCase
       SessionBeanManager manager = new StatelessBeanManager();
       final BaseSessionContext context = new BaseSessionContext(manager, bean);
       BaseSessionInvocationContext invocation = new BaseSessionInvocationContext(null, null, null) {
+         @Override
+         public <T> T getBusinessObject(Class<T> businessInterface) throws IllegalStateException
+         {
+            throw new IllegalStateException("getBusinessObject not allowed during injection (EJB 3.0 FR 4.5.2)");
+         }
+
+         @Override
+         public TimerService getTimerService()
+         {
+            throw new IllegalStateException("getTimerService not allowed during injection (EJB 3.0 FR 4.5.2)");
+         }
+
+         @Override
+         public UserTransaction getUserTransaction()
+         {
+            throw new IllegalStateException("getUserTransaction not allowed during injection (EJB 3.0 FR 4.5.2)");
+         }
+
          public Object proceed()
          {
             //GreeterBean target = (GreeterBean) getTarget();
             //target.setSessionContext(CurrentEJBContext.get(SessionContext.class));
-            bean.setSessionContext(context);
+            SessionContext ctx = CurrentEJBContext.get(SessionContext.class);
+            bean.setSessionContext(ctx);
             return null;
          }
       };
       CurrentInvocationContext.push(invocation);
       try
       {
-         // normally done by the instance interceptor
-         //invocation.setEJBContext(context);
+         invocation.setEJBContext(context);
          
          invocation.proceed();
       }

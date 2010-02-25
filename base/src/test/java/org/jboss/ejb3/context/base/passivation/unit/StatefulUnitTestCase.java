@@ -21,12 +21,14 @@
  */
 package org.jboss.ejb3.context.base.passivation.unit;
 
+import org.jboss.ejb3.context.CurrentEJBContext;
 import org.jboss.ejb3.context.CurrentInvocationContext;
 import org.jboss.ejb3.context.base.BaseSessionContext;
 import org.jboss.ejb3.context.base.BaseSessionInvocationContext;
 import org.jboss.ejb3.context.base.passivation.StatefulGreeterBean;
 import org.jboss.ejb3.context.base.stateless.StatelessBeanManager;
 import org.jboss.ejb3.context.spi.SessionBeanManager;
+import org.jboss.ejb3.context.spi.SessionContext;
 import org.junit.Test;
 
 import javax.ejb.SessionBean;
@@ -49,13 +51,17 @@ public class StatefulUnitTestCase
       BaseSessionInvocationContext invocation = new BaseSessionInvocationContext(null, null, null) {
          public Object proceed()
          {
-            bean.setSessionContext(context);
+            // lookup
+            SessionContext ctx = CurrentEJBContext.get(SessionContext.class);
+            bean.setSessionContext(ctx);
             return null;
          }
       };
       CurrentInvocationContext.push(invocation);
       try
       {
+         invocation.setEJBContext(context);
+         
          invocation.proceed();
       }
       finally
