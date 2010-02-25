@@ -29,13 +29,42 @@ import org.jboss.ejb3.context.spi.SessionInvocationContext;
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.xml.rpc.handler.MessageContext;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 
 /**
+ * Implementation of the SessionContext interface.
+ *
+ * The class is Serializable to allow stateful beans to passivate.
+ * 
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class BaseSessionContext extends BaseEJBContext
-   implements SessionContext
+   implements Serializable, SessionContext
 {
+   private static final long serialVersionUID = 1L;
+
+   /**
+    * A serializable handle to be able to push this context into an object stream.
+    */
+   private static class Handle implements Serializable
+   {
+      private static final long serialVersionUID = 1L;
+
+      private Object instance;
+
+      private Handle(Object instance)
+      {
+         this.instance = instance;
+      }
+
+      private Object readResolve() throws ObjectStreamException
+      {
+         SessionBeanManager manager = CurrentInvocationContext.get(SessionInvocationContext.class).getManager();
+         return new BaseSessionContext(manager, instance);
+      }
+   }
+
    public BaseSessionContext(SessionBeanManager manager, Object instance)
    {
       super(manager, instance);
@@ -79,5 +108,13 @@ public class BaseSessionContext extends BaseEJBContext
    public MessageContext getMessageContext() throws IllegalStateException
    {
       return getCurrentInvocationContext().getMessageContext();
+   }
+
+   private Object writeReplace() throws ObjectStreamException
+   {
+      // the manager is never Serializable, so we should only make sure the bean ends up in the stream.
+      // note that the bean itself doesn't have to be Serializable, but the assumption is that a capable stream
+      // is used.
+      return new Handle(getTarget());
    }
 }
