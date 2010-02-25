@@ -22,8 +22,8 @@
 package org.jboss.ejb3.context.base.stateless.unit;
 
 import org.jboss.ejb3.context.CurrentInvocationContext;
+import org.jboss.ejb3.context.base.BaseSessionInvocationContext;
 import org.jboss.ejb3.context.base.stateless.GreeterBean;
-import org.jboss.ejb3.context.base.stateless.SessionInvocation;
 import org.jboss.ejb3.context.base.stateless.StatelessBeanManager;
 import org.jboss.ejb3.context.base.stateless.StatelessContext;
 import org.jboss.ejb3.context.spi.SessionBeanManager;
@@ -40,17 +40,7 @@ public class StatelessUnitTestCase
       final GreeterBean bean = new GreeterBean();
       SessionBeanManager manager = new StatelessBeanManager();
       final StatelessContext context = new StatelessContext(manager, bean);
-      SessionInvocation invocation = new SessionInvocation(null, null, null) {
-//         @Override
-//         public <T> T getBusinessObject(Class<T> businessInterface) throws IllegalStateException
-//         {
-//            throw new IllegalStateException("getBusinessObject not allowed during injection (EJB 3.0 FR 4.5.2)");
-//         }
-//         public Object getTarget()
-//         {
-//            return bean;
-//         }
-
+      BaseSessionInvocationContext invocation = new BaseSessionInvocationContext(null, null, null) {
          public Object proceed()
          {
             //GreeterBean target = (GreeterBean) getTarget();

@@ -19,20 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.context.base.stateless;
+package org.jboss.ejb3.context.base;
 
+import org.jboss.ejb3.context.spi.BeanManager;
 import org.jboss.ejb3.context.spi.EJBContext;
-import org.jboss.ejb3.context.spi.SessionBeanManager;
-import org.jboss.ejb3.context.spi.SessionContext;
-import org.jboss.ejb3.context.spi.SessionInvocationContext;
+import org.jboss.ejb3.context.spi.InvocationContext;
 
 import javax.ejb.EJBHome;
 import javax.ejb.EJBLocalHome;
-import javax.ejb.EJBLocalObject;
-import javax.ejb.EJBObject;
 import javax.ejb.TimerService;
 import javax.transaction.UserTransaction;
-import javax.xml.rpc.handler.MessageContext;
 import java.lang.reflect.Method;
 import java.security.Identity;
 import java.security.Principal;
@@ -43,39 +39,20 @@ import java.util.Properties;
 /**
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class SessionInvocation implements SessionInvocationContext
+public abstract class BaseInvocationContext implements InvocationContext
 {
    private Map<String, Object> contextData = new HashMap<String, Object>();
-   private Class<?> invokedBusinessInterface;
    private Method method;
    private Object parameters[];
 
-   private SessionContext instanceContext;
+   private EJBContext instanceContext;
    private Principal callerPrincipal;
-   private MessageContext messageContext;
 
-   public SessionInvocation(Class<?> invokedBusinessInterface, Method method, Object parameters[])
+   public BaseInvocationContext(Method method, Object parameters[])
    {
-      // might be null for non-EJB3 invocations & lifecycle callbacks
-      this.invokedBusinessInterface = invokedBusinessInterface;
-      
       // might be null for lifecycle callbacks
       this.method = method;
       this.parameters = parameters;
-   }
-
-   public SessionContext getEJBContext()
-   {
-      if(instanceContext == null)
-         throw new IllegalStateException("No instance associated with invocation " + this);
-      return instanceContext;
-   }
-
-   public <T> T getBusinessObject(Class<T> businessInterface) throws IllegalStateException
-   {
-      // we need an instance attached
-      SessionContext ctx = getEJBContext();
-      return ctx.getManager().getBusinessObject(ctx, businessInterface);      
    }
 
    // redundant
@@ -97,6 +74,13 @@ public class SessionInvocation implements SessionInvocationContext
       return contextData;
    }
 
+   public EJBContext getEJBContext()
+   {
+      if(instanceContext == null)
+         throw new IllegalStateException("No instance associated with invocation " + this);
+      return instanceContext;
+   }
+
    // redundant
    public EJBHome getEJBHome()
    {
@@ -109,42 +93,16 @@ public class SessionInvocation implements SessionInvocationContext
       return getManager().getEJBLocalHome();
    }
 
-   public EJBLocalObject getEJBLocalObject() throws IllegalStateException
-   {
-      SessionContext ctx = getEJBContext();
-      return ctx.getManager().getEJBLocalObject(ctx);
-   }
-
-   public EJBObject getEJBObject() throws IllegalStateException
-   {
-      SessionContext ctx = getEJBContext();
-      return ctx.getManager().getEJBObject(ctx);
-   }
-
    // redundant
    public Properties getEnvironment()
    {
-      throw new UnsupportedOperationException("getCallerIdentity is deprecated");
+      throw new UnsupportedOperationException("getEnvironment is deprecated");
    }
 
-   public Class<?> getInvokedBusinessInterface() throws IllegalStateException
-   {
-      if(invokedBusinessInterface == null)
-         throw new IllegalStateException("No invoked business interface on " + this);
-      return invokedBusinessInterface;
-   }
-
-   public SessionBeanManager getManager()
+   public BeanManager getManager()
    {
       // for now
       return getEJBContext().getManager();
-   }
-
-   public MessageContext getMessageContext() throws IllegalStateException
-   {
-      if(messageContext == null)
-         throw new IllegalStateException("No message context on " + this);
-      return messageContext;
    }
 
    public Method getMethod()
@@ -199,11 +157,8 @@ public class SessionInvocation implements SessionInvocationContext
       return getManager().lookup(name);
    }
 
-   public Object proceed() throws Exception
-   {
-      throw new RuntimeException("NYI");
-   }
-
+   public abstract Object proceed() throws Exception;
+   
    public void setCallerPrincipal(Principal callerPrincipal)
    {
       // FIXME: security check
@@ -212,14 +167,9 @@ public class SessionInvocation implements SessionInvocationContext
 
    public void setEJBContext(EJBContext instanceContext)
    {
-      this.instanceContext = SessionContext.class.cast(instanceContext);
+      this.instanceContext = instanceContext;
    }
 
-   public void setMessageContext(MessageContext messageContext)
-   {
-      this.messageContext = messageContext;
-   }
-   
    public void setParameters(Object[] params) throws IllegalArgumentException, IllegalStateException
    {
       if(method == null)
