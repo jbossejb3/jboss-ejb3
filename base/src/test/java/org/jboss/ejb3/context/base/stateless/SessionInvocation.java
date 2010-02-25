@@ -36,6 +36,7 @@ import javax.xml.rpc.handler.MessageContext;
 import java.lang.reflect.Method;
 import java.security.Identity;
 import java.security.Principal;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -44,10 +45,24 @@ import java.util.Properties;
  */
 public class SessionInvocation implements SessionInvocationContext
 {
+   private Map<String, Object> contextData = new HashMap<String, Object>();
+   private Class<?> invokedBusinessInterface;
+   private Method method;
+   private Object parameters[];
+
    private SessionContext instanceContext;
    private Principal callerPrincipal;
-   private Class<?> invokedBusinessInterface;
    private MessageContext messageContext;
+
+   public SessionInvocation(Class<?> invokedBusinessInterface, Method method, Object parameters[])
+   {
+      // might be null for non-EJB3 invocations & lifecycle callbacks
+      this.invokedBusinessInterface = invokedBusinessInterface;
+      
+      // might be null for lifecycle callbacks
+      this.method = method;
+      this.parameters = parameters;
+   }
 
    public SessionContext getEJBContext()
    {
@@ -79,7 +94,7 @@ public class SessionInvocation implements SessionInvocationContext
 
    public Map<String, Object> getContextData()
    {
-      throw new RuntimeException("NYI");
+      return contextData;
    }
 
    // redundant
@@ -134,12 +149,14 @@ public class SessionInvocation implements SessionInvocationContext
 
    public Method getMethod()
    {
-      throw new RuntimeException("NYI");
+      return method;
    }
 
    public Object[] getParameters()
    {
-      throw new RuntimeException("NYI");
+      if(method == null)
+         throw new IllegalStateException("Getting parameters is not allowed on lifecycle callbacks (EJB 3.0 FR 12)");
+      return parameters;
    }
 
    public boolean getRollbackOnly()
@@ -179,7 +196,7 @@ public class SessionInvocation implements SessionInvocationContext
    // redundant
    public Object lookup(String name) throws IllegalArgumentException
    {
-      throw new RuntimeException("NYI");
+      return getManager().lookup(name);
    }
 
    public Object proceed() throws Exception
@@ -203,9 +220,11 @@ public class SessionInvocation implements SessionInvocationContext
       this.messageContext = messageContext;
    }
    
-   public void setParameters(Object[] params)
+   public void setParameters(Object[] params) throws IllegalArgumentException, IllegalStateException
    {
-      throw new RuntimeException("NYI");
+      if(method == null)
+         throw new IllegalStateException("Setting parameters is not allowed on lifecycle callbacks (EJB 3.0 FR 12)");
+      this.parameters = params;
    }
 
    public void setRollbackOnly()

@@ -40,7 +40,7 @@ public class StatelessUnitTestCase
       final GreeterBean bean = new GreeterBean();
       SessionBeanManager manager = new StatelessBeanManager();
       final StatelessContext context = new StatelessContext(manager, bean);
-      SessionInvocation invocation = new SessionInvocation() {
+      SessionInvocation invocation = new SessionInvocation(null, null, null) {
 //         @Override
 //         public <T> T getBusinessObject(Class<T> businessInterface) throws IllegalStateException
 //         {
