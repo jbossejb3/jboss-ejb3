@@ -29,6 +29,7 @@ import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.xml.rpc.handler.MessageContext;
 import java.lang.reflect.Method;
+import java.util.concurrent.Future;
 
 /**
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
@@ -39,6 +40,7 @@ public abstract class BaseSessionInvocationContext extends BaseInvocationContext
    private Class<?> invokedBusinessInterface;
 
    private MessageContext messageContext;
+   private Future future;
 
    public BaseSessionInvocationContext(Class<?> invokedBusinessInterface, Method method, Object parameters[])
    {
@@ -92,8 +94,20 @@ public abstract class BaseSessionInvocationContext extends BaseInvocationContext
       return messageContext;
    }
 
+   public void setFuture(Future future)
+   {
+      this.future = future;
+   }
+   
    public void setMessageContext(MessageContext messageContext)
    {
       this.messageContext = messageContext;
+   }
+
+   public boolean wasCancelCalled() throws IllegalStateException
+   {
+      if(future == null)
+         throw new IllegalStateException("No asynchronous invocation in progress");
+      return future.isCancelled();
    }
 }

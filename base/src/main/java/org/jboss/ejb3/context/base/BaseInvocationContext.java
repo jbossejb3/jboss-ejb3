@@ -27,6 +27,7 @@ import org.jboss.ejb3.context.spi.InvocationContext;
 
 import javax.ejb.EJBHome;
 import javax.ejb.EJBLocalHome;
+import javax.ejb.Timer;
 import javax.ejb.TimerService;
 import javax.transaction.UserTransaction;
 import java.lang.reflect.Method;
@@ -47,6 +48,7 @@ public abstract class BaseInvocationContext implements InvocationContext
 
    private EJBContext instanceContext;
    private Principal callerPrincipal;
+   private Timer timer;
 
    public BaseInvocationContext(Method method, Object parameters[])
    {
@@ -127,6 +129,11 @@ public abstract class BaseInvocationContext implements InvocationContext
       return getEJBContext().getTarget();
    }
 
+   public Timer getTimer()
+   {
+      return timer;
+   }
+
    // redundant
    public TimerService getTimerService()
    {
@@ -180,5 +187,10 @@ public abstract class BaseInvocationContext implements InvocationContext
    public void setRollbackOnly()
    {
       getManager().setRollbackOnly();
+   }
+
+   public void setTimer(Timer timer)
+   {
+      this.timer = timer;
    }
 }

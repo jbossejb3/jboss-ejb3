@@ -27,4 +27,9 @@ package org.jboss.ejb3.context.spi;
 public interface SessionContext extends EJBContext, javax.ejb.SessionContext
 {
    SessionBeanManager getManager();
+
+   /**
+    * @since 3.1
+    */
+   boolean wasCancelCalled() throws IllegalStateException;
 }

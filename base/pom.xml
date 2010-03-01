@@ -13,6 +13,7 @@
 
    <name>JBoss EJB 3 Context Base</name>
 
+   <!-- Only API dependencies allowed -->
    <dependencies>
       <dependency>
          <groupId>junit</groupId>
@@ -20,9 +21,16 @@
       </dependency>
       
       <dependency>
-         <groupId>org.jboss.javaee</groupId>
-         <artifactId>jboss-ejb-api</artifactId>
-         <version>3.0.0.GA</version>
+         <groupId>${javax.ejb.groupId}</groupId>
+         <artifactId>${javax.ejb.artifactId}</artifactId>
+         <version>${javax.ejb.version}</version>
+         <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+         <groupId>${javax.interceptor.groupId}</groupId>
+         <artifactId>${javax.interceptor.artifactId}</artifactId>
+         <version>${javax.interceptor.version}</version>
          <scope>provided</scope>
       </dependency>
    </dependencies>

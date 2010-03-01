@@ -21,6 +21,7 @@
  */
 package org.jboss.ejb3.context.spi;
 
+import javax.ejb.Timer;
 import java.security.Principal;
 
 /**
@@ -28,11 +29,19 @@ import java.security.Principal;
  */
 public interface InvocationContext extends javax.interceptor.InvocationContext, EJBContext
 {
-//   Principal getCallerPrincipal();
-//
    EJBContext getEJBContext();
 
+   /**
+    * @since 1.1
+    */
+   Timer getTimer();
+   
    void setCallerPrincipal(Principal callerPrincipal);
 
    void setEJBContext(EJBContext instance);
+
+   /**
+    * @since 1.1
+    */
+   void setTimer(Timer timer);
 }

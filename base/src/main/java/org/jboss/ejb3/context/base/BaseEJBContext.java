@@ -32,6 +32,7 @@ import javax.ejb.TimerService;
 import javax.transaction.UserTransaction;
 import java.security.Identity;
 import java.security.Principal;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -58,6 +59,11 @@ public class BaseEJBContext implements EJBContext
    {
       // per invocation
       return getCurrentInvocationContext().getCallerPrincipal();
+   }
+
+   public Map<String, Object> getContextData()
+   {
+      return getCurrentInvocationContext().getContextData();
    }
 
    protected InvocationContext getCurrentInvocationContext()
