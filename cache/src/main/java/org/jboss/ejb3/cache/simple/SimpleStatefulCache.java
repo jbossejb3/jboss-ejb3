@@ -535,11 +535,11 @@ public class SimpleStatefulCache implements StatefulCache
       {
          log.trace("Removing context " + key);
       }
-      StatefulBeanContext ctx = null;
-      synchronized (cacheMap)
-      {
-         ctx = cacheMap.get(key);
-      }
+      // don't directly use the cacheMap to get the 
+      // object from the key. Instead, use the get() method
+      // which will even activate any sessions which have been
+      // passivated (see https://jira.jboss.org/jira/browse/EJBTHREE-2030)
+      StatefulBeanContext ctx = this.get(key);
       if(ctx == null)
          throw new NoSuchEJBException("Could not find Stateful bean: " + key);
       if (!ctx.isRemoved())
