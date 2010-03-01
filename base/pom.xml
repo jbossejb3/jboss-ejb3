@@ -11,6 +11,8 @@
 
    <artifactId>jboss-ejb3-context-base</artifactId>
 
+   <name>JBoss EJB 3 Context Base</name>
+
    <dependencies>
       <dependency>
          <groupId>junit</groupId>
