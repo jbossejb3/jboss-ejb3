@@ -21,11 +21,10 @@
  */
 package org.jboss.ejb3.test.threadlocal;
 
-import javax.ejb.EJBContext;
-
 import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.ejb3.BeanContext;
 import org.jboss.ejb3.Container;
+import org.jboss.ejb3.context.spi.EJBContext;
 import org.jboss.ejb3.interceptor.InterceptorInfo;
 import org.jboss.logging.Logger;
 
