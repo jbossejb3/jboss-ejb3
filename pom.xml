@@ -72,6 +72,7 @@
 
    <modules>
       <module>base</module>
+      <module>naming</module>
    </modules>
 
    <profiles>
