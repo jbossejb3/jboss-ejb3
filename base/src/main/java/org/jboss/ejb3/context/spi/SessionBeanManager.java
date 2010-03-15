@@ -25,15 +25,27 @@ import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 
 /**
+ * The SessionBeanManager is in charge of creating proxies which are
+ * returned by an EJBContext.
+ * 
  * Formerly known as SessionContainer.
  * 
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public interface SessionBeanManager extends BeanManager
 {
+   /**
+    * @see javax.ejb.SessionContext#getBusinessObject(Class) 
+    */
    <T> T getBusinessObject(SessionContext ctx, Class<T> businessInterface) throws IllegalStateException;
 
+   /**
+    * @see javax.ejb.SessionContext#getEJBLocalObject()  
+    */
    EJBLocalObject getEJBLocalObject(SessionContext ctx) throws IllegalStateException;
 
+   /**
+    * @see javax.ejb.SessionContext#getEJBObject()   
+    */
    EJBObject getEJBObject(SessionContext ctx) throws IllegalStateException;
 }

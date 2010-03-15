@@ -28,25 +28,57 @@ import javax.transaction.UserTransaction;
 import java.security.Principal;
 
 /**
+ * Allows an EJBContext to query for runtime context information
+ * which is per EJB. This as opposed to of EJBContext which provides
+ * information per EnterpriseBean instance or InvocationContext is
+ * per invocation.
+ *
  * Formerly known as Container.
  * 
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public interface BeanManager
 {
+   /**
+    * @see javax.ejb.EJBContext#getEJBHome()
+    */
    EJBHome getEJBHome() throws IllegalStateException;
 
+   /**
+    * @see javax.ejb.EJBContext#getEJBLocalHome()
+    */
    EJBLocalHome getEJBLocalHome() throws IllegalStateException;
 
+   /**
+    * TODO: should this really be per EJB or per invocation
+    * @see javax.ejb.EJBContext#getRollbackOnly() 
+    */
    boolean getRollbackOnly() throws IllegalStateException;
 
+   /**
+    * @see javax.ejb.EJBContext#getTimerService() 
+    */
    TimerService getTimerService() throws IllegalStateException;
 
+   /**
+    * @see javax.ejb.EJBContext#getUserTransaction()
+    */
    UserTransaction getUserTransaction() throws IllegalStateException;
 
+   /**
+    * Allows an invocation to query the security service associated
+    * with this EJB.
+    * @see javax.ejb.EJBContext#isCallerInRole(String)
+    */
    boolean isCallerInRole(Principal callerPrincipal, String roleName) throws IllegalStateException;
 
+   /**
+    * @see javax.ejb.EJBContext#lookup(String)
+    */
    Object lookup(String name) throws IllegalArgumentException;
 
+   /**
+    * @see javax.ejb.EJBContext#setRollbackOnly() 
+    */
    void setRollbackOnly() throws IllegalStateException;
 }

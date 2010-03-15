@@ -24,6 +24,9 @@ package org.jboss.ejb3.context.spi;
 import java.util.Map;
 
 /**
+ * Extend the default EJBContext interface with the ability to
+ * query container provided runtime context associated to the EJB.
+ *
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public interface EJBContext extends javax.ejb.EJBContext
@@ -33,7 +36,16 @@ public interface EJBContext extends javax.ejb.EJBContext
     */
    Map<String, Object> getContextData();
 
+   /**
+    * @return the runtime context for this EJB
+    */
    BeanManager getManager();
-   
+
+   /**
+    * Returns the bean instance associated with this context. This must be
+    * the same one which has the context injected.
+    * 
+    * @return the bean instance associated with this context
+    */
    Object getTarget();
 }

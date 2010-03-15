@@ -25,10 +25,17 @@ import javax.ejb.Timer;
 import java.security.Principal;
 
 /**
+ * The EJBContext as viewed per invocation.
+ *
+ * The behavior or <pre>proceed()</pre> is beyond scope.
+ * 
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public interface InvocationContext extends javax.interceptor.InvocationContext, EJBContext
 {
+   /**
+    * @return the per-instance EJBContext
+    */
    EJBContext getEJBContext();
 
    /**
