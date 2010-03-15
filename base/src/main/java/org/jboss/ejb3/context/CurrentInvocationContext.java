@@ -51,6 +51,7 @@ public class CurrentInvocationContext
 
    public static void push(InvocationContext invocation)
    {
+      assert invocation != null : "invocation is null";
       stack.push(invocation);
    }
 }
