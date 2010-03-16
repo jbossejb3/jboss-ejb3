@@ -81,9 +81,6 @@ public abstract class AbstractPool implements Pool
       try
       {
          container.injectBeanContext(ctx);
-
-         ctx.initialiseInterceptorInstances();
-
       }
       finally
       {

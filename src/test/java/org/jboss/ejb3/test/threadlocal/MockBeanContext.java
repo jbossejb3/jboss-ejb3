@@ -27,6 +27,7 @@ import org.jboss.ejb3.Container;
 import org.jboss.ejb3.context.spi.EJBContext;
 import org.jboss.ejb3.context.spi.InvocationContext;
 import org.jboss.ejb3.interceptor.InterceptorInfo;
+import org.jboss.injection.Injector;
 import org.jboss.logging.Logger;
 
 /**
@@ -48,12 +49,12 @@ public class MockBeanContext implements BeanContext<Container>
       this.instance = instance;
    }
 
-   public InvocationContext createLifecycleInvocation(javax.interceptor.InvocationContext delegate)
+   public InvocationContext createInjectionInvocation(Iterable<Injector> injectors)
    {
       throw new RuntimeException("NYI");
    }
 
-   public InvocationContext createMethodInvocation(javax.interceptor.InvocationContext delegate)
+   public InvocationContext createLifecycleInvocation()
    {
       throw new RuntimeException("NYI");
    }
