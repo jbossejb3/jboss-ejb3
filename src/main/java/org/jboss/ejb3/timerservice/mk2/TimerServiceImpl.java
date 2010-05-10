@@ -72,36 +72,44 @@ public class TimerServiceImpl implements TimerService
       this.executor = executor;
    }
    
-   public Timer createCalendarTimer(ScheduleExpression schedule, Serializable info) 
-      throws IllegalArgumentException, IllegalStateException, EJBException
+   @Override
+   public Timer createCalendarTimer(ScheduleExpression schedule) throws IllegalArgumentException,
+         IllegalStateException, EJBException
    {
-      throw new RuntimeException("NYI");
+      // TODO Auto-generated method stub
+      return null;
    }
 
+
+   @Override
    public Timer createCalendarTimer(ScheduleExpression schedule, TimerConfig timerConfig)
       throws IllegalArgumentException, IllegalStateException, EJBException
    {
       throw new RuntimeException("NYI");
    }
 
+   @Override
    public Timer createIntervalTimer(Date initialExpiration, long intervalDuration, TimerConfig timerConfig)
       throws IllegalArgumentException, IllegalStateException, EJBException
    {
       throw new RuntimeException("NYI");
    }
 
+   @Override
    public Timer createIntervalTimer(long initialDuration, long intervalDuration, TimerConfig timerConfig)
       throws IllegalArgumentException, IllegalStateException, EJBException
    {
       throw new RuntimeException("NYI");
    }
 
+   @Override
    public Timer createSingleActionTimer(Date expiration, TimerConfig timerConfig)
       throws IllegalArgumentException, IllegalStateException, EJBException
    {
       throw new RuntimeException("NYI");
    }
 
+   @Override
    public Timer createSingleActionTimer(long duration, TimerConfig timerConfig)
       throws IllegalArgumentException, IllegalStateException, EJBException
    {
@@ -149,6 +157,7 @@ public class TimerServiceImpl implements TimerService
       }
    }
    
+   @Override
    public Timer createTimer(long duration, Serializable info)
       throws IllegalArgumentException, IllegalStateException, EJBException
    {
@@ -158,18 +167,21 @@ public class TimerServiceImpl implements TimerService
       return createTimer(new Date(System.currentTimeMillis() + duration), 0, info, true);
    }
 
+   @Override
    public Timer createTimer(Date expiration, Serializable info)
       throws IllegalArgumentException, IllegalStateException, EJBException
    {
       throw new RuntimeException("NYI");
    }
 
+   @Override
    public Timer createTimer(long initialDuration, long intervalDuration, Serializable info)
       throws IllegalArgumentException, IllegalStateException, EJBException
    {
       throw new RuntimeException("NYI");
    }
 
+   @Override
    public Timer createTimer(Date initialExpiration, long intervalDuration, Serializable info)
       throws IllegalArgumentException, IllegalStateException, EJBException
    {
@@ -195,6 +207,7 @@ public class TimerServiceImpl implements TimerService
          return null;
    }
    
+   @Override
    public Collection<Timer> getTimers() throws IllegalStateException, EJBException
    {
       throw new RuntimeException("NYI");
@@ -274,4 +287,6 @@ public class TimerServiceImpl implements TimerService
          log.error("Retry timeout failed for timer: " + txtimer, e);
       }
    }
+
+
 }

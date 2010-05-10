@@ -269,9 +269,18 @@ public class TimerImpl implements Timer
          throw new NoSuchObjectLocalException("Timer was canceled");
    }
    
+   @Override
+   public boolean isCalendarTimer() throws IllegalStateException, NoSuchObjectLocalException, EJBException
+   {
+      // TODO Auto-generated method stub
+      return false;
+   }
+
+   
    /* (non-Javadoc)
     * @see javax.ejb.Timer#cancel()
     */
+   @Override
    public void cancel() throws IllegalStateException, NoSuchObjectLocalException, EJBException
    {
       // TODO Auto-generated method stub
@@ -289,6 +298,7 @@ public class TimerImpl implements Timer
       future.cancel(false);
    }
    
+   @Override
    public TimerHandle getHandle() throws IllegalStateException, NoSuchObjectLocalException, EJBException
    {
       return handle;
@@ -302,6 +312,7 @@ public class TimerImpl implements Timer
    /* (non-Javadoc)
     * @see javax.ejb.Timer#getInfo()
     */
+   @Override
    public Serializable getInfo() throws IllegalStateException, NoSuchObjectLocalException, EJBException
    {
       // TODO Auto-generated method stub
@@ -312,6 +323,7 @@ public class TimerImpl implements Timer
    /* (non-Javadoc)
     * @see javax.ejb.Timer#getNextTimeout()
     */
+   @Override
    public Date getNextTimeout() throws IllegalStateException, NoSuchObjectLocalException, EJBException
    {
       // TODO Auto-generated method stub
@@ -322,6 +334,7 @@ public class TimerImpl implements Timer
    /* (non-Javadoc)
     * @see javax.ejb.Timer#getSchedule()
     */
+   @Override
    public ScheduleExpression getSchedule() throws IllegalStateException, NoSuchObjectLocalException, EJBException
    {
       // TODO Auto-generated method stub
@@ -332,6 +345,7 @@ public class TimerImpl implements Timer
    /* (non-Javadoc)
     * @see javax.ejb.Timer#getTimeRemaining()
     */
+   @Override
    public long getTimeRemaining() throws IllegalStateException, NoSuchObjectLocalException, EJBException
    {
       // TODO Auto-generated method stub
@@ -361,6 +375,7 @@ public class TimerImpl implements Timer
    /* (non-Javadoc)
     * @see javax.ejb.Timer#isPersistent()
     */
+   @Override
    public boolean isPersistent() throws IllegalStateException, NoSuchObjectLocalException, EJBException
    {
       // TODO Auto-generated method stub
@@ -452,4 +467,5 @@ public class TimerImpl implements Timer
       String retStr = "[id=" + id + ",service=" + timerService + ",remaining=" + remaining + ",intervalDuration=" + intervalDuration + "," + timerState + "]";
       return retStr;
    }
+
 }
