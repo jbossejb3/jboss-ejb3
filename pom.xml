@@ -32,7 +32,6 @@
         <configuration>
           <source>1.6</source>
           <target>1.6</target>
-          <executable>${JDK6_HOME}/bin/javac</executable>
         </configuration>
       </plugin>
 
@@ -46,10 +45,9 @@
             </goals>
             <configuration>
               <rules>
-                <requireProperty>
-                  <property>env.JDK6_HOME</property>
-                  <message>JDK6_HOME is not set</message>
-                </requireProperty>
+                <requireJavaVersion>
+                  <version>[1.6,)</version>
+                </requireJavaVersion>
               </rules>
             </configuration>
           </execution>
@@ -67,6 +65,13 @@
   </build>
 
   <dependencies>
+  
+  	<dependency>
+  		<groupId>org.jboss.ejb3.timerservice</groupId>
+  		<artifactId>ejb31-calendar-expr-parser</artifactId>
+  		<version>0.1.0-SNAPSHOT</version>
+  	</dependency>
+  	
     <!-- For 'mocking' a DataSource we use Hypersonic -->
     <dependency>
       <groupId>hsqldb</groupId>
@@ -165,14 +170,4 @@
     </dependency>
   </dependencies>
 
-<!--
-  <profiles>
-    <profile>
-      <id>jdk6</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-    </profile>
-  </profiles>
--->
 </project>

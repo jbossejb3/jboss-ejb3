@@ -31,6 +31,8 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Table;
 
+import org.jboss.ejb3.timerservice.mk2.TimerState;
+
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @version $Revision: $
@@ -50,11 +52,14 @@ public class TimerEntity
    
    private long interval;
    
-   @Lob
-   private Object instanceKey;
+   private Date nextDate;
+   
+   private Date previousRun;
    
    @Lob
    private Serializable info;
+
+   private TimerState timerState;
 
    public UUID getId()
    {
@@ -96,16 +101,6 @@ public class TimerEntity
       this.interval = interval;
    }
 
-   public Object getInstanceKey()
-   {
-      return instanceKey;
-   }
-
-   public void setInstanceKey(Object instanceKey)
-   {
-      this.instanceKey = instanceKey;
-   }
-
    public Serializable getInfo()
    {
       return info;
@@ -115,4 +110,36 @@ public class TimerEntity
    {
       this.info = info;
    }
+
+   public Date getNextDate()
+   {
+      return nextDate;
+   }
+
+   public void setNextDate(Date nextDate)
+   {
+      this.nextDate = nextDate;
+   }
+
+   public Date getPreviousRun()
+   {
+      return previousRun;
+   }
+
+   public void setPreviousRun(Date previousRun)
+   {
+      this.previousRun = previousRun;
+   }
+
+   public TimerState getTimerState()
+   {
+      return timerState;
+   }
+
+   public void setTimerState(TimerState timerState)
+   {
+      this.timerState = timerState;
+   }
+   
+   
 }

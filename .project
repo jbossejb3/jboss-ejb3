@@ -1,14 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-  <name>jboss-ejb3-timerservice-mk2</name>
-  <comment>JBoss EJB 3.x TimerService Mark 2 is an implementation based on
+	<name>jboss-ejb3-timerservice-mk2</name>
+	<comment>JBoss EJB 3.x TimerService Mark 2 is an implementation based on
     the venerable JBoss AS timer service meant for use in EJB 2. NO_M2ECLIPSE_SUPPORT: Project files created with the maven-eclipse-plugin are not supported in M2Eclipse.</comment>
-  <projects/>
-  <buildSpec>
-    <buildCommand>
-      <name>org.eclipse.jdt.core.javabuilder</name>
-    </buildCommand>
-  </buildSpec>
-  <natures>
-    <nature>org.eclipse.jdt.core.javanature</nature>
-  </natures>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>org.eclipse.jdt.core.javabuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+		<buildCommand>
+			<name>org.maven.ide.eclipse.maven2Builder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>org.maven.ide.eclipse.maven2Nature</nature>
+		<nature>org.eclipse.jdt.core.javanature</nature>
+	</natures>
 </projectDescription>

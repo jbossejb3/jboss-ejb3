@@ -21,15 +21,6 @@
  */
 package org.jboss.ejb3.timerservice.mk2;
 
-import static org.jboss.ejb3.timerservice.mk2.TimerImpl.State.ACTIVE;
-import static org.jboss.ejb3.timerservice.mk2.TimerImpl.State.CANCELED;
-import static org.jboss.ejb3.timerservice.mk2.TimerImpl.State.CANCELED_IN_TX;
-import static org.jboss.ejb3.timerservice.mk2.TimerImpl.State.CREATED;
-import static org.jboss.ejb3.timerservice.mk2.TimerImpl.State.EXPIRED;
-import static org.jboss.ejb3.timerservice.mk2.TimerImpl.State.IN_TIMEOUT;
-import static org.jboss.ejb3.timerservice.mk2.TimerImpl.State.RETRY_TIMEOUT;
-import static org.jboss.ejb3.timerservice.mk2.TimerImpl.State.STARTED_IN_TX;
-
 import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
@@ -57,50 +48,30 @@ import org.jboss.logging.Logger;
 public class TimerImpl implements Timer
 {
    private static final Logger log = Logger.getLogger(TimerImpl.class);
-   
-   private State timerState;
-   private TimerServiceImpl timerService;
-   private TimedObjectInvoker timedObjectInvoker;
-   private UUID id;
-   private Serializable info;
-   private TimerHandleImpl handle;
 
-   private Date initialExpiration;
-   private long intervalDuration;
-   private long nextExpiration;
+   protected TimerState timerState;
 
-   private ScheduledFuture<?> future;
+   protected TimerServiceImpl timerService;
 
+   protected TimedObjectInvoker timedObjectInvoker;
 
-   /**
-    * Timer states and their allowed transitions
-    * <p/>
-    * CREATED  - on create
-    * CREATED -> STARTED_IN_TX - when strated with Tx
-    * CREATED -> ACTIVE  - when started without Tx
-    * STARTED_IN_TX -> ACTIVE - on Tx commit
-    * STARTED_IN_TX -> CANCELED - on Tx rollback
-    * ACTIVE -> CANCELED_IN_TX - on cancel() with Tx
-    * ACTIVE -> CANCELED - on cancel() without Tx
-    * CANCELED_IN_TX -> CANCELED - on Tx commit
-    * CANCELED_IN_TX -> ACTIVE - on Tx rollback
-    * ACTIVE -> IN_TIMEOUT - on TimerTask run
-    * IN_TIMEOUT -> ACTIVE - on Tx commit if intervalDuration > 0
-    * IN_TIMEOUT -> EXPIRED -> on Tx commit if intervalDuration == 0
-    * IN_TIMEOUT -> RETRY_TIMEOUT -> on Tx rollback
-    * RETRY_TIMEOUT -> ACTIVE -> on Tx commit/rollback if intervalDuration > 0
-    * RETRY_TIMEOUT -> EXPIRED -> on Tx commit/rollback if intervalDuration == 0
-    */
-   static enum State {
-      CREATED,
-      STARTED_IN_TX,
-      ACTIVE,
-      CANCELED_IN_TX,
-      CANCELED,
-      EXPIRED,
-      IN_TIMEOUT,
-      RETRY_TIMEOUT
-   };
+   protected UUID id;
+
+   protected Serializable info;
+
+   protected boolean persistent;
+
+   protected TimerHandleImpl handle;
+
+   protected Date initialExpiration;
+
+   protected long intervalDuration;
+
+   protected Date nextExpiration;
+
+   protected ScheduledFuture<?> future;
+
+   protected Date previousRun; 
    
    class TimerSynchronization implements Synchronization
    {
@@ -112,25 +83,29 @@ public class TimerImpl implements Timer
 
             switch (timerState)
             {
-               case STARTED_IN_TX:
+               case STARTED_IN_TX :
                   scheduleTimeout();
-                  setTimerState(ACTIVE);
+                  setTimerState(TimerState.ACTIVE);
+                  // persist changes
+                  timerService.persistTimer(TimerImpl.this);
                   break;
 
-               case CANCELED_IN_TX:
+               case CANCELED_IN_TX :
                   cancelTimer();
                   break;
 
-               case IN_TIMEOUT:
-               case RETRY_TIMEOUT:
-                  if(intervalDuration == 0)
+               case IN_TIMEOUT :
+               case RETRY_TIMEOUT :
+                  if (intervalDuration == 0)
                   {
-                     setTimerState(EXPIRED);
+                     setTimerState(TimerState.EXPIRED);
                      cancelTimer();
                   }
                   else
                   {
-                     setTimerState(ACTIVE);
+                     setTimerState(TimerState.ACTIVE);
+                     // persist changes
+                     timerService.persistTimer(TimerImpl.this);
                   }
                   break;
             }
@@ -141,29 +116,35 @@ public class TimerImpl implements Timer
 
             switch (timerState)
             {
-               case STARTED_IN_TX:
+               case STARTED_IN_TX :
                   cancelTimer();
                   break;
-                  
-               case CANCELED_IN_TX:
-                  setTimerState(ACTIVE);
+
+               case CANCELED_IN_TX :
+                  setTimerState(TimerState.ACTIVE);
+                  // persist changes
+                  timerService.persistTimer(TimerImpl.this);
                   break;
-                  
-               case IN_TIMEOUT:
-                  setTimerState(RETRY_TIMEOUT);
+
+               case IN_TIMEOUT :
+                  setTimerState(TimerState.RETRY_TIMEOUT);
+                  // persist changes
+                  timerService.persistTimer(TimerImpl.this);
                   log.debug("retry: " + TimerImpl.this);
                   timerService.retryTimeout(TimerImpl.this);
                   break;
-                  
-               case RETRY_TIMEOUT:
+
+               case RETRY_TIMEOUT :
                   if (intervalDuration == 0)
                   {
-                     setTimerState(EXPIRED);
+                     setTimerState(TimerState.EXPIRED);
                      cancelTimer();
                   }
                   else
                   {
-                     setTimerState(ACTIVE);
+                     setTimerState(TimerState.ACTIVE);
+                     // persist changes
+                     timerService.persistTimer(TimerImpl.this);
                   }
                   break;
             }
@@ -172,38 +153,40 @@ public class TimerImpl implements Timer
 
       public void beforeCompletion()
       {
-         switch(timerState)
+         switch (timerState)
          {
-            case CANCELED_IN_TX:
+            case CANCELED_IN_TX :
                timerService.removeTimer(TimerImpl.this);
                break;
 
-            case IN_TIMEOUT:
-            case RETRY_TIMEOUT:
-               if(intervalDuration == 0)
+            case IN_TIMEOUT :
+            case RETRY_TIMEOUT :
+               if (intervalDuration == 0)
                {
                   timerService.removeTimer(TimerImpl.this);
                }
                break;
          }
       }
-      
+
    };
-   
+
    class TimerTaskImpl implements Runnable
    {
       public void run()
       {
          log.debug("run: " + TimerImpl.this);
-
+         TimerImpl.this.previousRun = new Date();
          // Set next scheduled execution attempt. This is used only
          // for reporting (getTimeRemaining()/getNextTimeout())
          // and not from the underlying jdk timer implementation.
          if (isActive() && intervalDuration > 0)
          {
-            nextExpiration += intervalDuration;
+            nextExpiration = new Date(nextExpiration.getTime() + intervalDuration);
          }
-         
+         // persist changes
+         timerService.persistTimer(TimerImpl.this);
+
          // If a retry thread is in progress, we don't want to allow another
          // interval to execute until the retry is complete. See JIRA-1926.
          if (isInRetry())
@@ -211,12 +194,14 @@ public class TimerImpl implements Timer
             log.debug("Timer in retry mode, skipping this scheduled execution");
             return;
          }
-         
+
          if (isActive())
          {
             try
             {
-               setTimerState(IN_TIMEOUT);
+               setTimerState(TimerState.IN_TIMEOUT);
+               // persist changes
+               timerService.persistTimer(TimerImpl.this);
                timedObjectInvoker.callTimeout(TimerImpl.this);
             }
             catch (Exception e)
@@ -225,67 +210,155 @@ public class TimerImpl implements Timer
             }
             finally
             {
-               if (timerState == IN_TIMEOUT)
+               if (timerState == TimerState.IN_TIMEOUT)
                {
                   log.debug("Timer was not registered with Tx, resetting state: " + TimerImpl.this);
                   if (intervalDuration == 0)
                   {
-                     setTimerState(EXPIRED);
+                     setTimerState(TimerState.EXPIRED);
                      killTimer();
                   }
                   else
                   {
-                     setTimerState(ACTIVE);
+                     setTimerState(TimerState.ACTIVE);
+                     // persist changes
+                     timerService.persistTimer(TimerImpl.this);
                   }
                }
             }
          }
       }
    }
-   
-   TimerImpl(TimerServiceImpl service, UUID id, Serializable info)
+
+   public TimerImpl(UUID id, TimerServiceImpl service, Date initialExpiry, long intervalDuration, Serializable info,
+         boolean persistent)
    {
       assert service != null : "service is null";
       assert id != null : "id is null";
-      
+
       this.timerService = service;
+      this.timerService.addTimer(this);
+
       this.timedObjectInvoker = service.getInvoker();
       this.id = id;
       this.info = info;
-      
+      this.persistent = persistent;
+      this.initialExpiration = initialExpiry;
+      this.intervalDuration = intervalDuration;
+      this.nextExpiration = initialExpiry;
+
       this.handle = new TimerHandleImpl(id, service);
-      
-      setTimerState(CREATED);
+
+      setTimerState(TimerState.CREATED);
    }
-   
+
    /**
     * @throws NoSuchObjectLocalException if the txtimer was canceled or has expired
     */
-   private void assertTimedOut()
+   protected void assertTimerState()
    {
-      if (timerState == EXPIRED)
+      if (timerState == TimerState.EXPIRED)
          throw new NoSuchObjectLocalException("Timer has expired");
-      if (timerState == CANCELED_IN_TX || timerState == CANCELED)
+      if (timerState == TimerState.CANCELED_IN_TX || timerState == TimerState.CANCELED)
          throw new NoSuchObjectLocalException("Timer was canceled");
    }
-   
+
+   /**
+    * {@inheritDoc}
+    */
    @Override
    public boolean isCalendarTimer() throws IllegalStateException, NoSuchObjectLocalException, EJBException
    {
-      // TODO Auto-generated method stub
+      // first check whether this timer has expired or cancelled
+      this.assertTimerState();
+
       return false;
    }
 
-   
-   /* (non-Javadoc)
-    * @see javax.ejb.Timer#cancel()
+   /**
+    * {@inheritDoc}
     */
    @Override
    public void cancel() throws IllegalStateException, NoSuchObjectLocalException, EJBException
    {
-      // TODO Auto-generated method stub
-      //
-      throw new RuntimeException("NYI");
+      // first check whether the timer has expired or has been cancelled
+      this.assertTimerState();
+      this.cancelTimer();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public TimerHandle getHandle() throws IllegalStateException, NoSuchObjectLocalException, EJBException
+   {
+      return this.handle;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public boolean isPersistent() throws IllegalStateException, NoSuchObjectLocalException, EJBException
+   {
+      return this.persistent;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public Serializable getInfo() throws IllegalStateException, NoSuchObjectLocalException, EJBException
+   {
+      return this.info;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public Date getNextTimeout() throws IllegalStateException, NoSuchObjectLocalException, EJBException
+   {
+      // first check the validity of the timer state
+      this.assertTimerState();
+      return this.nextExpiration;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public ScheduleExpression getSchedule() throws IllegalStateException, NoSuchObjectLocalException, EJBException
+   {
+      this.assertTimerState();
+      throw new IllegalStateException("Timer " + this + " is not a calendar based timer");
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public long getTimeRemaining() throws IllegalStateException, NoSuchObjectLocalException, EJBException
+   {
+      //      // first check the validity of the timer state
+      //      this.assertTimerState();
+      //      long currentTimeInMillis = System.currentTimeMillis();
+      //      // if the next expiration is *not* in future and the repeat interval isn't
+      //      // a positive number (i.e. no repeats) then there won't be any more timeouts.
+      //      // So throw a NoMoreTimeoutsException.
+      //      // NOTE: We check for intervalDuration and not just nextExpiration because,
+      //      // it's a valid case where the nextExpiration is in past (maybe the server was
+      //      // down when the timeout was expected) 
+      //      if (this.nextExpiration < currentTimeInMillis && this.intervalDuration <= 0)
+      //      {
+      //         throw new NoMoreTimeoutsException("No more timeouts for timer " + this);
+      //      }
+      return 0;//this.nextExpiration - currentTimeInMillis;
+   }
+
+   protected UUID getId()
+   {
+      return this.id;
    }
 
    /**
@@ -293,94 +366,42 @@ public class TimerImpl implements Timer
     */
    protected void cancelTimer()
    {
-      if (timerState != EXPIRED)
-         setTimerState(CANCELED);
+      if (timerState != TimerState.EXPIRED)
+         setTimerState(TimerState.CANCELED);
       future.cancel(false);
-   }
-   
-   @Override
-   public TimerHandle getHandle() throws IllegalStateException, NoSuchObjectLocalException, EJBException
-   {
-      return handle;
+
+      // persist changes
+      timerService.persistTimer(this);
    }
 
-   protected UUID getId()
-   {
-      return id;
-   }
-   
-   /* (non-Javadoc)
-    * @see javax.ejb.Timer#getInfo()
-    */
-   @Override
-   public Serializable getInfo() throws IllegalStateException, NoSuchObjectLocalException, EJBException
-   {
-      // TODO Auto-generated method stub
-      //return null;
-      throw new RuntimeException("NYI");
-   }
-
-   /* (non-Javadoc)
-    * @see javax.ejb.Timer#getNextTimeout()
-    */
-   @Override
-   public Date getNextTimeout() throws IllegalStateException, NoSuchObjectLocalException, EJBException
-   {
-      // TODO Auto-generated method stub
-      //return null;
-      throw new RuntimeException("NYI");
-   }
-
-   /* (non-Javadoc)
-    * @see javax.ejb.Timer#getSchedule()
-    */
-   @Override
-   public ScheduleExpression getSchedule() throws IllegalStateException, NoSuchObjectLocalException, EJBException
-   {
-      // TODO Auto-generated method stub
-      //return null;
-      throw new RuntimeException("NYI");
-   }
-   
-   /* (non-Javadoc)
-    * @see javax.ejb.Timer#getTimeRemaining()
-    */
-   @Override
-   public long getTimeRemaining() throws IllegalStateException, NoSuchObjectLocalException, EJBException
-   {
-      // TODO Auto-generated method stub
-      //return 0;
-      throw new RuntimeException("NYI");
-   }
-   
-   protected boolean isActive()
+   public boolean isActive()
    {
       return !isCanceled() && !isExpired();
    }
 
-   protected boolean isCanceled()
+   public boolean isCanceled()
    {
-      return timerState == CANCELED_IN_TX || timerState == CANCELED;
+      return timerState == TimerState.CANCELED_IN_TX || timerState == TimerState.CANCELED;
    }
 
-   protected boolean isExpired()
+   public boolean isExpired()
    {
-      return timerState == EXPIRED;
+      return timerState == TimerState.EXPIRED;
+   }
+
+   protected boolean isInRetry()
+   {
+      return timerState == TimerState.RETRY_TIMEOUT;
+   }
+
+   public Date getPreviousRun()
+   {
+      return this.previousRun;
    }
    
-   protected boolean isInRetry() {
-      return timerState == RETRY_TIMEOUT;
-   }
-
-   /* (non-Javadoc)
-    * @see javax.ejb.Timer#isPersistent()
-    */
-   @Override
-   public boolean isPersistent() throws IllegalStateException, NoSuchObjectLocalException, EJBException
+   public TimerState getState()
    {
-      // TODO Auto-generated method stub
-      //return false;
-      throw new RuntimeException("NYI");
+      return this.timerState;
    }
    
    /**
@@ -389,16 +410,19 @@ public class TimerImpl implements Timer
    protected void killTimer()
    {
       log.debug("killTimer: " + this);
-      if (timerState != EXPIRED)
-         setTimerState(CANCELED);
+      if (timerState != TimerState.EXPIRED)
+         setTimerState(TimerState.CANCELED);
       timerService.removeTimer(this);
       future.cancel(false);
+
+      // persist changes
+      timerService.persistTimer(this);
    }
-   
+
    protected void registerTimerWithTx()
    {
       Transaction tx = timerService.getTransaction();
-      if(tx != null)
+      if (tx != null)
       {
          try
          {
@@ -415,56 +439,57 @@ public class TimerImpl implements Timer
          }
       }
    }
-   
+
    protected void scheduleTimeout()
    {
       Runnable command = new TimerTaskImpl();
-      long delay = nextExpiration - System.currentTimeMillis();
-      if(delay < 0) delay = 0;
+      long delay = this.nextExpiration.getTime() - System.currentTimeMillis();
+      if (delay < 0)
+         delay = 0;
       if (intervalDuration > 0)
-         future = timerService.getExecutor().scheduleAtFixedRate(command, delay, intervalDuration, TimeUnit.MILLISECONDS);
+         future = timerService.getExecutor().scheduleAtFixedRate(command, delay, intervalDuration,
+               TimeUnit.MILLISECONDS);
       else
          future = timerService.getExecutor().schedule(command, delay, TimeUnit.MILLISECONDS);
    }
-   
-   private void setTimerState(State state)
+
+   protected void setTimerState(TimerState state)
    {
       log.debug(this + " set state " + state);
       this.timerState = state;
    }
-   
+
    protected void startInTx()
    {
       if (timerService.getTransaction() != null)
       {
          // don't schedule the timeout yet
-         setTimerState(STARTED_IN_TX);
+         setTimerState(TimerState.STARTED_IN_TX);
       }
       else
       {
          scheduleTimeout();
-         setTimerState(ACTIVE);
+         setTimerState(TimerState.ACTIVE);
       }
+      // persist changes
+      timerService.persistTimer(this);
+
    }
-   
-   protected void startTimer(Date initialExpiration, long intervalDuration)
+
+   public void startTimer()
    {
-      this.initialExpiration = initialExpiration;
-      this.nextExpiration = initialExpiration.getTime();
-      this.intervalDuration = intervalDuration;
-      
-      timerService.addTimer(this);
       registerTimerWithTx();
-      
+
       // the timer will actually go ACTIVE on tx commit
       startInTx();
    }
-   
+
    @Override
    public String toString()
    {
-      long remaining = nextExpiration - System.currentTimeMillis();
-      String retStr = "[id=" + id + ",service=" + timerService + ",remaining=" + remaining + ",intervalDuration=" + intervalDuration + "," + timerState + "]";
+      long remaining = this.nextExpiration.getTime() - System.currentTimeMillis();
+      String retStr = "[id=" + id + ",service=" + timerService + ",remaining=" + remaining + ",intervalDuration="
+            + intervalDuration + "," + timerState + "]";
       return retStr;
    }
 
