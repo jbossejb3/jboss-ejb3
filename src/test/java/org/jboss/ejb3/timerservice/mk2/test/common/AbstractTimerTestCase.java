@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.JarURLConnection;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Enumeration;
@@ -40,8 +41,8 @@ import org.jboss.deployers.spi.DeploymentException;
 import org.jboss.deployers.vfs.spi.client.VFSDeployment;
 import org.jboss.deployers.vfs.spi.client.VFSDeploymentFactory;
 import org.jboss.logging.Logger;
-import org.jboss.virtual.VFS;
-import org.jboss.virtual.VirtualFile;
+import org.jboss.vfs.VFS;
+import org.jboss.vfs.VirtualFile;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
@@ -105,7 +106,7 @@ public abstract class AbstractTimerTestCase
       }
       
       // TODO: another hack that simulates profile service going through deploy dir
-      VirtualFile deployDir = VFS.getRoot(findDirURI("src/test/resources/deploy"));
+      VirtualFile deployDir = VFS.getChild(findDirURI("src/test/resources/deploy"));
       List<VirtualFile> candidates = deployDir.getChildren();
       for(VirtualFile candidate : candidates)
       {
@@ -116,9 +117,9 @@ public abstract class AbstractTimerTestCase
       deploy(AbstractTimerTestCase.class.getProtectionDomain().getCodeSource().getLocation());
    }
    
-   protected static void deploy(URL url) throws DeploymentException, IOException
+   protected static void deploy(URL url) throws DeploymentException, IOException, URISyntaxException
    {
-      VirtualFile root = VFS.getRoot(url);
+      VirtualFile root = VFS.getChild(url);
       VFSDeployment deployment = VFSDeploymentFactory.getInstance().createVFSDeployment(root);
       mainDeployer.deploy(deployment);
       mainDeployer.checkComplete(deployment);

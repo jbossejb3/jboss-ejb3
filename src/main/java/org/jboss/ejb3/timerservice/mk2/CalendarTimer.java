@@ -29,7 +29,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import javax.ejb.EJBException;
-import javax.ejb.NoMoreTimeoutsException;
 import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.ScheduleExpression;
 
@@ -62,33 +61,10 @@ public class CalendarTimer extends TimerImpl
    }
 
    @Override
-   public void cancel() throws IllegalStateException, NoSuchObjectLocalException, EJBException
-   {
-      // TODO Auto-generated method stub
-
-   }
-
-   @Override
-   public Date getNextTimeout() throws IllegalStateException, NoMoreTimeoutsException, NoSuchObjectLocalException,
-         EJBException
-   {
-      // TODO Auto-generated method stub
-      return null;
-   }
-
-   @Override
    public ScheduleExpression getSchedule() throws IllegalStateException, NoSuchObjectLocalException, EJBException
    {
       this.assertTimerState();
       return this.calendarTimeout.getScheduleExpression();
-   }
-
-   @Override
-   public long getTimeRemaining() throws IllegalStateException, NoMoreTimeoutsException, NoSuchObjectLocalException,
-         EJBException
-   {
-      // TODO Auto-generated method stub
-      return 0;
    }
 
    @Override
@@ -154,8 +130,7 @@ public class CalendarTimer extends TimerImpl
             {
                if (timerState == TimerState.IN_TIMEOUT)
                {
-                  logger.debug("Timer was not registered with Tx, resetting state: " + CalendarTimer.this);
-                  if (intervalDuration == 0)
+                  if (CalendarTimer.this.nextExpiration == null)
                   {
                      setTimerState(TimerState.EXPIRED);
                      killTimer();

@@ -299,12 +299,7 @@ public class TimerServiceImpl implements TimerService
       TimerImpl timer = new TimerImpl(uuid, this, initialExpiration, intervalDuration, info, persistent);
       if (persistent)
       {
-         TimerEntity entity = new TimerEntity();
-         entity.setId(uuid);
-         entity.setInfo(info);
-         entity.setInitialDate(initialExpiration);
-         entity.setInterval(intervalDuration);
-         entity.setTargetId(invoker.getTimedObjectId());
+         TimerEntity entity = timer.getPersistentState();
          em.persist(entity);
       }
       timer.startTimer();
@@ -331,10 +326,7 @@ public class TimerServiceImpl implements TimerService
       TimerImpl timer = new CalendarTimer(uuid, this, calendarTimeout, info, persistent);
       if (persistent)
       {
-         TimerEntity entity = new TimerEntity();
-         entity.setId(uuid);
-         entity.setInfo(info);
-         entity.setTargetId(invoker.getTimedObjectId());
+         TimerEntity entity = timer.getPersistentState();
          em.persist(entity);
       }
       timer.startTimer();
@@ -449,13 +441,7 @@ public class TimerServiceImpl implements TimerService
       {
          return;
       }
-      UUID id = timer.getId();
-
-      TimerEntity timerEntity = this.em.find(TimerEntity.class, id);
-      timerEntity.setNextDate(timer.getNextTimeout());
-      timerEntity.setPreviousRun(timer.getPreviousRun());
-      timerEntity.setTimerState(timer.getState());
-      // persist in a new tx
+      TimerEntity timerEntity = timer.getPersistentState();
       this.persistInNewTx(timerEntity);
 
    }
@@ -463,6 +449,7 @@ public class TimerServiceImpl implements TimerService
    private void persistInNewTx(TimerEntity timer)
    {
       //TODO: Implement this
+      // First merge then persist. All this in a tx
    }
 
 }

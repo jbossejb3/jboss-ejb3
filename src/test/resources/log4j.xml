@@ -61,7 +61,7 @@
 
   <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
     <param name="Target" value="System.out"/>
-    <param name="Threshold" value="ALL"/>
+    <param name="Threshold" value="INFO"/>
 
     <layout class="org.apache.log4j.PatternLayout">
       <!-- The default pattern: Date Priority [Category] Message\n -->
@@ -102,20 +102,25 @@
   </category>
   -->
 
-  <category name="org.hibernate">
-    <priority value="ALL"/>
+  <category name="org.jboss.deployers">
+    <priority value="TRACE"/>
+  </category>
+
+  <category name="org.jboss.vfs">
+    <priority value="TRACE"/>
   </category>
   
-  <category name="org.jboss">
-    <priority value="INFO"/>
+    <category name="org.jboss.microcontainer">
+    <priority value="TRACE"/>
   </category>
+
   
   <!-- ======================= -->
   <!-- Setup the Root category -->
   <!-- ======================= -->
 
   <root>
-    <priority value="WARN" />
+    <priority value="INFO" />
     <appender-ref ref="CONSOLE"/>
     <appender-ref ref="FILE"/>
   </root>

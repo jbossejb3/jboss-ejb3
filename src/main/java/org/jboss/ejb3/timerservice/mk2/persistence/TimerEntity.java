@@ -60,6 +60,8 @@ public class TimerEntity
    private Serializable info;
 
    private TimerState timerState;
+   
+   private boolean calendarTimer;
 
    public UUID getId()
    {
@@ -139,6 +141,16 @@ public class TimerEntity
    public void setTimerState(TimerState timerState)
    {
       this.timerState = timerState;
+   }
+
+   public boolean isCalendarTimer()
+   {
+      return calendarTimer;
+   }
+
+   public void setCalendarTimer(boolean calendarTimer)
+   {
+      this.calendarTimer = calendarTimer;
    }
    
    
