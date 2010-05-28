@@ -32,9 +32,12 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
+
+
 import org.jboss.bootstrap.microcontainer.ServerImpl;
 import org.jboss.bootstrap.spi.ServerConfig;
 import org.jboss.bootstrap.spi.microcontainer.MCServer;
+import org.jboss.dependency.spi.ControllerContext;
 import org.jboss.dependency.spi.ControllerState;
 import org.jboss.deployers.client.spi.main.MainDeployer;
 import org.jboss.deployers.spi.DeploymentException;
@@ -56,6 +59,16 @@ public abstract class AbstractTimerTestCase
    
    private static MCServer server;
    private static MainDeployer mainDeployer;
+   
+   /**
+    * basedir (set through Maven)
+    */
+   protected static final File BASEDIR = new File(System.getProperty("basedir"));
+
+   /**
+    * Target directory
+    */
+   protected static final File TARGET_DIRECTORY = new File(BASEDIR, "target");
    
    @AfterClass
    public static void afterClass() throws Exception
@@ -81,15 +94,18 @@ public abstract class AbstractTimerTestCase
       log.info("dir = " + dir);
       props.put(ServerConfig.HOME_DIR, dir);
       props.put(ServerConfig.SERVER_CONFIG_URL, findDir("src/test/resources/conf"));
+      
+      // see https://jira.jboss.org/jira/browse/JBBOOT-20
+      props.put(ServerConfig.EXIT_ON_SHUTDOWN, "false");
+      System.setProperty("jboss.shutdown.forceHalt", "false");
+      
       server.init(props);
       
       server.start();
       
       mainDeployer = (MainDeployer) server.getKernel().getController().getContext("MainDeployer", ControllerState.INSTALLED).getTarget();
       
-      URL url = new File("src/main/resources").toURI().toURL();
-      log.debug("url = " + url);
-      deploy(url);
+     
       
       // TODO: hack, use something similar to deploy directory
       Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources("META-INF/jboss-beans.xml");
@@ -102,7 +118,7 @@ public abstract class AbstractTimerTestCase
             continue;
          JarURLConnection connection = (JarURLConnection) c;
          URL jarFileURL = connection.getJarFileURL();
-         deploy(jarFileURL);
+         addToDeploy(jarFileURL);
       }
       
       // TODO: another hack that simulates profile service going through deploy dir
@@ -110,19 +126,31 @@ public abstract class AbstractTimerTestCase
       List<VirtualFile> candidates = deployDir.getChildren();
       for(VirtualFile candidate : candidates)
       {
-         deploy(candidate.toURL());
+         addToDeploy(candidate.toURL());
       }
+      deploy();
       
-      // Ehr, to deploy the persistence unit defined in src/test/resources (it's not a hack! it's a feature!)
-      deploy(AbstractTimerTestCase.class.getProtectionDomain().getCodeSource().getLocation());
+//      File testClassesMetaInf = new File(TARGET_DIRECTORY, "test-classes");
+//      addToDeploy(testClassesMetaInf.toURI().toURL());
+         URL url = new File(BASEDIR, "src/main/resources").toURI().toURL();
+         log.debug("url = " + url);
+         addToDeploy(url);
+      
+      // finally deploy
+      deploy();
    }
    
-   protected static void deploy(URL url) throws DeploymentException, IOException, URISyntaxException
+   protected static void deploy() throws DeploymentException, IOException, URISyntaxException
+   {
+      mainDeployer.process();
+      mainDeployer.checkComplete();
+   }
+   
+   protected static void addToDeploy(URL url) throws DeploymentException, URISyntaxException
    {
       VirtualFile root = VFS.getChild(url);
       VFSDeployment deployment = VFSDeploymentFactory.getInstance().createVFSDeployment(root);
-      mainDeployer.deploy(deployment);
-      mainDeployer.checkComplete(deployment);
+      mainDeployer.addDeployment(deployment);
    }
    
    private static String findDir(String path) throws IOException
@@ -143,6 +171,25 @@ public abstract class AbstractTimerTestCase
    {
       // FIXME: check state
       return expectedType.cast(server.getKernel().getController().getContext(name, null).getTarget());
+   }
+   
+   public <T> T getBeanByType(Class<T> expectedType)
+   {
+      return this.getBeanByType(expectedType, ControllerState.INSTALLED);
+   }
+   
+   public <T> T getBeanByType(Class<T> expectedType, ControllerState state)
+   {
+      ControllerContext context = server.getKernel().getController().getContextByClass(expectedType);
+      if (context == null)
+      {
+         return null;
+      }
+      if (context.getState().equals(state) == false)
+      {
+         throw new IllegalStateException(context.getName() + " is not in " + state + " state");
+      }
+      return expectedType.cast(context.getTarget());
    }
    private static String mkdir(String path) throws IOException
    {

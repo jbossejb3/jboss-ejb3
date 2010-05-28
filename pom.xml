@@ -3,7 +3,13 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-
+	<parent>
+		<groupId>org.jboss.ejb3.timerservice</groupId>
+		<artifactId>jboss-ejb3-timerservice-parent</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+	
   <!-- Maven POM Model Version -->
   <modelVersion>4.0.0</modelVersion>
 
@@ -11,7 +17,6 @@
   <groupId>org.jboss.ejb3.timerservice</groupId>
   <artifactId>jboss-ejb3-timerservice-mk2</artifactId>
   <packaging>jar</packaging>
-  <version>0.1.0-SNAPSHOT</version>
   <name>JBoss EJB 3.x TimerService Mark 2</name>
   <description>
     JBoss EJB 3.x TimerService Mark 2 is an implementation based on
@@ -19,53 +24,32 @@
   </description>
   <url>http://labs.jboss.com/jbossejb3/</url>
 
-	<properties>
-		<version.junit>4.4</version.junit>
-		<version.jboss.logging>2.1.1.GA</version.jboss.logging>
-	</properties>
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
-        </configuration>
-      </plugin>
+    <build>
+        <plugins>
+            <!-- Assembly Plugin -->
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2-beta-4</version>
+                <executions>
+                    <!--  Build timerservice mk2 "package" -->
+                  <execution>
+                    <id>build-timerservice-mk2-package</id> 
+                    <phase>package</phase>
+                    <goals>
+                      <goal>single</goal>
+                    </goals>
+                  </execution>
+                </executions>
+                <configuration>
+                  <descriptors>
+                    <descriptor>src/assembly/package-assembler.xml</descriptor>
+                  </descriptors>
+                </configuration>
+            </plugin>
+        </plugins>
+    
+    </build>
 
-      <plugin>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>enforce-jdk6</id>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <requireJavaVersion>
-                  <version>[1.6,)</version>
-                </requireJavaVersion>
-              </rules>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <forkMode>once</forkMode>
-          <jvm>${JDK6_HOME}/bin/java</jvm>
-			<redirectTestOutputToFile>true</redirectTestOutputToFile>
-			<printSummary>true</printSummary>
-			<!-- 
-          	<argLine>-verbose:class</argLine>
-          	-->
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 
   <dependencies>
   
@@ -100,7 +84,6 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>${version.junit}</version>
       <scope>test</scope>
     </dependency>
     <!-- JPA 1.0 -->
@@ -182,18 +165,16 @@
     <dependency>
       <groupId>org.jboss.jpa</groupId>
       <artifactId>jboss-jpa-mcint</artifactId>
-      <version>1.0.0-alpha-1</version>
+      <version>1.0.0-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jboss.logging</groupId>
       <artifactId>jboss-logging-spi</artifactId>
-      <version>${version.jboss.logging}</version>
     </dependency>
     <dependency>
       <groupId>org.jboss.logging</groupId>
       <artifactId>jboss-logging-log4j</artifactId>
-      <version>${version.jboss.logging}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

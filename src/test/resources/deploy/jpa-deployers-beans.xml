@@ -27,6 +27,4 @@
       </property>
    </bean>
    
-   <!-- TODO: doesn't belong here -->
-   <bean name="org.jboss.jpa.mcint.annotations.PersistenceUnit" class="org.jboss.jpa.mcint.kernel.plugins.annotations.PersistenceUnitAnnotationPlugin"/>
 </deployment>

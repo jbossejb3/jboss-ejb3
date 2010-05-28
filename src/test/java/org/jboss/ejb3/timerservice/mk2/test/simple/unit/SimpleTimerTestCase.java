@@ -56,7 +56,7 @@ public class SimpleTimerTestCase extends AbstractTimerTestCase
          }
       };
       
-      TimerServiceFactory factory = getBean("TimerServiceFactory", TimerServiceFactory.class);
+      TimerServiceFactory factory = getBeanByType(TimerServiceFactory.class);
       TimerService service = factory.createTimerService(invoker);
       service.createTimer(500, null);
       
