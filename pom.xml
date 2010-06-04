@@ -56,7 +56,7 @@
   	<dependency>
   		<groupId>org.jboss.ejb3.timerservice</groupId>
   		<artifactId>ejb31-calendar-expr-parser</artifactId>
-  		<version>0.1.0-SNAPSHOT</version>
+  		<version>${project.version}</version>
   	</dependency>
   	
 	<dependency>
@@ -72,7 +72,6 @@
       </exclusions>
     </dependency>
     
-  	
   	
     <!-- For 'mocking' a DataSource we use Hypersonic -->
     <dependency>

@@ -128,24 +128,41 @@ public abstract class AbstractTimerTestCase
       {
          addToDeploy(candidate.toURL());
       }
+      // deploy the deployers
       deploy();
       
-//      File testClassesMetaInf = new File(TARGET_DIRECTORY, "test-classes");
-//      addToDeploy(testClassesMetaInf.toURI().toURL());
          URL url = new File(BASEDIR, "src/main/resources").toURI().toURL();
          log.debug("url = " + url);
          addToDeploy(url);
       
-      // finally deploy
+      // deploy the resources in src/main/resources
       deploy();
    }
    
+   /**
+    * Deploys all previously added deployments.
+    * 
+    * @throws DeploymentException
+    * @throws IOException
+    * @throws URISyntaxException
+    * @see {@link #addToDeploy(URL)}
+    */
    protected static void deploy() throws DeploymentException, IOException, URISyntaxException
    {
       mainDeployer.process();
       mainDeployer.checkComplete();
    }
    
+   /**
+    * Adds the <code>url</code> for deployment. This method will not trigger a failure
+    * if the deployment depends on some other MC bean which isn't yet available. When a set of 
+    * deployments have been added through this methods, finally call the {@link #deploy()} method
+    * so that all the deployments are processed and dependencies between deployments resolved.
+    * 
+    * @param url
+    * @throws DeploymentException
+    * @throws URISyntaxException
+    */
    protected static void addToDeploy(URL url) throws DeploymentException, URISyntaxException
    {
       VirtualFile root = VFS.getChild(url);

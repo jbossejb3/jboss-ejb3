@@ -23,6 +23,14 @@
 			</includes>
 			<outputDirectory>.</outputDirectory>
 		</fileSet>
+		<fileSet>
+			<directory>src/assembly</directory>
+			<includes>
+				<include>package-install-script.xml</include>
+			</includes>
+			<outputDirectory>.</outputDirectory>
+		</fileSet>
+		
 
 	</fileSets>
 	<dependencySets>

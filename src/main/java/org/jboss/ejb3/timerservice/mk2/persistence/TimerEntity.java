@@ -28,9 +28,12 @@ import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
 import javax.persistence.Lob;
 import javax.persistence.Table;
 
+import org.jboss.ejb3.timerservice.mk2.TimerImpl;
 import org.jboss.ejb3.timerservice.mk2.TimerState;
 
 /**
@@ -38,49 +41,55 @@ import org.jboss.ejb3.timerservice.mk2.TimerState;
  * @version $Revision: $
  */
 @Entity
-@Table(name="timer")
-public class TimerEntity
+@Table(name = "timer")
+@Inheritance(strategy = InheritanceType.JOINED)
+public class TimerEntity implements Serializable
 {
    @Id
    private UUID id;
-   
-   @Column(nullable=false)
-   private String targetId;
-   
-   @Column(nullable=false)
+
+   @Column(nullable = false)
+   private String timedObjectId;
+
+   @Column(nullable = false)
    private Date initialDate;
-   
+
    private long interval;
-   
+
    private Date nextDate;
-   
+
    private Date previousRun;
-   
+
    @Lob
    private Serializable info;
 
    private TimerState timerState;
-   
-   private boolean calendarTimer;
+
+   public TimerEntity()
+   {
+
+   }
+
+   public TimerEntity(TimerImpl timer)
+   {
+      this.id = timer.getId();
+      this.info = timer.getInfo();
+      this.initialDate = timer.getInitialExpiration();
+      this.interval = timer.getInterval();
+      this.nextDate = timer.getNextTimeout();
+      this.previousRun = timer.getPreviousRun();
+      this.timerState = timer.getState();
+      this.timedObjectId = timer.getTimedObjectId();
+   }
 
    public UUID getId()
    {
       return id;
    }
 
-   public void setId(UUID id)
+   public String getTimedObjectId()
    {
-      this.id = id;
-   }
-
-   public String getTargetId()
-   {
-      return targetId;
-   }
-
-   public void setTargetId(String targetId)
-   {
-      this.targetId = targetId;
+      return timedObjectId;
    }
 
    public Date getInitialDate()
@@ -88,29 +97,14 @@ public class TimerEntity
       return initialDate;
    }
 
-   public void setInitialDate(Date initialDate)
-   {
-      this.initialDate = initialDate;
-   }
-
    public long getInterval()
    {
       return interval;
    }
 
-   public void setInterval(long interval)
-   {
-      this.interval = interval;
-   }
-
    public Serializable getInfo()
    {
       return info;
-   }
-
-   public void setInfo(Serializable info)
-   {
-      this.info = info;
    }
 
    public Date getNextDate()
@@ -145,13 +139,7 @@ public class TimerEntity
 
    public boolean isCalendarTimer()
    {
-      return calendarTimer;
+      return false;
    }
 
-   public void setCalendarTimer(boolean calendarTimer)
-   {
-      this.calendarTimer = calendarTimer;
-   }
-   
-   
 }

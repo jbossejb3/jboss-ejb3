@@ -32,55 +32,144 @@ import javax.transaction.TransactionManager;
 import org.jboss.beans.metadata.api.annotations.Inject;
 import org.jboss.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.ejb3.timerservice.spi.TimerServiceFactory;
+import org.jboss.logging.Logger;
 
 /**
+ * Implementation of {@link TimerServiceFactory}, responsible for 
+ * creating and managing MK2 timer services
+ * 
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @version $Revision: $
  */
 public class TimerServiceFactoryImpl implements TimerServiceFactory
 {
+   /**
+    * Logger
+    */
+   private static final Logger logger = Logger.getLogger(TimerServiceFactoryImpl.class);
+
+   /**
+    * Entity manager factory for JPA backed persistence
+    */
    private EntityManagerFactory emf;
+
+   /**
+    * Transaction manager for transaction management
+    */
    private TransactionManager transactionManager;
+
+   /**
+    * Exceutor service for creating the scheduled timer tasks
+    */
    private ScheduledExecutorService executor;
-   
+
+   /**
+    * Creates a timer service for the passed <code>invoker</code>.
+    * 
+    * <p>
+    *   This method also registers the created timer service, with the {@link TimerServiceRegistry}
+    * </p>
+    */
    public TimerService createTimerService(TimedObjectInvoker invoker)
    {
       // TODO: inject
       executor = Executors.newScheduledThreadPool(10);
-      
-      return new TimerServiceImpl(invoker, emf.createEntityManager(), transactionManager, executor);
+
+      // create the timer service
+      TimerServiceImpl timerService = new TimerServiceImpl(invoker, emf.createEntityManager(), transactionManager,
+            executor);
+      // register this new created timer service in our registry
+      TimerServiceRegistry.registerTimerService(timerService);
+      return timerService;
    }
 
-   /* (non-Javadoc)
+   /**
+    * Restores the <code>timerService</code>.
+    * 
+    * <p>
+    *   This involves restoring, any persisted, active timer instances
+    * </p>
+    * <p>
+    *   This method additionally registers (if it is not already registered)
+    *   the timer service with the {@link TimerServiceRegistry}
+    * </p>
     * @see org.jboss.ejb3.timerservice.spi.TimerServiceFactory#restoreTimerService(javax.ejb.TimerService)
     */
    public void restoreTimerService(TimerService timerService)
    {
-      // TODO Auto-generated method stub
-      //
-      throw new RuntimeException("NYI");
+      TimerServiceImpl mk2TimerService = (TimerServiceImpl) timerService;
+      String timedObjectId = mk2TimerService.getInvoker().getTimedObjectId();
+      // if the timer service is not registered (maybe it was unregistered when it 
+      // was suspended) then register it with the timer service registry
+      if (TimerServiceRegistry.isRegistered(timedObjectId) == false)
+      {
+         TimerServiceRegistry.registerTimerService(mk2TimerService);
+      }
+      
+      logger.debug("Restoring timerservice for timedObjectId: " + timedObjectId);
+      // restore the timers
+      mk2TimerService.restoreTimers();
+
    }
 
-   @PersistenceUnit(unitName="timerdb")
+   /**
+    * Set the entity manager factory responsible for managing persistence of the 
+    * timers.
+    * 
+    * @param emf Entity manager factory
+    */
+   @PersistenceUnit(unitName = "timerdb")
    public void setEntityManagerFactory(EntityManagerFactory emf)
    {
       this.emf = emf;
    }
-   
+
+   /**
+    * Sets the transaction mananger responsible for transaction management of timers
+    * 
+    * @param tm Transaction manager
+    */
    @Inject
    public void setTransactionManager(TransactionManager tm)
    {
       this.transactionManager = tm;
    }
-   
-   /* (non-Javadoc)
+
+   /**
+    * Suspends the <code>timerService</code>
+    * 
+    * <p>
+    *   This involves suspending any scheduled timer tasks. Note that this method 
+    *   does not <i>cancel</i> any timers. The timer will continue to stay active
+    *   although their <i>currently scheduled tasks</i> will be cancelled. 
+    * </p>
+    * <p>
+    *   A suspended timer service (and the associated) timers can be restored by invoking
+    *   {@link #restoreTimerService(TimerService)}
+    * </p>
+    * <p>
+    *   This method additionally unregisters the the timer service from the {@link TimerServiceRegistry}
+    * </p>  
     * @see org.jboss.ejb3.timerservice.spi.TimerServiceFactory#suspendTimerService(javax.ejb.TimerService)
     */
    public void suspendTimerService(TimerService timerService)
    {
-      // TODO Auto-generated method stub
-      //
-      throw new RuntimeException("NYI");
+      TimerServiceImpl mk2TimerService = (TimerServiceImpl) timerService;
+      try
+      {
+         logger.debug("Suspending timerservice for timedObjectId: " + mk2TimerService.getInvoker().getTimedObjectId());
+         // suspend the timers
+         mk2TimerService.suspendTimers();
+      }
+      finally
+      {
+         String timedObjectId = mk2TimerService.getInvoker().getTimedObjectId(); 
+         // remove from our registry too
+         if(TimerServiceRegistry.isRegistered(timedObjectId))
+         {
+            TimerServiceRegistry.unregisterTimerService(timedObjectId);
+         }
+      }
    }
 
 }

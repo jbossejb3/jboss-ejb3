@@ -22,17 +22,15 @@
 package org.jboss.ejb3.timerservice.mk2;
 
 import java.io.Serializable;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import javax.ejb.EJBException;
 import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.ScheduleExpression;
 
 import org.jboss.ejb3.timer.schedule.CalendarBasedTimeout;
+import org.jboss.ejb3.timerservice.mk2.persistence.CalendarTimerEntity;
+import org.jboss.ejb3.timerservice.mk2.persistence.TimerEntity;
 import org.jboss.logging.Logger;
 
 /**
@@ -59,6 +57,12 @@ public class CalendarTimer extends TimerImpl
       super(id, timerService, calendarTimeout.getFirstTimeout().getTime(), 0, info, persistent);
       this.calendarTimeout = calendarTimeout;
    }
+   
+   public CalendarTimer(CalendarTimerEntity persistedCalendarTimer, TimerServiceImpl timerService)
+   {
+      super(persistedCalendarTimer, timerService);
+      this.calendarTimeout = persistedCalendarTimer.getCalendarTimeout();
+   }
 
    @Override
    public ScheduleExpression getSchedule() throws IllegalStateException, NoSuchObjectLocalException, EJBException
@@ -74,78 +78,16 @@ public class CalendarTimer extends TimerImpl
       return true;
    }
 
+   
    @Override
-   protected void scheduleTimeout()
+   protected TimerEntity createPersistentState()
    {
-      Runnable timeoutTask = new CalendarTimerTimeoutTask();
-      long delay = this.nextExpiration.getTime() - System.currentTimeMillis();
-      // if the timeout is in past, then trigger "now"
-      if (delay < 0)
-      {
-         delay = 0;
-      }
-      // schedule a one-shot task
-      future = timerService.getExecutor().schedule(timeoutTask, delay, TimeUnit.MILLISECONDS);
+      return new CalendarTimerEntity(this);
    }
-
-   private class CalendarTimerTimeoutTask implements Runnable
+   
+   public CalendarBasedTimeout getCalendarTimeout()
    {
-
-      @Override
-      public void run()
-      {
-
-         logger.debug("run: " + CalendarTimer.this);
-         CalendarTimer.this.previousRun = new Date();
-
-         // If a retry thread is in progress, we don't want to allow another
-         // interval to execute until the retry is complete. See JIRA-1926.
-         if (isInRetry())
-         {
-            logger.debug("Timer in retry mode, skipping this scheduled execution");
-            return;
-         }
-
-         if (isActive())
-         {
-            try
-            {
-               setTimerState(TimerState.IN_TIMEOUT);
-               // calculate next timeout and schedule a new task for next timeout
-               Calendar next = CalendarTimer.this.calendarTimeout.getNextTimeout(new GregorianCalendar());
-               CalendarTimer.this.nextExpiration = next.getTime();
-               // persist changes
-               timerService.persistTimer(CalendarTimer.this);
-               CalendarTimer.this.scheduleTimeout();
-               // invoke the timeout method
-               // TODO: This and the schedule of the next timeout should happen
-               // independently (separate threads)
-               timedObjectInvoker.callTimeout(CalendarTimer.this);
-            }
-            catch (Exception e)
-            {
-               logger.error("Error invoking ejbTimeout", e);
-            }
-            finally
-            {
-               if (timerState == TimerState.IN_TIMEOUT)
-               {
-                  if (CalendarTimer.this.nextExpiration == null)
-                  {
-                     setTimerState(TimerState.EXPIRED);
-                     killTimer();
-                  }
-                  else
-                  {
-                     setTimerState(TimerState.ACTIVE);
-                     // persist changes
-                     timerService.persistTimer(CalendarTimer.this);
-                  }
-               }
-            }
-         }
-
-      }
+      return this.calendarTimeout;
    }
-
+   
 }
