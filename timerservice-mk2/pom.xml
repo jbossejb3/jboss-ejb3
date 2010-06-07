@@ -1,0 +1,210 @@
+<!--
+  vi:ts=2:sw=2:expandtab:
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<parent>
+		<groupId>org.jboss.ejb3.timerservice</groupId>
+		<artifactId>jboss-ejb3-timerservice-parent</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+	
+  <!-- Maven POM Model Version -->
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- Artifact Information -->
+  <groupId>org.jboss.ejb3.timerservice</groupId>
+  <artifactId>jboss-ejb3-timerservice-mk2</artifactId>
+  <packaging>jar</packaging>
+  <name>JBoss EJB 3.x TimerService Mark 2</name>
+  <description>
+    JBoss EJB 3.x TimerService Mark 2 is an implementation based on
+    the venerable JBoss AS timer service meant for use in EJB 2.
+  </description>
+  <url>http://labs.jboss.com/jbossejb3/</url>
+
+    <build>
+        <plugins>
+            <!-- Assembly Plugin -->
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2-beta-4</version>
+                <executions>
+                    <!--  Build timerservice mk2 "package" -->
+                  <execution>
+                    <id>build-timerservice-mk2-package</id> 
+                    <phase>package</phase>
+                    <goals>
+                      <goal>single</goal>
+                    </goals>
+                  </execution>
+                </executions>
+                <configuration>
+                  <descriptors>
+                    <descriptor>src/assembly/package-assembler.xml</descriptor>
+                  </descriptors>
+                </configuration>
+            </plugin>
+        </plugins>
+    
+    </build>
+
+
+  <dependencies>
+  
+  	<dependency>
+  		<groupId>org.jboss.ejb3.timerservice</groupId>
+  		<artifactId>ejb31-calendar-expr-parser</artifactId>
+  		<version>${project.version}</version>
+  	</dependency>
+  	
+	<dependency>
+      <groupId>org.jboss.kernel</groupId>
+      <artifactId>jboss-kernel</artifactId>
+      <version>2.2.0.Alpha9</version>
+      
+      <exclusions>
+      	<exclusion>
+      		<groupId>org.jboss</groupId>
+      		<artifactId>jboss-common-core</artifactId>
+      	</exclusion>
+      </exclusions>
+    </dependency>
+    
+  	
+    <!-- For 'mocking' a DataSource we use Hypersonic -->
+    <dependency>
+      <groupId>hsqldb</groupId>
+      <artifactId>hsqldb</artifactId>
+      <version>1.8.0.8-brew</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- JPA 1.0 -->
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>ejb3-persistence</artifactId>
+      <version>1.0.2.GA</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.bootstrap</groupId>
+      <artifactId>jboss-bootstrap</artifactId>
+      <version>1.0.0-Beta-1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.deployers</groupId>
+      <artifactId>jboss-deployers-vfs</artifactId>
+      <version>2.2.0.Alpha4</version>
+      <scope>test</scope>
+    </dependency>
+	
+    
+    
+    <dependency>
+      <groupId>org.jboss.spec.javax.ejb</groupId>
+      <artifactId>jboss-ejb-api_3.1_spec</artifactId>
+      <version>1.0.0.Beta2</version>
+    </dependency> 
+    
+    <dependency>
+		<groupId>org.jboss.metadata</groupId>
+		<artifactId>jboss-metadata-ejb</artifactId>
+    </dependency>
+       
+    <dependency>
+      <groupId>org.jboss.ejb3</groupId>
+      <artifactId>jboss-ejb3-jta-profile</artifactId>
+      <version>0.1.0-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>    
+    <dependency>
+      <groupId>org.jboss.ejb3</groupId>
+      <artifactId>jboss-ejb3-timerservice-spi</artifactId>
+      <version>1.0.0</version>
+      <exclusions>
+        <!-- Make sure the EJB 3.0 API doesn't get in here -->
+        <exclusion>
+          <groupId>org.jboss.javaee</groupId>
+          <artifactId>jboss-ejb-api</artifactId>
+        </exclusion>
+		<exclusion>
+			<groupId>org.jboss.metadata</groupId>
+			<artifactId>jboss-metadata-ejb</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.jpa</groupId>
+      <artifactId>jboss-jpa-deployers</artifactId>
+      <version>1.0.2-alpha-1</version>
+      <scope>test</scope>
+      <exclusions>
+        <!-- Make sure the EJB 3.0 API doesn't get in here -->
+        <exclusion>
+          <groupId>org.jboss.javaee</groupId>
+          <artifactId>jboss-ejb-api</artifactId>
+        </exclusion>
+        <exclusion>
+        	<groupId>org.jboss</groupId>
+        	<artifactId>jboss-common-core</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <!-- JBJPA-21: To use the correct abstract layer either include org.jboss.jpa:jboss-jpa-vfs2 
+    	or org.jboss.jpa:jboss-jpa-vfs3 in the class path. Else an error will 
+    	occur: "No service found for class org.jboss.jpa.deployment.PersistenceUnitDeploymentFactory (JBJPA-21) -->
+    <dependency>
+    	<groupId>org.jboss.jpa</groupId>
+    	<artifactId>jboss-jpa-vfs3</artifactId>
+    	<version>1.0.2-alpha-1</version>
+    	<scope>test</scope>
+    	<exclusions>
+    		<exclusion>
+    			<groupId>org.jboss</groupId>
+    			<artifactId>jboss-vfs</artifactId>
+    		</exclusion>
+    	</exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.jpa</groupId>
+      <artifactId>jboss-jpa-mcint</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.logging</groupId>
+      <artifactId>jboss-logging-spi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.logging</groupId>
+      <artifactId>jboss-logging-log4j</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.naming</groupId>
+      <artifactId>jnpserver</artifactId>
+      <version>5.0.5.Final</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+        	<groupId>org.jboss</groupId>
+        	<artifactId>jboss-common-core</artifactId>
+        </exclusion>
+      </exclusions>
+      
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.slf4j</groupId>
+      <artifactId>slf4j-jboss-logging</artifactId>
+      <version>1.0.0.GA</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+</project>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deployment xmlns="urn:jboss:bean-deployer:2.0">
+   <!-- As a 'mock' DataSource we use HSQLDB -->
+   <bean name="HSQLDBService" class="org.jboss.ejb3.timerservice.mk2.test.common.HSQLDBService">
+      <depends>NamingServer</depends>
+   </bean>
+</deployment>

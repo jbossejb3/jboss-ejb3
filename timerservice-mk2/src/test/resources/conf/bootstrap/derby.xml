@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deployment xmlns="urn:jboss:bean-deployer:2.0">
+   <!-- As a 'mock' DataSource we use Derby -->
+   <bean name="DerbyService" class="org.jboss.ejb3.timerservice.quartz.test.common.DerbyService">
+      <depends>NamingServer</depends>
+   </bean>
+</deployment>

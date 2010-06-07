@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deployment xmlns="urn:jboss:bean-deployer:2.0">
+   <bean name="SimpleClassLoaderDeployer" class="org.jboss.ejb3.timerservice.mk2.test.common.SimpleClassLoaderDeployer"/>
+   
+   <!-- The MainDeployer -->
+   <bean name="MainDeployer" class="org.jboss.deployers.plugins.main.MainDeployerImpl">
+      <property name="structuralDeployers"><inject bean="StructuralDeployers"/></property>
+      <property name="deployers"><inject bean="Deployers"/></property>
+      <!--property name="mgtDeploymentCreator"><inject bean="ManagedDeploymentCreator"/></property-->
+   </bean>
+      
+   <!-- The holder for deployers that determine structure -->
+   <bean name="StructuralDeployers" class="org.jboss.deployers.vfs.plugins.structure.VFSStructuralDeployersImpl">
+      <property name="structureBuilder">
+         <!-- The consolidator of the structure information -->
+         <bean name="StructureBuilder" class="org.jboss.deployers.vfs.plugins.structure.VFSStructureBuilder"/>
+      </property>
+      <!-- Accept any implementor of structure deployer -->
+      <incallback method="addDeployer"/>
+      <uncallback method="removeDeployer"/>
+   </bean>
+   
+   <!-- The holder for deployers that do real deployment -->
+   <bean name="Deployers" class="org.jboss.deployers.plugins.deployers.DeployersImpl">
+      <constructor><parameter><inject bean="jboss.kernel:service=KernelController"/></parameter></constructor>
+      <!-- Accept any implementor of deployer -->
+      <incallback method="addDeployer"/>
+      <uncallback method="removeDeployer"/>
+   </bean>
+   
+   <!-- File Structure -->
+   <bean name="FileStructure" class="org.jboss.deployers.vfs.plugins.structure.file.FileStructure">
+      <constructor>
+         <parameter>
+            <set elementClass="java.lang.String">
+               <value>-beans.xml</value>
+            </set>
+         </parameter>
+      </constructor>
+   </bean>
+   
+   <!-- File Structure -->
+   <bean name="JARStructure" class="org.jboss.deployers.vfs.plugins.structure.jar.JARStructure"/>
+   
+   <!-- POJO Deployment -->
+   <bean name="BeanDeployer" class="org.jboss.deployers.vfs.deployer.kernel.BeanDeployer"/>
+   <bean name="KernelDeploymentDeployer" class="org.jboss.deployers.vfs.deployer.kernel.KernelDeploymentDeployer"/>
+   <bean name="BeanMetaDataDeployer" class="org.jboss.deployers.vfs.deployer.kernel.BeanMetaDataDeployer">
+      <constructor><parameter class="org.jboss.kernel.Kernel"><inject bean="jboss.kernel:service=Kernel"/></parameter></constructor>
+   </bean>
+</deployment>
