@@ -53,6 +53,7 @@ import org.jboss.ejb3.timerservice.mk2.persistence.CalendarTimerEntity;
 import org.jboss.ejb3.timerservice.mk2.persistence.TimerEntity;
 import org.jboss.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 
 /**
  * MK2 implementation of EJB3.1 {@link TimerService}
@@ -150,7 +151,7 @@ public class TimerServiceImpl implements TimerService
    {
       Serializable info = timerConfig == null ? null : timerConfig.getInfo();
       boolean persistent = timerConfig == null ? true : timerConfig.isPersistent();
-      return this.createCalendarTimer(schedule, info, persistent);
+      return this.createCalendarTimer(schedule, info, persistent, null);
    }
 
    /**
@@ -290,6 +291,18 @@ public class TimerServiceImpl implements TimerService
       return this.createTimer(initialExpiration, intervalDuration, info, true);
    }
 
+  // @Override
+   public Timer createAutoTimer(ScheduleExpression schedule, NamedMethodMetaData timeoutMethod)
+   {
+      return this.createCalendarTimer(schedule, null, true, timeoutMethod);
+   }
+
+ //  @Override
+   public Timer createAutoTimer(ScheduleExpression schedule, TimerConfig timerConfig, NamedMethodMetaData timeoutMethod)
+   {
+      return this.createCalendarTimer(schedule, timerConfig.getInfo(), timerConfig.isPersistent(), timeoutMethod);
+   }
+
    /**
     * {@inheritDoc}
     */
@@ -355,7 +368,8 @@ public class TimerServiceImpl implements TimerService
     * @return Returns the newly created timer
     * @throws IllegalArgumentException If the passed <code>schedule</code> is null
     */
-   private Timer createCalendarTimer(ScheduleExpression schedule, Serializable info, boolean persistent)
+   private Timer createCalendarTimer(ScheduleExpression schedule, Serializable info, boolean persistent,
+         NamedMethodMetaData timeoutMethod)
    {
       if (schedule == null)
       {
@@ -376,7 +390,7 @@ public class TimerServiceImpl implements TimerService
       // generate a id for the timer
       UUID uuid = UUID.randomUUID();
       // create the timer
-      TimerImpl timer = new CalendarTimer(uuid, this, calendarTimeout, info, persistent);
+      TimerImpl timer = new CalendarTimer(uuid, this, calendarTimeout, info, persistent, timeoutMethod);
       // persist it if it's persistent
       if (persistent)
       {

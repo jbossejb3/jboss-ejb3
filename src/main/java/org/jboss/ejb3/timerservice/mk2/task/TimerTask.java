@@ -151,7 +151,23 @@ public class TimerTask implements Runnable
                this.timer.scheduleTimeout();
             }
             // finally invoke the timeout method through the invoker
-            this.timerService.getInvoker().callTimeout(this.timer);
+            if (this.timer.isAutoTimer())
+            {
+//               TimedObjectInvoker invoker = this.timerService.getInvoker();
+//               if (invoker instanceof AutoTimedObjectInvoker == false)
+//               {
+//                  String msg = "Cannot invoke timeout method because timer: " + this.timer
+//                  + " is an auto timer, but invoker is not of type" + AutoTimedObjectInvoker.class;
+//                  logger.error(msg);
+//                  throw new RuntimeException(msg);
+//               }
+//               // call the timeout method
+//               ((AutoTimedObjectInvoker) invoker).callTimeout(this.timer, this.timer.getTimeoutMethod());
+            }
+            else
+            {
+               this.timerService.getInvoker().callTimeout(this.timer);
+            }
          }
          catch (Exception e)
          {

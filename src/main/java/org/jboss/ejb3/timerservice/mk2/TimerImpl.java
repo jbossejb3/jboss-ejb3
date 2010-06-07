@@ -39,6 +39,7 @@ import org.jboss.ejb3.timerservice.mk2.persistence.TimerEntity;
 import org.jboss.ejb3.timerservice.mk2.task.TimerTask;
 import org.jboss.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 
 /**
  * Implementation of EJB3.1 {@link Timer}
@@ -303,6 +304,18 @@ public class TimerImpl implements Timer
       return nextTimeoutInMillis - currentTimeInMillis;
    }
 
+   //@Override
+   public boolean isAutoTimer()
+   {
+      return false;
+   }
+   
+   //@Override
+   public NamedMethodMetaData getTimeoutMethod()
+   {
+      throw new IllegalStateException("Timer " + this + " is not an auto timer");
+   }
+   
    /**
     * Cancels any scheduled timer task and appropriately updates the state of this timer
     * to {@link TimerState#CANCELED}

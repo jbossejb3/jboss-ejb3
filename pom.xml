@@ -110,7 +110,13 @@
       <groupId>org.jboss.spec.javax.ejb</groupId>
       <artifactId>jboss-ejb-api_3.1_spec</artifactId>
       <version>1.0.0.Beta2</version>
-    </dependency>    
+    </dependency> 
+    
+    <dependency>
+		<groupId>org.jboss.metadata</groupId>
+		<artifactId>jboss-metadata-ejb</artifactId>
+    </dependency>
+       
     <dependency>
       <groupId>org.jboss.ejb3</groupId>
       <artifactId>jboss-ejb3-jta-profile</artifactId>
@@ -120,12 +126,16 @@
     <dependency>
       <groupId>org.jboss.ejb3</groupId>
       <artifactId>jboss-ejb3-timerservice-spi</artifactId>
-      <version>[0,)</version>
+      <version>1.0.0</version>
       <exclusions>
         <!-- Make sure the EJB 3.0 API doesn't get in here -->
         <exclusion>
           <groupId>org.jboss.javaee</groupId>
           <artifactId>jboss-ejb-api</artifactId>
+        </exclusion>
+		<exclusion>
+			<groupId>org.jboss.metadata</groupId>
+			<artifactId>jboss-metadata-ejb</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

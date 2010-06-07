@@ -27,11 +27,14 @@ import javax.ejb.ScheduleExpression;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.jboss.ejb3.timer.schedule.CalendarBasedTimeout;
 import org.jboss.ejb3.timerservice.mk2.CalendarTimer;
+import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
+import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 
 /**
  * CalendarTimerEntity
@@ -69,6 +72,11 @@ public class CalendarTimerEntity extends TimerEntity
 
    private Date endDate;
 
+   private boolean autoTimer;
+
+   @OneToOne
+   private TimeoutMethod timeoutMethod;
+
    public CalendarTimerEntity()
    {
 
@@ -78,7 +86,20 @@ public class CalendarTimerEntity extends TimerEntity
    {
       super(calendarTimer);
       this.scheduleExpression = calendarTimer.getSchedule();
+      this.autoTimer = calendarTimer.isAutoTimer();
+      if (this.autoTimer)
+      {
+         String methodParams[] = null;
 
+         NamedMethodMetaData timeoutNamedMethod = calendarTimer.getTimeoutMethod();
+         MethodParametersMetaData params = timeoutNamedMethod.getMethodParams();
+         if (params != null)
+         {
+            methodParams = params.toArray(methodParams);
+         }
+         this.timeoutMethod = new TimeoutMethod(timeoutNamedMethod.getMethodName(), methodParams);
+      }
+      
       this.second = this.scheduleExpression.getSecond();
       this.minute = this.scheduleExpression.getMinute();
       this.hour = this.scheduleExpression.getHour();
@@ -171,6 +192,26 @@ public class CalendarTimerEntity extends TimerEntity
    public void setEndDate(Date end)
    {
       this.endDate = end;
+   }
+
+   public TimeoutMethod getTimeoutMethod()
+   {
+      return timeoutMethod;
+   }
+
+   public void setTimeoutMethod(TimeoutMethod timeoutMethod)
+   {
+      this.timeoutMethod = timeoutMethod;
+   }
+
+   public boolean isAutoTimer()
+   {
+      return autoTimer;
+   }
+
+   public void setAutoTimer(boolean autoTimer)
+   {
+      this.autoTimer = autoTimer;
    }
 
 }

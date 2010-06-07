@@ -32,6 +32,7 @@ import org.jboss.ejb3.timer.schedule.CalendarBasedTimeout;
 import org.jboss.ejb3.timerservice.mk2.persistence.CalendarTimerEntity;
 import org.jboss.ejb3.timerservice.mk2.persistence.TimerEntity;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 
 /**
  * CalendarTimer
@@ -42,10 +43,14 @@ import org.jboss.logging.Logger;
 public class CalendarTimer extends TimerImpl
 {
 
-   private CalendarBasedTimeout calendarTimeout;
-
    private static Logger logger = Logger.getLogger(CalendarTimer.class);
 
+   private CalendarBasedTimeout calendarTimeout;
+
+   private boolean autoTimer;
+   
+   private NamedMethodMetaData timeoutMethod;
+   
    public CalendarTimer(UUID id, TimerServiceImpl timerService, CalendarBasedTimeout calendarTimeout)
    {
       this(id, timerService, calendarTimeout, null, true);
@@ -54,9 +59,21 @@ public class CalendarTimer extends TimerImpl
    public CalendarTimer(UUID id, TimerServiceImpl timerService, CalendarBasedTimeout calendarTimeout,
          Serializable info, boolean persistent)
    {
+      this(id, timerService,calendarTimeout, info, persistent, null);
+   }
+   
+   public CalendarTimer(UUID id, TimerServiceImpl timerService, CalendarBasedTimeout calendarTimeout,
+         Serializable info, boolean persistent, NamedMethodMetaData timeoutMethod)
+   {
       super(id, timerService, calendarTimeout.getFirstTimeout().getTime(), 0, info, persistent);
       this.calendarTimeout = calendarTimeout;
+      if (timeoutMethod != null)
+      {
+         this.autoTimer = true;
+         this.timeoutMethod = timeoutMethod;
+      }
    }
+
    
    public CalendarTimer(CalendarTimerEntity persistedCalendarTimer, TimerServiceImpl timerService)
    {
@@ -85,9 +102,30 @@ public class CalendarTimer extends TimerImpl
       return new CalendarTimerEntity(this);
    }
    
+   
    public CalendarBasedTimeout getCalendarTimeout()
    {
       return this.calendarTimeout;
+   }
+
+   public boolean isAutoTimer()
+   {
+      return autoTimer;
+   }
+
+   public void setAutoTimer(boolean autoTimer)
+   {
+      this.autoTimer = autoTimer;
+   }
+
+   public NamedMethodMetaData getTimeoutMethod()
+   {
+      return timeoutMethod;
+   }
+
+   public void setTimeoutMethod(NamedMethodMetaData timeoutMethod)
+   {
+      this.timeoutMethod = timeoutMethod;
    }
    
 }
