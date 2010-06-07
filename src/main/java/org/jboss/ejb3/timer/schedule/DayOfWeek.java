@@ -175,4 +175,15 @@ public class DayOfWeek extends MixedValueTypeExpression
 
       return next;
    }
+   
+   public int getFirst()
+   {
+      if (this.expressionType == ScheduleExpressionType.WILDCARD)
+      {
+         return new GregorianCalendar().get(Calendar.DAY_OF_WEEK);
+      }
+      return this.offsetAdjustedDaysOfWeek.first();
+   }
+
+
 }

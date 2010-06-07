@@ -176,6 +176,15 @@ public class Second extends IntegerBasedExpression
 
       return next;
    }
+   
+   public int getFirst()
+   {
+      if (this.expressionType == ScheduleExpressionType.WILDCARD)
+      {
+         return new GregorianCalendar().get(Calendar.SECOND);
+      }
+      return this.seconds.first();
+   }
 
    /**
     * Returns the maximum allowed value for a {@link Second}
@@ -199,4 +208,5 @@ public class Second extends IntegerBasedExpression
       return MIN_SECOND;
    }
 
+   
 }

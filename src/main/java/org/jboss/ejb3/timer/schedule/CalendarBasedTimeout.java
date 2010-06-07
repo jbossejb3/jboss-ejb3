@@ -22,12 +22,14 @@
 package org.jboss.ejb3.timer.schedule;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 import javax.ejb.ScheduleExpression;
 
 /**
- * ScheduleExpressionParserImpl
+ * CalendarBasedTimeout
  *
  * @author Jaikiran Pai
  * @version $Revision: $
@@ -50,38 +52,43 @@ public class CalendarBasedTimeout
     * The {@link Minute} created out of the {@link ScheduleExpression#getMinute()} value
     */
    private Minute minute;
-   
+
    /**
     * The {@link Hour} created out of the {@link ScheduleExpression#getHour()} value
     */
    private Hour hour;
-   
+
    /**
     * The {@link DayOfWeek} created out of the {@link ScheduleExpression#getDayOfWeek()} value
     */
    private DayOfWeek dayOfWeek;
-   
+
    /**
     * The {@link DayOfMonth} created out of the {@link ScheduleExpression#getDayOfMonth()} value
     */
    private DayOfMonth dayOfMonth;
-   
+
    /**
     * The {@link Month} created out of the {@link ScheduleExpression#getMonth()} value
     */
    private Month month;
-   
+
    /**
     * The {@link Year} created out of the {@link ScheduleExpression#getYear()} value
     */
    private Year year;
-   
+
    /**
     * The first timeout relative to the time when this {@link CalendarBasedTimeout} was created
     * from a {@link ScheduleExpression} 
     */
    private Calendar firstTimeout;
 
+   /**
+    * The timezone being used for this {@link CalendarBasedTimeout}
+    */
+   private TimeZone timezone;
+   
    /**
     * Creates a {@link CalendarBasedTimeout} from the passed <code>schedule</code>.
     * <p>
@@ -95,7 +102,7 @@ public class CalendarBasedTimeout
       // store the original expression from which this
       // CalendarBasedTimeout was created
       this.scheduleExpression = schedule;
-      
+
       // Start parsing the values in the ScheduleExpression
       this.second = new Second(schedule.getSecond());
       this.minute = new Minute(schedule.getMinute());
@@ -104,7 +111,15 @@ public class CalendarBasedTimeout
       this.dayOfMonth = new DayOfMonth(schedule.getDayOfMonth());
       this.month = new Month(schedule.getMonth());
       this.year = new Year(schedule.getYear());
-      
+      if (schedule.getTimezone() != null)
+      {
+         this.timezone = TimeZone.getTimeZone(schedule.getTimezone());
+      }
+      else
+      {
+         this.timezone = TimeZone.getDefault();
+      }
+
       // Now that we have parsed the values from the ScheduleExpression,
       // determine and set the first timeout (relative to the current time)
       // of this CalendarBasedTimeout
@@ -113,7 +128,7 @@ public class CalendarBasedTimeout
 
    public Calendar getNextTimeout(Calendar current)
    {
-      Calendar next = new GregorianCalendar(current.getTimeZone());
+      Calendar next = new GregorianCalendar(this.timezone);
       next.setTime(current.getTime());
       next.setFirstDayOfWeek(Calendar.SUNDAY);
 
@@ -121,23 +136,21 @@ public class CalendarBasedTimeout
       next.add(Calendar.SECOND, 1);
 
       next = this.second.getNextSecond(next);
-//      next.getTime();
       next = this.minute.getNextMinute(next);
-  //    next.getTime();
       next = this.hour.getNextHour(next);
-    //  next.getTime();
       next = this.dayOfWeek.getNextDayOfWeek(next);
-      //next.getTime();
       next = this.dayOfMonth.getNextDayOfMonth(next);
-     // next.getTime();
       next = this.month.getNextMonth(next);
       if (next == null)
       {
          return null;
       }
-      // next.getTime();
       next = this.year.getNextYear(next);
-      //next.getTime();
+      Date end = this.scheduleExpression.getEnd();
+      if (next != null && end != null && next.after(end))
+      {
+         return null;
+      }
       return next;
    }
 
@@ -149,13 +162,25 @@ public class CalendarBasedTimeout
    {
       return this.firstTimeout;
    }
-   
+
    private void setFirstTimeout()
    {
-      this.firstTimeout = new GregorianCalendar();
-      this.firstTimeout.set(Calendar.HOUR, 0);
-      this.firstTimeout.set(Calendar.MINUTE, 0);
-      this.firstTimeout.set(Calendar.SECOND, 0);
+      this.firstTimeout = new GregorianCalendar(this.timezone);
+      Date start = this.scheduleExpression.getStart();
+      if (start != null)
+      {
+         this.firstTimeout.setTime(start);
+      }
+      else
+      {
+         this.firstTimeout.set(Calendar.SECOND, this.second.getFirst());
+         this.firstTimeout.set(Calendar.MINUTE, this.minute.getFirst());
+         this.firstTimeout.set(Calendar.HOUR_OF_DAY, this.hour.getFirst());
+         //      this.firstTimeout.set(Calendar.DAY_OF_WEEK, this.dayOfWeek.getFirst());
+         //      this.firstTimeout.set(Calendar.DAY_OF_MONTH, this.dayOfMonth.getFirst());
+         //      this.firstTimeout.set(Calendar.MONTH, this.month.getFirst());
+         //      this.firstTimeout.set(Calendar.YEAR, this.year.getFirst());
+      }
       this.firstTimeout.setFirstDayOfWeek(Calendar.SUNDAY);
 
       this.firstTimeout = this.second.getNextSecond(this.firstTimeout);
@@ -168,9 +193,9 @@ public class CalendarBasedTimeout
       {
          this.firstTimeout = this.year.getNextYear(this.firstTimeout);
       }
-      
+
    }
-   
+
    /**
     * Returns the original {@link ScheduleExpression} from which this {@link CalendarBasedTimeout}
     * was created.

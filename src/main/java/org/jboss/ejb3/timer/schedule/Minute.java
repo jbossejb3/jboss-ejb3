@@ -176,6 +176,15 @@ public class Minute extends IntegerBasedExpression
       return next;
    }
 
+   public int getFirst()
+   {
+      if (this.expressionType == ScheduleExpressionType.WILDCARD)
+      {
+         return new GregorianCalendar().get(Calendar.MINUTE);
+      }
+      return this.minutes.first();
+   }
+
    /**
     * Returns the maximum allowed value for a {@link Minute}
     * 

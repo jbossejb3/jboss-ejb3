@@ -187,4 +187,14 @@ public class Year extends IntegerBasedExpression
       return next;
    }
 
+   public int getFirst()
+   {
+      if (this.expressionType == ScheduleExpressionType.WILDCARD)
+      {
+         return new GregorianCalendar().get(Calendar.YEAR);
+      }
+      return this.years.first();
+   }
+
+
 }
