@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <!--
+    vi:ts=2:sw=2:expandtab:
+    -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+
+    <parent>
+        <groupId>org.jboss.ejb3.timerservice</groupId>
+        <artifactId>jboss-ejb3-timerservice-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    
+    <!-- Model Information -->
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Artifact Information  -->
+    <groupId>org.jboss.ejb3.timerservice</groupId>
+    <artifactId>jboss-ejb3-timerservice-deployer</artifactId>
+    <packaging>jar</packaging>
+    <name>JBoss EJB3.1+ Timerservice deployer</name>
+    <url>http://www.jboss.org</url>
+    <description>MC based deployer(s) for timerservice functionality for EJB containers</description>
+    
+    <properties>
+        <version.org.jboss.deployers>2.2.0.Alpha5</version.org.jboss.deployers>
+        <version.org.jboss.kernel>2.2.0.Alpha10</version.org.jboss.kernel>
+    </properties>
+    
+    <build>
+        <plugins>
+            <!-- Assembly Plugin -->
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2-beta-4</version>
+                <executions>
+                    <!--  Build timerservice deployer "package" -->
+                  <execution>
+                    <id>build-timerservice-deployer-package</id> 
+                    <phase>package</phase>
+                    <goals>
+                      <goal>single</goal>
+                    </goals>
+                  </execution>
+                </executions>
+                <configuration>
+                  <descriptors>
+                    <descriptor>src/assembly/package-assembler.xml</descriptor>
+                  </descriptors>
+                </configuration>
+            </plugin>
+        </plugins>
+    
+    </build>
+    
+    <dependencies>
+
+        <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-ejb</artifactId>
+        </dependency>
+        <dependency>
+        	<groupId>org.jboss.ejb3</groupId>
+        	<artifactId>jboss-ejb3-common</artifactId>
+        	<version>1.0.0</version>
+        </dependency>
+        <dependency>
+        	<groupId>org.jboss.ejb3</groupId>
+        	<artifactId>jboss-ejb3-core</artifactId>
+        	<version>1.4.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+        	<groupId>org.jboss.ejb3.timerservice</groupId>
+        	<artifactId>jboss-ejb3-timerservice-extension</artifactId>
+        	<version>${project.version}</version>
+        </dependency>
+        <!-- JBoss deployers -->
+        <dependency>
+        	<groupId>org.jboss.kernel</groupId>
+        	<artifactId>jboss-kernel</artifactId>
+        	<version>${version.org.jboss.kernel}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss.deployers</groupId>
+          <artifactId>jboss-deployers-spi</artifactId>
+          <version>${version.org.jboss.deployers}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss.deployers</groupId>
+          <artifactId>jboss-deployers-core-spi</artifactId>
+          <version>${version.org.jboss.deployers}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss.deployers</groupId>
+          <artifactId>jboss-deployers-structure-spi</artifactId>
+          <version>${version.org.jboss.deployers}</version>
+        </dependency>
+        
+        <!-- ***************************** -->
+        <!--  Test dependencies -->
+        <!-- ***************************** -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+    
+    </dependencies>
+
+</project>	

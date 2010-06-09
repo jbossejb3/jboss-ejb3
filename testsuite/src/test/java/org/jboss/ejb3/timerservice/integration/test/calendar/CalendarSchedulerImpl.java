@@ -79,8 +79,9 @@ public class CalendarSchedulerImpl implements CalendarScheduler
    @Timeout
    public void timeout(Timer timer)
    {
-      logger.info("Timeout called on bean " + this + " for timer " + timer + " at " + new Date());
-      this.timeoutTracker.trackTimeout(timer);
+      Date now = new Date();
+      logger.info("Timeout called on bean " + this + " for timer " + timer + " at " + now);
+      this.timeoutTracker.trackTimeout(timer, now);
 
       int numberOfTimeouts = this.timeoutTracker.getTimeoutCount();
       Integer maxTimeouts = (Integer) timer.getInfo();

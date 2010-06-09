@@ -38,7 +38,6 @@ import javax.ejb.ScheduleExpression;
 import javax.ejb.Timer;
 import javax.ejb.TimerConfig;
 import javax.ejb.TimerHandle;
-import javax.ejb.TimerService;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.transaction.RollbackException;
@@ -49,11 +48,12 @@ import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 import org.jboss.ejb3.timer.schedule.CalendarBasedTimeout;
+import org.jboss.ejb3.timerservice.extension.TimerService;
 import org.jboss.ejb3.timerservice.mk2.persistence.CalendarTimerEntity;
+import org.jboss.ejb3.timerservice.mk2.persistence.TimeoutMethod;
 import org.jboss.ejb3.timerservice.mk2.persistence.TimerEntity;
 import org.jboss.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.logging.Logger;
-import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 
 /**
  * MK2 implementation of EJB3.1 {@link TimerService}
@@ -151,7 +151,7 @@ public class TimerServiceImpl implements TimerService
    {
       Serializable info = timerConfig == null ? null : timerConfig.getInfo();
       boolean persistent = timerConfig == null ? true : timerConfig.isPersistent();
-      return this.createCalendarTimer(schedule, info, persistent, null);
+      return this.createCalendarTimer(schedule, info, persistent, null, null);
    }
 
    /**
@@ -291,16 +291,19 @@ public class TimerServiceImpl implements TimerService
       return this.createTimer(initialExpiration, intervalDuration, info, true);
    }
 
-  // @Override
-   public Timer createAutoTimer(ScheduleExpression schedule, NamedMethodMetaData timeoutMethod)
+   @Override
+   public org.jboss.ejb3.timerservice.extension.Timer getAutoTimer(ScheduleExpression schedule,
+         String timeoutMethodName, String[] methodParams)
    {
-      return this.createCalendarTimer(schedule, null, true, timeoutMethod);
+      return this.createCalendarTimer(schedule, null, true, timeoutMethodName, methodParams);
    }
 
- //  @Override
-   public Timer createAutoTimer(ScheduleExpression schedule, TimerConfig timerConfig, NamedMethodMetaData timeoutMethod)
+   @Override
+   public org.jboss.ejb3.timerservice.extension.Timer getAutoTimer(ScheduleExpression schedule,
+         TimerConfig timerConfig, String timeoutMethodName, String[] methodParams)
    {
-      return this.createCalendarTimer(schedule, timerConfig.getInfo(), timerConfig.isPersistent(), timeoutMethod);
+      return this.createCalendarTimer(schedule, timerConfig.getInfo(), timerConfig.isPersistent(), timeoutMethodName,
+            methodParams);
    }
 
    /**
@@ -368,8 +371,8 @@ public class TimerServiceImpl implements TimerService
     * @return Returns the newly created timer
     * @throws IllegalArgumentException If the passed <code>schedule</code> is null
     */
-   private Timer createCalendarTimer(ScheduleExpression schedule, Serializable info, boolean persistent,
-         NamedMethodMetaData timeoutMethod)
+   private org.jboss.ejb3.timerservice.extension.Timer createCalendarTimer(ScheduleExpression schedule,
+         Serializable info, boolean persistent, String timeoutMethod, String[] methodParams)
    {
       if (schedule == null)
       {
@@ -390,7 +393,7 @@ public class TimerServiceImpl implements TimerService
       // generate a id for the timer
       UUID uuid = UUID.randomUUID();
       // create the timer
-      TimerImpl timer = new CalendarTimer(uuid, this, calendarTimeout, info, persistent, timeoutMethod);
+      TimerImpl timer = new CalendarTimer(uuid, this, calendarTimeout, info, persistent, timeoutMethod, methodParams);
       // persist it if it's persistent
       if (persistent)
       {
@@ -590,7 +593,6 @@ public class TimerServiceImpl implements TimerService
 
          // do the actual persistence
          this.em.persist(mergedTimerEntity);
-         logger.debug("Successfully persisted timer " + timer);
       }
       catch (Throwable t)
       {
@@ -789,6 +791,143 @@ public class TimerServiceImpl implements TimerService
       // persist changes
       this.persistTimer(timer);
 
+   }
+
+   private org.jboss.ejb3.timerservice.extension.Timer getExistingAutoTimer(ScheduleExpression schedule,
+         TimerConfig timerConfig, String timeoutMethodName, String[] methodParams)
+   {
+//      if (timerConfig != null && timerConfig.isPersistent() == false)
+//      {
+//         return null;
+//      }
+//      // we need to restore only those timers which correspond to the 
+//      // timed object invoker to which this timer service belongs. So
+//      // first get hold of the timed object id
+//      String timedObjectId = this.getInvoker().getTimedObjectId();
+//
+//      // TODO: Again the boilerplate transaction management code
+//      // (which will go, once the timer service is "managed")
+//      boolean thisMethodStartedTx = this.startTxIfNone();
+//
+//      try
+//      {
+//
+//         // join the transaction, since the entity manager was created
+//         // outside the transaction context
+//         this.em.joinTransaction();
+//
+//         Query autoTimersQuery = this.em
+//               .createQuery("from CalendarTimerEntity t where t.timedObjectId = :timedObjectId and t.autoTimer is true");
+//         autoTimersQuery.setParameter("timedObjectId", timedObjectId);
+//
+//         List<CalendarTimerEntity> autoTimers = autoTimersQuery.getResultList();
+//         for (CalendarTimerEntity autoTimer : autoTimers)
+//         {
+//            TimeoutMethod timeoutMethod = autoTimer.getTimeoutMethod();
+//            if (this.doesTimeoutMethodMatch(timeoutMethod, timeoutMethodName, methodParams) == false)
+//            {
+//               continue;
+//            }
+//            if (timerConfig != null)
+//            {
+//               Serializable info = timerConfig.getInfo();
+//               if (info != null)
+//               {
+//                  if (info.equals(autoTimer.getInfo()) == false)
+//                  {
+//                     continue;
+//                  }
+//               }
+//               else
+//               {
+//                  if (autoTimer.getInfo() != null)
+//                  {
+//                     continue;
+//                  }
+//               }
+//            }
+//            // now onto schedule
+//            ScheduleExpression autoTimerSchedule = autoTimer.getScheduleExpression();
+//            if (this.doSchedulesMatch(autoTimerSchedule, schedule))
+//            {
+//               return new CalendarTimer(autoTimer, this);
+//            }
+//            
+//         }
+//      }
+//      catch (Throwable t)
+//      {
+//         // TODO: Again the tx management boilerplate
+//         this.setRollbackOnly();
+//         throw new RuntimeException(t);
+//      }
+//      finally
+//      {
+//         // TODO: Remove this once the timer service implementation
+//         // becomes "managed"
+//         if (thisMethodStartedTx)
+//         {
+//            this.endTransaction();
+//         }
+//      }
+      return null;
+   }
+
+   private boolean doSchedulesMatch(ScheduleExpression schedule, ScheduleExpression otherScheduleExpression)
+   {
+      return true;
+   }
+   private boolean doesTimeoutMethodMatch(TimeoutMethod timeoutMethod, String timeoutMethodName, String[] methodParams)
+   {
+      if (timeoutMethod.getMethodName().equals(timeoutMethodName) == false)
+      {
+         return false;
+      }
+      String[] timeoutMethodParams = timeoutMethod.getMethodParams();
+      if (timeoutMethodParams == null && methodParams == null)
+      {
+         return true;
+      }
+      return this.methodParamsMatch(timeoutMethodParams, methodParams);
+   }
+   
+   private boolean doesTimerConfigMatch(TimerConfig timerConfig)
+   {
+      return true;
+   }
+
+   private boolean isEitherParamNull(Object param1, Object param2)
+   {
+      if (param1 != null && param2 == null)
+      {
+         return true;
+      }
+      if (param2 != null && param1 == null)
+      {
+         return true;
+      }
+      return false;
+   }
+
+   private boolean methodParamsMatch(String[] methodParams, String[] otherMethodParams)
+   {
+      if (this.isEitherParamNull(methodParams, otherMethodParams))
+      {
+         return false;
+      }
+
+      if (methodParams.length != otherMethodParams.length)
+      {
+         return false;
+      }
+      for (int i = 0; i < methodParams.length; i++)
+      {
+         if (methodParams[i].equals(otherMethodParams[i]) == false)
+         {
+            return false;
+         }
+      }
+      return true;
    }
 
    /**

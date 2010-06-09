@@ -19,43 +19,58 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.timerservice.integration.test.calendar;
+package org.jboss.ejb3.timerservice.integration.test.timerinfo;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import javax.ejb.Singleton;
-import javax.ejb.Timer;
 
 /**
- * TimeoutTracker
+ * CustomTimerInfo
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-@Singleton
-public class TimeoutTracker implements Serializable
+public class CustomTimerInfo implements Serializable
 {
 
-   private int timeoutCount;
-   
-   private List<Date> timeouts = new ArrayList<Date>();
-   
-   public int getTimeoutCount()
+   private String name;
+
+   public CustomTimerInfo(String name)
    {
-      return this.timeoutCount;
+      if (name == null)
+      {
+         throw new IllegalArgumentException("Name cannot be null for " + this.getClass().getName());
+      }
+      this.name = name;
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (obj == null)
+      {
+         return false;
+      }
+      if (this == obj)
+      {
+         return true;
+      }
+      if (obj instanceof CustomTimerInfo == false)
+      {
+         return false;
+      }
+      CustomTimerInfo other = (CustomTimerInfo) obj;
+      return this.name.equals(other.name);
    }
    
-   public List<Date> getTimeouts()
+   @Override
+   public int hashCode()
    {
-      return this.timeouts;
+      return this.name.hashCode();
    }
    
-   public void trackTimeout(Timer timer, Date timeoutDate)
+   @Override
+   public String toString()
    {
-      this.timeoutCount ++;
-      this.timeouts.add(timeoutDate);
+      return this.getClass().getName() + " name : " + this.name;
    }
 }

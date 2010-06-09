@@ -24,6 +24,7 @@ package org.jboss.ejb3.timerservice.mk2.persistence;
 import java.util.Date;
 
 import javax.ejb.ScheduleExpression;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
@@ -33,8 +34,6 @@ import javax.persistence.Transient;
 
 import org.jboss.ejb3.timer.schedule.CalendarBasedTimeout;
 import org.jboss.ejb3.timerservice.mk2.CalendarTimer;
-import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
-import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 
 /**
  * CalendarTimerEntity
@@ -74,7 +73,7 @@ public class CalendarTimerEntity extends TimerEntity
 
    private boolean autoTimer;
 
-   @OneToOne
+   @OneToOne (cascade = CascadeType.ALL)
    private TimeoutMethod timeoutMethod;
 
    public CalendarTimerEntity()
@@ -87,17 +86,10 @@ public class CalendarTimerEntity extends TimerEntity
       super(calendarTimer);
       this.scheduleExpression = calendarTimer.getSchedule();
       this.autoTimer = calendarTimer.isAutoTimer();
-      if (this.autoTimer)
+      if (calendarTimer.isAutoTimer())
       {
-         String methodParams[] = null;
-
-         NamedMethodMetaData timeoutNamedMethod = calendarTimer.getTimeoutMethod();
-         MethodParametersMetaData params = timeoutNamedMethod.getMethodParams();
-         if (params != null)
-         {
-            methodParams = params.toArray(methodParams);
-         }
-         this.timeoutMethod = new TimeoutMethod(timeoutNamedMethod.getMethodName(), methodParams);
+         String timeoutMethodName = calendarTimer.getTimeoutMethod();
+         this.timeoutMethod = new TimeoutMethod(timeoutMethodName, calendarTimer.getTimeoutMethodParams());
       }
       
       this.second = this.scheduleExpression.getSecond();

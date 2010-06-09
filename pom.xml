@@ -35,6 +35,8 @@
     <modules>
 		<module>ejb31-calendar-expr-parser</module>
         <module>timerservice-mk2</module>
+        <module>timerservice-extension</module>
+        <module>deployer</module>
     </modules>
     
     <profiles>

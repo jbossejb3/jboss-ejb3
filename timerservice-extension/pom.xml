@@ -1,0 +1,46 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<parent>
+		<groupId>org.jboss.ejb3.timerservice</groupId>
+		<artifactId>jboss-ejb3-timerservice-parent</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<!-- Maven POM Model Version -->
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- Artifact Information -->
+	<groupId>org.jboss.ejb3.timerservice</groupId>
+	<artifactId>jboss-ejb3-timerservice-extension</artifactId>
+	<packaging>jar</packaging>
+
+	<name>JBoss EJB3.1 TimerService extension</name>
+	<description>
+    Extension of EJB3.1 timerservice, providing JBoss specific API
+  </description>
+	<url>http://labs.jboss.com/jbossejb3/</url>
+
+
+	<dependencies>
+
+		<dependency>
+			<groupId>org.jboss.spec.javax.ejb</groupId>
+			<artifactId>jboss-ejb-api_3.1_spec</artifactId>
+			<version>1.0.0.Beta2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.logging</groupId>
+			<artifactId>jboss-logging-spi</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
+</project>

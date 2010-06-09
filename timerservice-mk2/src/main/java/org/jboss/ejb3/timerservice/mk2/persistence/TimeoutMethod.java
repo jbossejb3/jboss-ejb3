@@ -22,11 +22,16 @@
 package org.jboss.ejb3.timerservice.mk2.persistence;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
  * TimeoutMethod
@@ -35,6 +40,7 @@ import javax.persistence.Id;
  * @version $Revision: $
  */
 @Entity
+@Table (name = "Timeout_Method")
 public class TimeoutMethod implements Serializable
 {
 
@@ -44,7 +50,10 @@ public class TimeoutMethod implements Serializable
 
    private String methodName;
 
-   private String[] methodParams;
+   // TODO: Ordering of method params is *not* considered right now
+   // (mainly because we expect atmost one param for a timeout method)
+   @ElementCollection
+   private List<String> methodParams;
 
    public TimeoutMethod()
    {
@@ -54,7 +63,10 @@ public class TimeoutMethod implements Serializable
    public TimeoutMethod(String methodName, String[] methodParams)
    {
       this.methodName = methodName;
-      this.methodParams = methodParams;
+      if (methodParams != null)
+      {
+         this.methodParams = new ArrayList<String>(Arrays.asList(methodParams));
+      }
    }
 
    public Long getId()
@@ -67,19 +79,16 @@ public class TimeoutMethod implements Serializable
       return methodName;
    }
 
-   public void setMethodName(String methodName)
-   {
-      this.methodName = methodName;
-   }
+   
 
    public String[] getMethodParams()
    {
-      return methodParams;
+      if (this.methodParams == null)
+      {
+         return null;
+      }
+      return methodParams.toArray(new String[]{});
    }
-
-   public void setMethodParams(String[] methodParams)
-   {
-      this.methodParams = methodParams;
-   }
+   
 
 }

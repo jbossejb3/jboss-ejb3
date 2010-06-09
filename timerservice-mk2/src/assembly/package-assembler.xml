@@ -40,6 +40,9 @@
 			<includes>
 				<include>org.jboss.ejb3.timerservice:jboss-ejb3-timerservice-mk2:jar</include>
 				<include>org.jboss.ejb3.timerservice:ejb31-calendar-expr-parser:jar</include>
+				<include>org.jboss.ejb3.timerservice:jboss-ejb3-timerservice-extension:jar</include>
+				<include>org.jboss.ejb3:jboss-ejb3-timerservice-spi:jar</include>
+				<include>org.jboss.metadata:jboss-metadata-ejb:jar</include>
 			</includes>
 
 		</dependencySet>

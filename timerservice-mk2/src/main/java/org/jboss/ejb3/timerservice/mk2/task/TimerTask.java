@@ -50,7 +50,7 @@ import org.jboss.logging.Logger;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class TimerTask implements Runnable
+public class TimerTask<T extends TimerImpl> implements Runnable
 {
 
    /**
@@ -61,7 +61,7 @@ public class TimerTask implements Runnable
    /**
     * The timer to which this {@link TimerTask} belongs
     */
-   protected TimerImpl timer;
+   protected T timer;
 
    /**
     * {@link TimerServiceImpl} to which this {@link TimerTask} belongs
@@ -73,7 +73,7 @@ public class TimerTask implements Runnable
     * @param timer The timer for which this task is being created. 
     * @throws IllegalArgumentException If the passed timer is null
     */
-   public TimerTask(TimerImpl timer)
+   public TimerTask(T timer)
    {
       if (timer == null)
       {
@@ -143,31 +143,8 @@ public class TimerTask implements Runnable
             this.timer.setTimerState(TimerState.IN_TIMEOUT);
             // persist changes
             this.timerService.persistTimer(this.timer);
-            // if it's a calendar timer then schedule the next timer task.
-            // For non-calendar timers, the schedule is known before hand.
-            // So they will already have scheduled the tasks appropriately
-            if (this.timer.isCalendarTimer())
-            {
-               this.timer.scheduleTimeout();
-            }
-            // finally invoke the timeout method through the invoker
-            if (this.timer.isAutoTimer())
-            {
-//               TimedObjectInvoker invoker = this.timerService.getInvoker();
-//               if (invoker instanceof AutoTimedObjectInvoker == false)
-//               {
-//                  String msg = "Cannot invoke timeout method because timer: " + this.timer
-//                  + " is an auto timer, but invoker is not of type" + AutoTimedObjectInvoker.class;
-//                  logger.error(msg);
-//                  throw new RuntimeException(msg);
-//               }
-//               // call the timeout method
-//               ((AutoTimedObjectInvoker) invoker).callTimeout(this.timer, this.timer.getTimeoutMethod());
-            }
-            else
-            {
-               this.timerService.getInvoker().callTimeout(this.timer);
-            }
+            // invoke timeout
+            this.handleTimeout();
          }
          catch (Exception e)
          {
@@ -194,5 +171,14 @@ public class TimerTask implements Runnable
          }
       }
    }
-   
+
+   protected void handleTimeout() throws Exception
+   {
+      this.timerService.getInvoker().callTimeout(this.timer);
+   }
+
+   protected T getTimer()
+   {
+      return this.timer;
+   }
 }

@@ -21,12 +21,15 @@
  */
 package org.jboss.ejb3.timer.schedule;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 import javax.ejb.ScheduleExpression;
+
+import org.jboss.logging.Logger;
 
 /**
  * CalendarBasedTimeout
@@ -36,6 +39,11 @@ import javax.ejb.ScheduleExpression;
  */
 public class CalendarBasedTimeout
 {
+
+   /**
+    * Logger
+    */
+   private static Logger logger = Logger.getLogger(CalendarBasedTimeout.class);
 
    /**
     * The {@link ScheduleExpression} from which this {@link CalendarBasedTimeout}
@@ -88,7 +96,7 @@ public class CalendarBasedTimeout
     * The timezone being used for this {@link CalendarBasedTimeout}
     */
    private TimeZone timezone;
-   
+
    /**
     * Creates a {@link CalendarBasedTimeout} from the passed <code>schedule</code>.
     * <p>
@@ -111,9 +119,28 @@ public class CalendarBasedTimeout
       this.dayOfMonth = new DayOfMonth(schedule.getDayOfMonth());
       this.month = new Month(schedule.getMonth());
       this.year = new Year(schedule.getYear());
-      if (schedule.getTimezone() != null)
+      if (schedule.getTimezone() != null && schedule.getTimezone().trim().isEmpty() == false)
       {
-         this.timezone = TimeZone.getTimeZone(schedule.getTimezone());
+         // If the timezone ID wasn't valid, then Timezone.getTimeZone returns
+         // GMT, which may not always be desirable.
+         // So we first check to see if the timezone id specified is available in
+         // timezone ids in the system. If it's available then we log a WARN message
+         // and fallback on the server's timezone.
+         String timezoneId = schedule.getTimezone();
+         String[] availableTimeZoneIDs = TimeZone.getAvailableIDs();
+         if (availableTimeZoneIDs != null && Arrays.asList(availableTimeZoneIDs).contains(timezoneId))
+         {
+            this.timezone = TimeZone.getTimeZone(timezoneId);
+         }
+         else
+         {
+            logger.warn("Unknown timezone id: " + timezoneId
+                  + " found in schedule expression. Ignoring it and using server's timezone: "
+                  + TimeZone.getDefault().getID());
+            
+            // use server's timezone
+            this.timezone = TimeZone.getDefault();
+         }
       }
       else
       {
@@ -152,6 +179,14 @@ public class CalendarBasedTimeout
          return null;
       }
       return next;
+   }
+   
+   public Calendar getNextTimeout()
+   {
+      Calendar now = new GregorianCalendar(this.timezone);
+      now.setTime(new Date());
+
+      return this.getNextTimeout(now);
    }
 
    /**

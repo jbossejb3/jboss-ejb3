@@ -31,15 +31,14 @@ import javax.ejb.EJBException;
 import javax.ejb.NoMoreTimeoutsException;
 import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.ScheduleExpression;
-import javax.ejb.Timer;
 import javax.ejb.TimerHandle;
-import javax.ejb.TimerService;
 
+import org.jboss.ejb3.timerservice.extension.Timer;
+import org.jboss.ejb3.timerservice.extension.TimerService;
 import org.jboss.ejb3.timerservice.mk2.persistence.TimerEntity;
 import org.jboss.ejb3.timerservice.mk2.task.TimerTask;
 import org.jboss.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.logging.Logger;
-import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 
 /**
  * Implementation of EJB3.1 {@link Timer}
@@ -304,16 +303,10 @@ public class TimerImpl implements Timer
       return nextTimeoutInMillis - currentTimeInMillis;
    }
 
-   //@Override
+   @Override
    public boolean isAutoTimer()
    {
       return false;
-   }
-   
-   //@Override
-   public NamedMethodMetaData getTimeoutMethod()
-   {
-      throw new IllegalStateException("Timer " + this + " is not an auto timer");
    }
    
    /**
@@ -538,7 +531,7 @@ public class TimerImpl implements Timer
    public void scheduleTimeout()
    {
       // create the timer task
-      Runnable timerTask = new TimerTask(this);
+      Runnable timerTask = this.getTimerTask();
       // find out how long is it away from now
       long delay = this.nextExpiration.getTime() - System.currentTimeMillis();
       // if in past, then trigger immediately
@@ -548,7 +541,7 @@ public class TimerImpl implements Timer
       }
       if (this.intervalDuration > 0)
       {
-         logger.debug("Scheduling at fixed rate, starting at " + delay
+         logger.debug("Scheduling timer " + this + " at fixed rate, starting at " + delay
                + " milli seconds from now with repeated interval=" + this.intervalDuration);
          // schedule the task
          this.future = this.timerService.getExecutor().scheduleAtFixedRate(timerTask, delay, this.intervalDuration,
@@ -556,7 +549,7 @@ public class TimerImpl implements Timer
       }
       else
       {
-         logger.debug("Scheduling a single action timer, starting at " + delay + " milli seconds from now");
+         logger.debug("Scheduling a single action timer " + this + " starting at " + delay + " milli seconds from now");
          // schedule the task
          this.future = this.getTimerService().getExecutor().schedule(timerTask, delay, TimeUnit.MILLISECONDS);
       }
@@ -572,12 +565,24 @@ public class TimerImpl implements Timer
    }
 
    /**
+    * Returns the task which handles the timeouts of this {@link TimerImpl}
+    * @return
+    * 
+    * @see TimerTask
+    */
+   protected TimerTask<?> getTimerTask()
+   {
+      return new TimerTask<TimerImpl>(this);
+   }
+   
+   /**
     * A nice formatted string output for this timer
     * {@inheritDoc}
     */
    @Override
    public String toString()
    {
+      //TODO: Cache this 
       StringBuilder sb = new StringBuilder();
       sb.append("[id=");
       sb.append(this.id);
@@ -591,6 +596,12 @@ public class TimerImpl implements Timer
       {
          sb.append(this.timedObjectInvoker.getTimedObjectId());
       }
+      sb.append(" ");
+      sb.append("auto-timer?:");
+      sb.append(this.isAutoTimer());
+      sb.append(" ");
+      sb.append("persistent?:");
+      sb.append(this.persistent);
       sb.append(" ");
       sb.append("timerService=");
       sb.append(this.timerService);

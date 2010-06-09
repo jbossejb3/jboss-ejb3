@@ -72,6 +72,21 @@
       </exclusions>
     </dependency>
     
+    <dependency>
+    	<groupId>org.jboss.ejb3.timerservice</groupId>
+    	<artifactId>jboss-ejb3-timerservice-extension</artifactId>
+    	<version>${project.version}</version>
+    </dependency>
+    
+	<!-- JPA 2.0 -->
+    <dependency>
+      <groupId>org.hibernate.javax.persistence</groupId>
+      <artifactId>hibernate-jpa-2.0-api</artifactId>
+      <version>1.0.0.Final</version>
+      <scope>provided</scope>
+    </dependency>
+    
+    
   	
     <!-- For 'mocking' a DataSource we use Hypersonic -->
     <dependency>
@@ -84,12 +99,6 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
-    </dependency>
-    <!-- JPA 1.0 -->
-    <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>ejb3-persistence</artifactId>
-      <version>1.0.2.GA</version>
     </dependency>
     <dependency>
       <groupId>org.jboss.bootstrap</groupId>
@@ -126,7 +135,7 @@
     <dependency>
       <groupId>org.jboss.ejb3</groupId>
       <artifactId>jboss-ejb3-timerservice-spi</artifactId>
-      <version>1.0.0</version>
+      <version>1.0.1-SNAPSHOT</version>
       <exclusions>
         <!-- Make sure the EJB 3.0 API doesn't get in here -->
         <exclusion>
@@ -174,7 +183,7 @@
     <dependency>
       <groupId>org.jboss.jpa</groupId>
       <artifactId>jboss-jpa-mcint</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.0-alpha-2</version>
       <scope>test</scope>
     </dependency>
     <dependency>

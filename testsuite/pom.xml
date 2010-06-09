@@ -101,7 +101,7 @@
 			</plugin>
 
 			<!--
-				Setup the package manager and no-interface package so that it can be
+				Setup the package manager and timerservice package so that it can be
 				installed later into the AS
 			-->
 			<plugin>
@@ -128,6 +128,14 @@
 								<artifactItem>
                                     <groupId>org.jboss.ejb3.timerservice</groupId>
                                     <artifactId>jboss-ejb3-timerservice-mk2</artifactId>
+                                    <classifier>package</classifier>
+                                    <type>jar</type>
+                                    <outputDirectory>${project.build.directory}/dependencies/packages</outputDirectory>
+                                </artifactItem>
+
+								<artifactItem>
+                                    <groupId>org.jboss.ejb3.timerservice</groupId>
+                                    <artifactId>jboss-ejb3-timerservice-deployer</artifactId>
                                     <classifier>package</classifier>
                                     <type>jar</type>
                                     <outputDirectory>${project.build.directory}/dependencies/packages</outputDirectory>
@@ -396,6 +404,15 @@
 			<classifier>package</classifier>
 			<scope>test</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>org.jboss.ejb3.timerservice</groupId>
+			<artifactId>jboss-ejb3-timerservice-deployer</artifactId>
+			<version>${project.version}</version>
+			<classifier>package</classifier>
+			<scope>test</scope>
+		</dependency>
+		
 
 	</dependencies>
 

@@ -131,9 +131,9 @@ public abstract class AbstractTimerTestCase
       // deploy the deployers
       deploy();
       
-         URL url = new File(BASEDIR, "src/main/resources").toURI().toURL();
-         log.debug("url = " + url);
-         addToDeploy(url);
+      URL url = new File(BASEDIR, "src/main/resources").toURI().toURL();
+      log.debug("url = " + url);
+      addToDeploy(url);
       
       // deploy the resources in src/main/resources
       deploy();

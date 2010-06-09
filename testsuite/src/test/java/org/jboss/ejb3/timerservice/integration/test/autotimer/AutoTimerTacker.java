@@ -19,43 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.timerservice.integration.test.calendar;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import javax.ejb.Singleton;
-import javax.ejb.Timer;
+package org.jboss.ejb3.timerservice.integration.test.autotimer;
 
 /**
- * TimeoutTracker
+ * Scheduler
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-@Singleton
-public class TimeoutTracker implements Serializable
+public interface AutoTimerTacker
 {
 
-   private int timeoutCount;
+   int getNumTimeoutsForEvery10SecTimer();
    
-   private List<Date> timeouts = new ArrayList<Date>();
-   
-   public int getTimeoutCount()
-   {
-      return this.timeoutCount;
-   }
-   
-   public List<Date> getTimeouts()
-   {
-      return this.timeouts;
-   }
-   
-   public void trackTimeout(Timer timer, Date timeoutDate)
-   {
-      this.timeoutCount ++;
-      this.timeouts.add(timeoutDate);
-   }
+   int getNumTimeoutsForEveryMinuteTimer();
 }

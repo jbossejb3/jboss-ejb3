@@ -16,30 +16,14 @@
 		51 Franklin St, Fifth Floor, Boston, MA ~ 02110-1301 USA, or see the
 		FSF site: http://www.fsf.org.
 	-->
-	<!--  
-    jboss-ejb3-singleton-deployer
--->
 <package name="${project.groupId}:${project.artifactId}"
 	version="${project.version}" xmlns="org/jboss/packagemanager/package">
 
-	<!--  common/lib -->
-	<file name="ejb31-calendar-expr-parser.jar" dest-path="common/lib" />
-	<file name="jboss-ejb3-timerservice-extension.jar" dest-path="common/lib" />
-	<file name="jboss-ejb3-timerservice-spi.jar" dest-path="common/lib" />
-	<file name="jboss-metadata-ejb.jar" dest-path="common/lib" />
+	<file name="jboss-ejb3-core.jar" dest-path="common/lib" />
+	<!-- Place  in deployers of AS -->
 	
+	<file name="jboss-ejb3-timerservice-deployer.jar" dest-path="server/default/deployers" />
+	<file name="jboss-ejb3-timerservice-deployer.jar" dest-path="server/all/deployers" />
 	
-	<file name="jboss-ejb3-timerservice-mk2.jar" dest-path="client" />
-
-	<!-- Place  in deploy of AS -->
-	<file name="jboss-ejb3-timerservice-mk2.jar" dest-path="server/all/deploy" />
-	<file name="jboss-ejb3-timerservice-mk2.jar" dest-path="server/default/deploy" />
-	
-	<file name="jboss-jpa-mcint.jar" dest-path="server/default/deployers" />
-	<file name="jboss-jpa-mcint.jar" dest-path="server/all/deployers" />
-	
-	<post-install>
-		<script name="package-install-script.xml"/>
-	</post-install>
 
 </package>
