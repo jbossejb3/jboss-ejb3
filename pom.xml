@@ -28,7 +28,7 @@
         <version.junit_junit>4.7</version.junit_junit>
         <version.jboss.logging.spi>2.1.1.GA</version.jboss.logging.spi>
         <version.jboss.logging.log4j>2.1.1.GA</version.jboss.logging.log4j>
-        <version.jboss.ejb.metadata>2.0.0-SNAPSHOT</version.jboss.ejb.metadata>
+        <version.jboss.ejb.metadata>2.0.0-alpha-16</version.jboss.ejb.metadata>
     </properties>
 
     <!-- Aggregate Modules -->
