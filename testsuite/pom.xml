@@ -124,22 +124,22 @@
 									<type>zip</type>
 									<outputDirectory>${project.build.directory}/dependencies/package-manager</outputDirectory>
 								</artifactItem>
-                                <!-- The timerservice package -->
+								<!-- The timerservice package -->
 								<artifactItem>
-                                    <groupId>org.jboss.ejb3.timerservice</groupId>
-                                    <artifactId>jboss-ejb3-timerservice-mk2</artifactId>
-                                    <classifier>package</classifier>
-                                    <type>jar</type>
-                                    <outputDirectory>${project.build.directory}/dependencies/packages</outputDirectory>
-                                </artifactItem>
+									<groupId>org.jboss.ejb3.timerservice</groupId>
+									<artifactId>jboss-ejb3-timerservice-mk2</artifactId>
+									<classifier>package</classifier>
+									<type>jar</type>
+									<outputDirectory>${project.build.directory}/dependencies/packages</outputDirectory>
+								</artifactItem>
 
 								<artifactItem>
-                                    <groupId>org.jboss.ejb3.timerservice</groupId>
-                                    <artifactId>jboss-ejb3-timerservice-deployer</artifactId>
-                                    <classifier>package</classifier>
-                                    <type>jar</type>
-                                    <outputDirectory>${project.build.directory}/dependencies/packages</outputDirectory>
-                                </artifactItem>
+									<groupId>org.jboss.ejb3.timerservice</groupId>
+									<artifactId>jboss-ejb3-timerservice-deployer</artifactId>
+									<classifier>package</classifier>
+									<type>jar</type>
+									<outputDirectory>${project.build.directory}/dependencies/packages</outputDirectory>
+								</artifactItem>
 
 								<artifactItem>
 									<groupId>junit</groupId>
@@ -217,14 +217,30 @@
 							<goal>run</goal>
 						</goals>
 						<configuration>
-							<tasks>
+							<tasks unless="test">
 								<ant antfile="${project.build.directory}/test-classes/test.xml"
 									target="tests" inheritRefs="true" inheritAll="true" />
 							</tasks>
 						</configuration>
 
 					</execution>
+					<execution>
+						<id>run-one-test</id>
+						<phase>integration-test</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<tasks if="test">
+								<ant antfile="${project.build.directory}/test-classes/test.xml"
+									target="one-test" inheritRefs="true" inheritAll="true" />
+							</tasks>
+
+						</configuration>
+
+					</execution>
 				</executions>
+				
 				<dependencies>
 					<dependency>
 						<groupId>org.apache.ant</groupId>
@@ -412,7 +428,7 @@
 			<classifier>package</classifier>
 			<scope>test</scope>
 		</dependency>
-		
+
 
 	</dependencies>
 
