@@ -15,7 +15,6 @@
 	<property name="location.packagemanager.zip.file" value="${location.packagemanager}/jboss-ejb3-package-manager-installer.zip"/>
   	<property name="location.timerservice.packages" value="${location.dependencies}/packages"/>
 	<property name="location.timerservice.mk2.package" value="${location.timerservice.packages}/jboss-ejb3-timerservice-mk2-package.jar"/>
-	<property name="location.timerservice.deployer.package" value="${location.timerservice.packages}/jboss-ejb3-timerservice-deployer-package.jar"/>
 	<property name="packagemanager.home" value="${location.packagemanager}/jboss-package-manager"/>
 
 	<path id="package.manager.classpath">
@@ -43,19 +42,6 @@
 			<arg value="${location.timerservice.mk2.package}"/>
 		</java>
 		
-		<echo>Installing timerservice deployer package</echo>
-		<java classname="org.jboss.ejb3.packagemanager.main.Main" classpathref="package.manager.classpath" fork="true">
-			
-			<!-- package manager home -->
-			<arg value="-p"/>
-			<arg value="${packagemanager.home}"/>
-			<!-- JBoss Home -->
-			<arg value="-s"/>
-			<arg value="${JBOSS_HOME}"/>
-			<arg value="-u"/>
-			<arg value="${location.timerservice.deployer.package}"/>
-		</java>
-
 	</target>
 	
 	<target name="unzip-package-manager">

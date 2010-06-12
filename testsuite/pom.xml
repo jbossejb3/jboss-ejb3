@@ -134,14 +134,6 @@
 								</artifactItem>
 
 								<artifactItem>
-									<groupId>org.jboss.ejb3.timerservice</groupId>
-									<artifactId>jboss-ejb3-timerservice-deployer</artifactId>
-									<classifier>package</classifier>
-									<type>jar</type>
-									<outputDirectory>${project.build.directory}/dependencies/packages</outputDirectory>
-								</artifactItem>
-
-								<artifactItem>
 									<groupId>junit</groupId>
 									<artifactId>junit</artifactId>
 									<outputDirectory>${project.build.directory}/dependencies/lib</outputDirectory>
@@ -416,14 +408,6 @@
 		<dependency>
 			<groupId>org.jboss.ejb3.timerservice</groupId>
 			<artifactId>jboss-ejb3-timerservice-mk2</artifactId>
-			<version>${project.version}</version>
-			<classifier>package</classifier>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.jboss.ejb3.timerservice</groupId>
-			<artifactId>jboss-ejb3-timerservice-deployer</artifactId>
 			<version>${project.version}</version>
 			<classifier>package</classifier>
 			<scope>test</scope>

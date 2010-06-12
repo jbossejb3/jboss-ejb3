@@ -34,7 +34,7 @@ import java.util.Map;
 public abstract class MixedValueTypeExpression extends IntegerBasedExpression
 {
 
-   private Map<String, Integer> aliases = new HashMap<String, Integer>();
+   private Map<String, Integer> lowercaseAliases = new HashMap<String, Integer>();
 
    protected abstract Map<String, Integer> getAliases();
 
@@ -47,7 +47,7 @@ public abstract class MixedValueTypeExpression extends IntegerBasedExpression
          {
             String key = entry.getKey();
             String lowerCaseAlias = key.toLowerCase(Locale.ENGLISH);
-            this.aliases.put(lowerCaseAlias, entry.getValue());
+            this.lowercaseAliases.put(lowerCaseAlias, entry.getValue());
          }
       }
    }
@@ -61,10 +61,10 @@ public abstract class MixedValueTypeExpression extends IntegerBasedExpression
       }
       catch (NumberFormatException nfe)
       {
-         if (this.aliases != null)
+         if (this.lowercaseAliases != null)
          {
             String lowerCaseAlias = alias.toLowerCase(Locale.ENGLISH);
-            return this.aliases.get(lowerCaseAlias);
+            return this.lowercaseAliases.get(lowerCaseAlias);
          }
       }
       return null;

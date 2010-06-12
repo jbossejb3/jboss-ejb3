@@ -122,11 +122,6 @@
     </dependency> 
     
     <dependency>
-		<groupId>org.jboss.metadata</groupId>
-		<artifactId>jboss-metadata-ejb</artifactId>
-    </dependency>
-       
-    <dependency>
       <groupId>org.jboss.ejb3</groupId>
       <artifactId>jboss-ejb3-jta-profile</artifactId>
       <version>0.1.0</version>
