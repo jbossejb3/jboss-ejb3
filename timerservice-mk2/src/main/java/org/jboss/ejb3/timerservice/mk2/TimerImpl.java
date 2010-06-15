@@ -323,8 +323,10 @@ public class TimerImpl implements Timer
          setTimerState(TimerState.CANCELED);
       }
       // cancel any scheduled timer task
-      future.cancel(false);
-
+      if (this.future != null)
+      {
+         future.cancel(false);
+      }
       // persist changes
       timerService.persistTimer(this);
    }
