@@ -25,8 +25,6 @@
 	<!--  common/lib -->
 	<file name="ejb31-calendar-expr-parser.jar" dest-path="common/lib" />
 	<file name="jboss-ejb3-timerservice-extension.jar" dest-path="common/lib" />
-	<file name="jboss-ejb3-timerservice-spi.jar" dest-path="common/lib" />
-	<file name="jboss-metadata-ejb.jar" dest-path="common/lib" />
 	
 	
 	<file name="jboss-ejb3-timerservice-mk2.jar" dest-path="client" />
@@ -35,8 +33,6 @@
 	<file name="jboss-ejb3-timerservice-mk2.jar" dest-path="server/all/deploy" />
 	<file name="jboss-ejb3-timerservice-mk2.jar" dest-path="server/default/deploy" />
 	
-	<file name="jboss-jpa-mcint.jar" dest-path="server/default/deployers" />
-	<file name="jboss-jpa-mcint.jar" dest-path="server/all/deployers" />
 	
 	<post-install>
 		<script name="package-install-script.xml"/>

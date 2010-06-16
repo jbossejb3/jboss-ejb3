@@ -76,8 +76,7 @@ public class TimerServiceFactoryImpl implements TimerServiceFactory
       executor = Executors.newScheduledThreadPool(10);
 
       // create the timer service
-      TimerServiceImpl timerService = new TimerServiceImpl(invoker, emf.createEntityManager(), transactionManager,
-            executor);
+      TimerServiceImpl timerService = new TimerServiceImpl(invoker, emf, transactionManager, executor);
       // register this new created timer service in our registry
       TimerServiceRegistry.registerTimerService(timerService);
       return timerService;

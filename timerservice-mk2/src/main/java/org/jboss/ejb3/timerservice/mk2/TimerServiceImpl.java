@@ -39,6 +39,7 @@ import javax.ejb.Timer;
 import javax.ejb.TimerConfig;
 import javax.ejb.TimerHandle;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
 import javax.transaction.RollbackException;
 import javax.transaction.Status;
@@ -77,7 +78,7 @@ public class TimerServiceImpl implements TimerService
    /**
     * Used for persistent timers
     */
-   private EntityManager em;
+   private EntityManagerFactory emf;
 
    /**
     * Transaction manager
@@ -100,21 +101,21 @@ public class TimerServiceImpl implements TimerService
     * Creates a {@link TimerServiceImpl}
     * 
     * @param invoker The {@link TimedObjectInvoker} responsible for invoking the timeout method
-    * @param em Entity manager responsible for JPA persistence management
+    * @param emf Entity manager factory responsible for JPA persistence management
     * @param transactionManager Transaction manager responsible for managing the transactional timer service
     * @param executor Executor service responsible for creating scheduled timer tasks
     * @throws IllegalArgumentException If either of the passed param is null
     */
-   public TimerServiceImpl(TimedObjectInvoker invoker, EntityManager em, TransactionManager transactionManager,
+   public TimerServiceImpl(TimedObjectInvoker invoker, EntityManagerFactory emf, TransactionManager transactionManager,
          ScheduledExecutorService executor)
    {
       if (invoker == null)
       {
          throw new IllegalArgumentException("Invoker cannot be null");
       }
-      if (em == null)
+      if (emf == null)
       {
-         throw new IllegalArgumentException("EntityManager cannot be null");
+         throw new IllegalArgumentException("EntityManagerFactory cannot be null");
       }
       if (transactionManager == null)
       {
@@ -126,7 +127,7 @@ public class TimerServiceImpl implements TimerService
       }
 
       this.invoker = invoker;
-      this.em = em;
+      this.emf = emf;
       this.transactionManager = transactionManager;
       this.executor = executor;
    }
@@ -350,13 +351,14 @@ public class TimerServiceImpl implements TimerService
       // if it's persistent, then save it
       if (persistent)
       {
-         TimerEntity entity = timer.getPersistentState();
-         em.persist(entity);
+         this.persistTimer(timer);
       }
       // now "start" the timer. This involves, moving the timer to an ACTIVE state
       // and scheduling the timer task
       this.startTimer(timer);
 
+      // add this timer to our local map
+      this.addTimer(timer);
       // return the newly created timer
       return timer;
    }
@@ -397,14 +399,15 @@ public class TimerServiceImpl implements TimerService
       // persist it if it's persistent
       if (persistent)
       {
-         TimerEntity entity = timer.getPersistentState();
-         em.persist(entity);
+         this.persistTimer(timer);
       }
 
       // now "start" the timer. This involves, moving the timer to an ACTIVE state
       // and scheduling the timer task
       this.startTimer(timer);
 
+      // add this timer to our local map
+      this.addTimer(timer);
       // return the timer
       return timer;
    }
@@ -448,13 +451,23 @@ public class TimerServiceImpl implements TimerService
     * @return
     * TODO: Rethink about this method. Looks brittle.
     */
-   public Timer getTimer(TimerHandle handle)
+   public org.jboss.ejb3.timerservice.extension.Timer getTimer(TimerHandle handle)
    {
+      // TODO: Why do we even have to maintain a map of timers.
+      // Looks needless and could perhaps lead to inconsistencies. 
+      // Let's instead just rely on DB? But then again what about non-persistent timers.
+      // Overall, needs a bit of thinking
       TimerImpl timer = timers.get(handle);
-      if (timer != null && timer.isActive())
+      if (timer != null)
+      {
          return timer;
+      }
       else
-         return null;
+      {
+         TimerHandleImpl timerHandle = (TimerHandleImpl) handle;
+         return this.getPersistedTimer(timerHandle);
+      }
+         
    }
 
    /**
@@ -586,13 +599,14 @@ public class TimerServiceImpl implements TimerService
          // start new tx
          this.transactionManager.begin();
 
-         // let the entity manager (which has been created outside a tx context) join the transaction
-         this.em.joinTransaction();
+         EntityManager em = this.emf.createEntityManager();
+         em.joinTransaction();
          // merge the state
-         TimerEntity mergedTimerEntity = this.em.merge(timerEntity);
+         TimerEntity mergedTimerEntity = em.merge(timerEntity);
 
          // do the actual persistence
-         this.em.persist(mergedTimerEntity);
+         em.persist(mergedTimerEntity);
+         
       }
       catch (Throwable t)
       {
@@ -651,64 +665,40 @@ public class TimerServiceImpl implements TimerService
       // first get hold of the timed object id
       String timedObjectId = this.getInvoker().getTimedObjectId();
 
-      // TODO: Again the boilerplate transaction management code
-      // (which will go, once the timer service is "managed")
-      boolean thisMethodStartedTx = this.startTxIfNone();
-
       // timers which are eligible for being restored (see javadoc of this
       // method for details)
       List<TimerImpl> restorableTimers = new ArrayList<TimerImpl>();
-      try
+      Set<TimerState> ineligibleTimerStates = new HashSet<TimerState>();
+      ineligibleTimerStates.add(TimerState.CANCELED);
+      ineligibleTimerStates.add(TimerState.EXPIRED);
+      ineligibleTimerStates.add(TimerState.CANCELED_IN_TX);
+
+      EntityManager em = this.emf.createEntityManager();
+
+      Query restorableTimersQuery = em
+            .createQuery("from TimerEntity t where t.timedObjectId = :timedObjectId and t.timerState not in (:timerStates)");
+      restorableTimersQuery.setParameter("timedObjectId", timedObjectId);
+      restorableTimersQuery.setParameter("timerStates", ineligibleTimerStates);
+
+      List<TimerEntity> persistedTimers = restorableTimersQuery.getResultList();
+      for (TimerEntity persistedTimer : persistedTimers)
       {
-         // timer states which we are *not* interested in, during restore
-         Set<TimerState> ineligibleTimerStates = new HashSet<TimerState>();
-         ineligibleTimerStates.add(TimerState.CANCELED);
-         ineligibleTimerStates.add(TimerState.EXPIRED);
-         ineligibleTimerStates.add(TimerState.CANCELED_IN_TX);
-
-         // join the transaction, since the entity manager was created
-         // outside the transaction context
-         this.em.joinTransaction();
-
-         Query restorableTimersQuery = this.em
-               .createQuery("from TimerEntity t where t.timedObjectId = :timedObjectId and t.timerState not in (:timerStates)");
-         restorableTimersQuery.setParameter("timedObjectId", timedObjectId);
-         restorableTimersQuery.setParameter("timerStates", ineligibleTimerStates);
-
-         List<TimerEntity> persistedTimers = restorableTimersQuery.getResultList();
-         for (TimerEntity persistedTimer : persistedTimers)
+         TimerImpl activeTimer = null;
+         if (persistedTimer.isCalendarTimer())
          {
-            TimerImpl activeTimer = null;
-            if (persistedTimer.isCalendarTimer())
-            {
-               CalendarTimerEntity calendarTimerEntity = (CalendarTimerEntity) persistedTimer;
-               // create a timer instance from the persisted calendar timer
-               activeTimer = new CalendarTimer(calendarTimerEntity, this);
-            }
-            else
-            {
-               // create the timer instance from the persisted state
-               activeTimer = new TimerImpl(persistedTimer, this);
-            }
-            // add it to the list of timers which will be restored
-            restorableTimers.add(activeTimer);
+            CalendarTimerEntity calendarTimerEntity = (CalendarTimerEntity) persistedTimer;
+            // create a timer instance from the persisted calendar timer
+            activeTimer = new CalendarTimer(calendarTimerEntity, this);
          }
-      }
-      catch (Throwable t)
-      {
-         // TODO: Again the tx management boilerplate
-         this.setRollbackOnly();
-         throw new RuntimeException(t);
-      }
-      finally
-      {
-         // TODO: Remove this once the timer service implementation
-         // becomes "managed"
-         if (thisMethodStartedTx)
+         else
          {
-            this.endTransaction();
+            // create the timer instance from the persisted state
+            activeTimer = new TimerImpl(persistedTimer, this);
          }
+         // add it to the list of timers which will be restored
+         restorableTimers.add(activeTimer);
       }
+
       logger.debug("Found " + restorableTimers.size() + " active timers for timedObjectId: " + timedObjectId);
       // now "start" each of the restorable timer. This involves, moving the timer to an ACTIVE state
       // and scheduling the timer task
@@ -793,6 +783,32 @@ public class TimerServiceImpl implements TimerService
 
    }
 
+   private TimerImpl getPersistedTimer(TimerHandleImpl timerHandle)
+   {
+      UUID id = timerHandle.getId();
+      String timedObjectId = timerHandle.getTimedObjectId();
+      EntityManager em = this.emf.createEntityManager();
+      Query query = em.createQuery("from TimerEntity t where t.id = :id and t.timedObjectId = :timedObjectId");
+      query.setParameter("id", id);
+      query.setParameter("timedObjectId", timedObjectId);
+      
+      List<TimerEntity> timers = query.getResultList();
+      if (timers == null || timers.isEmpty())
+      {
+         return null;
+      }
+      if (timers.size() > 1)
+      {
+         throw new EJBException("More than one timer found for TimerHandle: " + timerHandle);
+      }
+      TimerEntity timerEntity = timers.get(0);
+      if (timerEntity.isCalendarTimer())
+      {
+         return new CalendarTimer((CalendarTimerEntity) timerEntity, this);
+      }
+      return new TimerImpl(timerEntity, this);
+      
+   }
    private org.jboss.ejb3.timerservice.extension.Timer getExistingAutoTimer(ScheduleExpression schedule,
          TimerConfig timerConfig, String timeoutMethodName, String[] methodParams)
    {
@@ -931,33 +947,6 @@ public class TimerServiceImpl implements TimerService
    }
 
    /**
-    * Starts a new tx if not already started.
-    * 
-    * NOTE: This method will soon be removed, once this timer service
-    * implementation becomes "managed"
-    *  
-    * @return Returns true if a new transaction was created
-    * 
-    */
-   private boolean startTxIfNone()
-   {
-      try
-      {
-         Transaction currentTx = this.transactionManager.getTransaction();
-         if (currentTx == null)
-         {
-            this.transactionManager.begin();
-            return true;
-         }
-         return false;
-      }
-      catch (Throwable t)
-      {
-         throw new RuntimeException("Could not start transaction", t);
-      }
-   }
-
-   /**
     * Marks the transaction for rollback
     * NOTE: This method will soon be removed, once this timer service
     * implementation becomes "managed"
@@ -980,38 +969,6 @@ public class TimerServiceImpl implements TimerService
       catch (SystemException se)
       {
          logger.error("Could set transaction to rollback only", se);
-      }
-   }
-
-   /**
-    * Ends (either commits or rolls back, depending on the tx state) the current
-    * transaction
-    * NOTE: This method will soon be removed, once this timer service
-    * implementation becomes "managed"
-    *  
-    */
-   private void endTransaction()
-   {
-      try
-      {
-         Transaction tx = this.transactionManager.getTransaction();
-         if (tx == null)
-         {
-            throw new IllegalStateException("Transaction cannot be ended since no transaction is in progress");
-         }
-         if (tx.getStatus() == Status.STATUS_MARKED_ROLLBACK)
-         {
-            this.transactionManager.rollback();
-         }
-         else
-         {
-            // Commit tx
-            this.transactionManager.commit();
-         }
-      }
-      catch (Exception e)
-      {
-         throw new RuntimeException("Could not end transaction", e);
       }
    }
 

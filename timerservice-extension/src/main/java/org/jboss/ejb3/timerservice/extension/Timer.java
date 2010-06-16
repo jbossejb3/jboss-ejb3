@@ -32,4 +32,5 @@ public interface Timer extends javax.ejb.Timer
 
    boolean isAutoTimer();
    
+   boolean isActive();
 }

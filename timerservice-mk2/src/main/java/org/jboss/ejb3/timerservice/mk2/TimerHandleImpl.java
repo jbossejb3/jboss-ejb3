@@ -106,8 +106,22 @@ public class TimerHandleImpl implements TimerHandle
             throw new EJBException("Timerservice with timedObjectId: " + timedObjectId + " is not registered");
          }
       }
-         
-      return service.getTimer(this);
+      org.jboss.ejb3.timerservice.extension.Timer timer = this.service.getTimer(this);
+      if (timer != null && timer.isActive() == false)
+      {
+         throw new NoSuchObjectLocalException("Timer for handle: " + this + " is not active");
+      }
+      return timer;
+   }
+   
+   public UUID getId()
+   {
+      return this.id;
+   }
+   
+   public String getTimedObjectId()
+   {
+      return this.timedObjectId;
    }
    
    @Override

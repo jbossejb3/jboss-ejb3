@@ -471,7 +471,10 @@ public class TimerImpl implements Timer
       // remove from timerservice
       timerService.removeTimer(this);
       // Cancel any scheduled timer task
-      future.cancel(false);
+      if (this.future != null)
+      {
+         future.cancel(false);
+      }
 
       // persist changes
       timerService.persistTimer(this);
