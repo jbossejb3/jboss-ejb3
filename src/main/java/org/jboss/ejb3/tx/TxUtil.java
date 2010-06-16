@@ -21,18 +21,6 @@
  */
 package org.jboss.ejb3.tx;
 
-import java.lang.reflect.Method;
-
-import javax.ejb.ApplicationException;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
-
 import org.jboss.aop.Advisor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
@@ -41,6 +29,13 @@ import org.jboss.ejb3.interceptors.container.BeanContext;
 import org.jboss.ejb3.interceptors.container.InvocationHelper;
 import org.jboss.logging.Logger;
 import org.jboss.tm.TransactionManagerLocator;
+
+import javax.ejb.*;
+import javax.transaction.Status;
+import javax.transaction.SystemException;
+import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
+import java.lang.reflect.Method;
 
 /**
  * Comment
@@ -51,7 +46,29 @@ import org.jboss.tm.TransactionManagerLocator;
 public class TxUtil
 {
    private static final Logger log = Logger.getLogger(TxUtil.class);
-   
+
+   private static void check(String publicMethod, String specReferenceTxAttr)
+   {
+      // getRollbackOnly is not allowed during construction and injection EJB 3 4.4.1 and EJB 3 4.5.2
+      Invocation currentInvocation = CurrentInvocation.getCurrentInvocation();
+      if(currentInvocation == null)
+         throw new IllegalStateException("It's not allowed to do " + publicMethod + " during construction and injection");
+      Advisor advisor = currentInvocation.getAdvisor();
+      String containerName = advisor.getName();
+
+      // EJB1.1 11.6.1: Must throw IllegalStateException if BMT
+      TransactionManagementType type = TxUtil.getTransactionManagementType(advisor);
+      if (type != TransactionManagementType.CONTAINER)
+         throw new IllegalStateException("Container " + containerName + ": it is illegal to call " + publicMethod + " from BMT: " + type);
+
+      if(isLifecycleCallback(currentInvocation))
+         throw new IllegalStateException(containerName + ": " + publicMethod + " not allowed during lifecycle callbacks (EJB3 4.4.1 & 4.5.2)");
+
+      // TODO: we should really ask a TxType object to handle getRollbackOnly()
+      if(getTxType(currentInvocation) == TransactionAttributeType.SUPPORTS)
+         throw new IllegalStateException(containerName + ": " + publicMethod + " not allowed with TransactionAttributeType.SUPPORTS (" + specReferenceTxAttr + ")");
+   }
+
    // TODO: should really be protected
    public static TransactionManager getTransactionManager()
    {
@@ -73,24 +90,8 @@ public class TxUtil
 
    public static boolean getRollbackOnly()
    {
-      // getRollbackOnly is not allowed during construction and injection EJB 3 4.4.1 and EJB 3 4.5.2
-      Invocation currentInvocation = CurrentInvocation.getCurrentInvocation();
-      if(currentInvocation == null)
-         throw new IllegalStateException("It's not allowed to do getRollbackOnly() during construction and injection");
-      Advisor advisor = currentInvocation.getAdvisor();
-      
-      // EJB1.1 11.6.1: Must throw IllegalStateException if BMT
-      TransactionManagementType type = TxUtil.getTransactionManagementType(advisor);
-      if (type != TransactionManagementType.CONTAINER)
-         throw new IllegalStateException("Container " + advisor.getName() + ": it is illegal to call getRollbackOnly from BMT: " + type);
+      check("getRollbackOnly", "EJB 3.0 FR 13.6.2.9");
 
-      if(isLifecycleCallback(currentInvocation))
-         throw new IllegalStateException("getRollbackOnly() not allowed during lifecycle callbacks (EJB3 4.4.1 & 4.5.2)");
-      
-      // TODO: we should really ask a TxType object to handle getRollbackOnly()
-      if(getTxType(currentInvocation) == TransactionAttributeType.SUPPORTS)
-         throw new IllegalStateException("getRollbackOnly() not allowed with TransactionAttributeType.SUPPORTS (EJB 3 13.6.2.9)");
-      
       try
       {
          TransactionManager tm = TxUtil.getTransactionManager();
@@ -175,19 +176,8 @@ public class TxUtil
    
    public static void setRollbackOnly()
    {
-      // getRollbackOnly is not allowed during construction and injection EJB 3 4.4.1 and EJB 3 4.5.2
-      Invocation currentInvocation = CurrentInvocation.getCurrentInvocation();
-      if(currentInvocation == null)
-         throw new IllegalStateException("It's not allowed to do setRollbackOnly() during construction and injection");
-      Advisor advisor = currentInvocation.getAdvisor();
-      
-      // EJB1.1 11.6.1: Must throw IllegalStateException if BMT
-      TransactionManagementType type = TxUtil.getTransactionManagementType(advisor);
-      if (type != TransactionManagementType.CONTAINER) throw new IllegalStateException("Container " + advisor.getName() + ": it is illegal to call setRollbackOnly from BMT: " + type);
+      check("setRollbackOnly", "EJB 3.0 FR 13.6.2.8");
 
-      if(isLifecycleCallback(currentInvocation))
-         throw new IllegalStateException("setRollbackOnly() not allowed during lifecycle callbacks (EJB3 4.4.1 & 4.5.2)");
-      
       try
       {
          TransactionManager tm = TxUtil.getTransactionManager();
