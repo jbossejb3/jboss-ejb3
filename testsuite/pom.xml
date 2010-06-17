@@ -367,11 +367,11 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.jboss.javaee</groupId>
-			<artifactId>jboss-ejb-api_3.1</artifactId>
-			<version>1.0-alpha-1</version>
+			<groupId>org.jboss.spec.javax.ejb</groupId>
+			<artifactId>jboss-ejb-api_3.1_spec</artifactId>
+			<version>1.0.0.Beta2</version>
 			<scope>test</scope>
-		</dependency>
+		</dependency> 
 
 		<dependency>
 			<groupId>org.jboss.spec.javax.ejb</groupId>

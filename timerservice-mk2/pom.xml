@@ -23,6 +23,10 @@
     the venerable JBoss AS timer service meant for use in EJB 2.
   </description>
   <url>http://labs.jboss.com/jbossejb3/</url>
+  
+	<properties>
+		<version.org.jboss.ejb3.context>0.1.1</version.org.jboss.ejb3.context>
+	</properties>  
 
     <build>
         <plugins>
@@ -59,6 +63,25 @@
   		<version>${project.version}</version>
   	</dependency>
   	
+    <dependency>
+      <groupId>org.jboss.ejb3.context</groupId>
+      <artifactId>jboss-ejb3-context-base</artifactId>
+      <version>${version.org.jboss.ejb3.context}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.jboss.spec.javax.ejb</groupId>
+      <artifactId>jboss-ejb-api_3.1_spec</artifactId>
+      <version>1.0.0.Beta2</version>
+    </dependency> 
+    
+    <!--  Required for current invocation context usage -->
+    <dependency>
+    	<groupId>org.jboss.spec.javax.interceptor</groupId>
+    	<artifactId>jboss-interceptors-api_1.1_spec</artifactId>
+    	<version>1.0.0.Beta1</version>
+    </dependency>
+  	
 	<dependency>
       <groupId>org.jboss.kernel</groupId>
       <artifactId>jboss-kernel</artifactId>
@@ -86,7 +109,25 @@
       <scope>provided</scope>
     </dependency>
     
+	<dependency>
+      <groupId>org.jboss.ejb3</groupId>
+      <artifactId>jboss-ejb3-timerservice-spi</artifactId>
+      <version>1.0.1</version>
+      <exclusions>
+        <!-- Make sure the EJB 3.0 API doesn't get in here -->
+        <exclusion>
+          <groupId>org.jboss.javaee</groupId>
+          <artifactId>jboss-ejb-api</artifactId>
+        </exclusion>
+		<exclusion>
+			<groupId>org.jboss.metadata</groupId>
+			<artifactId>jboss-metadata-ejb</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
     
+    
+    <!--  Test dependencies -->
   	
     <!-- For 'mocking' a DataSource we use Hypersonic -->
     <dependency>
@@ -114,35 +155,13 @@
     </dependency>
 	
     
-    
-    <dependency>
-      <groupId>org.jboss.spec.javax.ejb</groupId>
-      <artifactId>jboss-ejb-api_3.1_spec</artifactId>
-      <version>1.0.0.Beta2</version>
-    </dependency> 
-    
     <dependency>
       <groupId>org.jboss.ejb3</groupId>
       <artifactId>jboss-ejb3-jta-profile</artifactId>
       <version>0.1.0</version>
       <scope>test</scope>
     </dependency>    
-    <dependency>
-      <groupId>org.jboss.ejb3</groupId>
-      <artifactId>jboss-ejb3-timerservice-spi</artifactId>
-      <version>1.0.1</version>
-      <exclusions>
-        <!-- Make sure the EJB 3.0 API doesn't get in here -->
-        <exclusion>
-          <groupId>org.jboss.javaee</groupId>
-          <artifactId>jboss-ejb-api</artifactId>
-        </exclusion>
-		<exclusion>
-			<groupId>org.jboss.metadata</groupId>
-			<artifactId>jboss-metadata-ejb</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
+
     <dependency>
       <groupId>org.jboss.jpa</groupId>
       <artifactId>jboss-jpa-deployers</artifactId>

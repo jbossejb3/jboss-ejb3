@@ -22,6 +22,7 @@
 package org.jboss.ejb3.timerservice.mk2;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -48,6 +49,8 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
+import org.jboss.ejb3.context.CurrentInvocationContext;
+import org.jboss.ejb3.context.spi.InvocationContext;
 import org.jboss.ejb3.timer.schedule.CalendarBasedTimeout;
 import org.jboss.ejb3.timerservice.extension.TimerService;
 import org.jboss.ejb3.timerservice.mk2.persistence.CalendarTimerEntity;
@@ -313,6 +316,11 @@ public class TimerServiceImpl implements TimerService
    @Override
    public Collection<Timer> getTimers() throws IllegalStateException, EJBException
    {
+      if (this.isLifecycleCallbackInvocation())
+      {
+         throw new IllegalStateException("getTimers() method invocation is not allowed during lifecycle callback of EJBs");
+      }
+      
       Set<Timer> activeTimers = new HashSet<Timer>();
       for (TimerImpl timer : this.timers.values())
       {
@@ -336,13 +344,22 @@ public class TimerServiceImpl implements TimerService
     * @param persistent True if the newly created timer has to be persistent
     * @return Returns the newly created timer
     * @throws IllegalArgumentException If <code>initialExpiration</code> is null or <code>intervalDuration</code> is negative
+    * @throws IllegalStateException If this method was invoked during a lifecycle callback on the EJB
     */
    private Timer createTimer(Date initialExpiration, long intervalDuration, Serializable info, boolean persistent)
    {
+      if (this.isLifecycleCallbackInvocation())
+      {
+         throw new IllegalStateException("Creation of timers is not allowed during lifecycle callback of EJBs");
+      }
       if (initialExpiration == null)
+      {
          throw new IllegalArgumentException("initial expiration is null");
+      }
       if (intervalDuration < 0)
+      {
          throw new IllegalArgumentException("interval duration is negative");
+      }
 
       // create an id for the new timer instance
       UUID uuid = UUID.randomUUID();
@@ -372,10 +389,15 @@ public class TimerServiceImpl implements TimerService
     * @param persistent True if the newly created timer has to be persistent
     * @return Returns the newly created timer
     * @throws IllegalArgumentException If the passed <code>schedule</code> is null
+    * @throws IllegalStateException If this method was invoked during a lifecycle callback on the EJB
     */
    private org.jboss.ejb3.timerservice.extension.Timer createCalendarTimer(ScheduleExpression schedule,
          Serializable info, boolean persistent, String timeoutMethod, String[] methodParams)
    {
+      if (this.isLifecycleCallbackInvocation())
+      {
+         throw new IllegalStateException("Creation of timers is not allowed during lifecycle callback of EJBs");
+      }
       if (schedule == null)
       {
          throw new IllegalArgumentException("schedule is null");
@@ -783,6 +805,48 @@ public class TimerServiceImpl implements TimerService
 
    }
 
+   /**
+    * Returns true if the {@link CurrentInvocationContext} represents a lifecycle 
+    * callback invocation. Else returns false.
+    * <p>
+    *   This method internally relies on {@link CurrentInvocationContext#get()} to obtain
+    *   the current invocation context.
+    *   <ul>
+    *       <li>If the context is available then it looks for the method that was invoked. 
+    *       The absence of a method indicates a lifecycle callback.</li>
+    *       <li>If the context is <i>not</i> available, then this method returns false (i.e.
+    *       it doesn't consider the current invocation as a lifecycle callback). This is 
+    *       for convenience, to allow the invocation of {@link javax.ejb.TimerService} methods
+    *       in the absence of {@link CurrentInvocationContext}</li>
+    *   </ul>    
+    *       
+    * </p>
+    * @return
+    */
+   protected boolean isLifecycleCallbackInvocation()
+   {
+      InvocationContext currentInvocationContext = null;
+      try
+      {
+         currentInvocationContext = CurrentInvocationContext.get();
+      }
+      catch (IllegalStateException ise)
+      {
+         // no context info available so return false
+         return false;
+      }
+      // If the method in current invocation context is null,
+      // then it represents a lifecycle callback invocation
+      Method invokedMethod = currentInvocationContext.getMethod();
+      if (invokedMethod == null)
+      {
+         // it's a lifecycle callback
+         return true;
+      }
+      // not an lifecycle callback
+      return false;
+   }
+   
    private TimerImpl getPersistedTimer(TimerHandleImpl timerHandle)
    {
       UUID id = timerHandle.getId();
