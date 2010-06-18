@@ -21,12 +21,16 @@
  */
 package org.jboss.ejb3.test.threadlocal;
 
+import java.security.Principal;
 import java.util.Hashtable;
 
+import javax.ejb.EJBHome;
+import javax.ejb.EJBLocalHome;
 import javax.ejb.TimerService;
 import javax.management.ObjectName;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.transaction.UserTransaction;
 
 import org.jboss.ejb3.BeanContext;
 import org.jboss.ejb3.Container;
@@ -301,5 +305,55 @@ public class MockContainer implements Container
       // TODO Auto-generated method stub
       return null;
    }
+   
+   @Override
+   public EJBHome getEJBHome() throws IllegalStateException
+   {
+      // TODO Auto-generated method stub
+      throw new RuntimeException("NYI");
+   }
+
+   @Override
+   public EJBLocalHome getEJBLocalHome() throws IllegalStateException
+   {
+      // TODO Auto-generated method stub
+      throw new RuntimeException("NYI");
+   }
+
+   @Override
+   public boolean getRollbackOnly() throws IllegalStateException
+   {
+      // TODO Auto-generated method stub
+      throw new RuntimeException("NYI");
+   }
+
+   @Override
+   public UserTransaction getUserTransaction() throws IllegalStateException
+   {
+      // TODO Auto-generated method stub
+      throw new RuntimeException("NYI");
+   }
+
+   @Override
+   public boolean isCallerInRole(Principal callerPrincipal, String roleName) throws IllegalStateException
+   {
+      // TODO Auto-generated method stub
+      throw new RuntimeException("NYI");
+   }
+
+   @Override
+   public Object lookup(String name) throws IllegalArgumentException
+   {
+      // TODO Auto-generated method stub
+      throw new RuntimeException("NYI");
+   }
+
+   @Override
+   public void setRollbackOnly() throws IllegalStateException
+   {
+      // TODO Auto-generated method stub
+      throw new RuntimeException("NYI");
+   }
+
 
 }
