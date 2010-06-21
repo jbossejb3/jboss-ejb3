@@ -32,6 +32,7 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.Lob;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 import org.jboss.ejb3.timerservice.mk2.TimerImpl;
 import org.jboss.ejb3.timerservice.mk2.TimerState;
@@ -49,9 +50,11 @@ public class TimerEntity implements Serializable
    private UUID id;
 
    @Column(nullable = false)
+   @NotNull
    private String timedObjectId;
 
    @Column(nullable = false)
+   @NotNull
    private Date initialDate;
 
    private long interval;

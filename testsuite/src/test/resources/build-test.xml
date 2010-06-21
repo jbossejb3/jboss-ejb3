@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="JBoss EJB3.1 timerservice testsuite setup" default="install-timerservice-packages">
-	
+
 	<property environment="env"/>
 	<!-- Enforce JBOSS_HOME -->
 	<fail unless="env.JBOSS_HOME" message="JBOSS_HOME not set"/>
@@ -8,30 +8,31 @@
 	<condition property="skip.packagemanager">
 		<isset property="env.skip.packagemanager"/>
 	</condition>
-	
+
 	<property name="location.target" value="${basedir}/target"/>
-  	<property name="location.dependencies" value="${location.target}/dependencies"/>
-  	<property name="location.packagemanager" value="${location.dependencies}/package-manager"/>
+	<property name="location.dependencies" value="${location.target}/dependencies"/>
+	<property name="location.packagemanager" value="${location.dependencies}/package-manager"/>
 	<property name="location.packagemanager.zip.file" value="${location.packagemanager}/jboss-ejb3-package-manager-installer.zip"/>
-  	<property name="location.timerservice.packages" value="${location.dependencies}/packages"/>
+	<property name="location.timerservice.packages" value="${location.dependencies}/packages"/>
 	<property name="location.timerservice.mk2.package" value="${location.timerservice.packages}/jboss-ejb3-timerservice-mk2-package.jar"/>
+	<property name="location.timerservice.deployer.package" value="${location.timerservice.packages}/jboss-ejb3-timerservice-deployer-package.jar"/>
 	<property name="packagemanager.home" value="${location.packagemanager}/jboss-package-manager"/>
 
 	<path id="package.manager.classpath">
-	    <fileset dir="${packagemanager.home}/lib" includes="**/*.jar"/>
+		<fileset dir="${packagemanager.home}/lib" includes="**/*.jar"/>
 	</path>
-	
+
 	<target name="install-timerservice-packages" description="Install timerservice component packages into JBoss AS" unless="skip.packagemanager">
 		<!--Unzip the package manager installer -->
 		<antcall target="unzip-package-manager"/>
-		
+
 		<!-- Setup package manager itself -->
 		<antcall target="setup-package-manager"/>
 
 		<!-- Install the timerservice packages through the package manager -->
 		<echo>Installing timerservice mk2 package</echo>
 		<java classname="org.jboss.ejb3.packagemanager.main.Main" classpathref="package.manager.classpath" fork="true">
-			
+
 			<!-- package manager home -->
 			<arg value="-p"/>
 			<arg value="${packagemanager.home}"/>
@@ -41,15 +42,29 @@
 			<arg value="-u"/>
 			<arg value="${location.timerservice.mk2.package}"/>
 		</java>
-		
+
+		<echo>Installing timerservice deployer package</echo>
+		<java classname="org.jboss.ejb3.packagemanager.main.Main" classpathref="package.manager.classpath" fork="true">
+
+			<!-- package manager home -->
+			<arg value="-p" />
+			<arg value="${packagemanager.home}" />
+			<!-- JBoss Home -->
+			<arg value="-s" />
+			<arg value="${JBOSS_HOME}" />
+			<arg value="-u" />
+			<arg value="${location.timerservice.deployer.package}" />
+		</java>
+
+
 	</target>
-	
+
 	<target name="unzip-package-manager">
 		<unzip dest="${location.packagemanager}" src="${location.packagemanager.zip.file}"/>
 	</target>
 
 	<target name="setup-package-manager">
-	
+
 		<java classname="org.jboss.ejb3.packagemanager.main.Setup" classpathref="package.manager.classpath" fork="true">
 			<!-- package manager home -->
 			<arg value="-p"/>
@@ -60,7 +75,7 @@
 		</java>
 
 	</target>
-	
-	
+
+
 
 </project>

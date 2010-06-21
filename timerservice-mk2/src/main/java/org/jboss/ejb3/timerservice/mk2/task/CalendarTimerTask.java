@@ -67,8 +67,7 @@ public class CalendarTimerTask extends TimerTask<CalendarTimer>
             throw new RuntimeException(msg);
          }
          // call the timeout method
-         ((MultiTimeoutMethodTimedObjectInvoker) invoker).callTimeout(calendarTimer, calendarTimer.getTimeoutMethod(), calendarTimer
-               .getTimeoutMethodParams());
+         ((MultiTimeoutMethodTimedObjectInvoker) invoker).callTimeout(calendarTimer, calendarTimer.getTimeoutMethod());
       }
       else
       {

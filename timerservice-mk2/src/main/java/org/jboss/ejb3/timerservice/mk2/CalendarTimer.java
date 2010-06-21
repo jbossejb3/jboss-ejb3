@@ -22,6 +22,7 @@
 package org.jboss.ejb3.timerservice.mk2;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.Calendar;
 import java.util.UUID;
 
@@ -63,24 +64,7 @@ public class CalendarTimer extends TimerImpl
     */
    private boolean autoTimer;
 
-   /**
-    * This represents the timeout method name for auto-timers.
-    * <p>
-    *   If this isn't an auto-timer, then this {@link #timeoutMethodName} will 
-    *   be null 
-    * </p>
-    */
-   private String timeoutMethodName;
-
-   /**
-    * Represents the timeout method parameters for an auto-timer.
-    * 
-    * <p>
-    *   If this isn't an auto-timer, then this {@link #timeoutMethodParams} will 
-    *   be null
-    * </p>
-    */
-   private String[] timeoutMethodParams;
+   private Method timeoutMethod;
 
    /**
     * Constructs a {@link CalendarTimer}
@@ -106,7 +90,7 @@ public class CalendarTimer extends TimerImpl
    public CalendarTimer(UUID id, TimerServiceImpl timerService, CalendarBasedTimeout calendarTimeout,
          Serializable info, boolean persistent)
    {
-      this(id, timerService, calendarTimeout, info, persistent, null, null);
+      this(id, timerService, calendarTimeout, info, persistent, null);
    }
 
    /**
@@ -124,7 +108,7 @@ public class CalendarTimer extends TimerImpl
     *           <code>timeoutMethodName</code> is not null
     */
    public CalendarTimer(UUID id, TimerServiceImpl timerService, CalendarBasedTimeout calendarTimeout,
-         Serializable info, boolean persistent, String timeoutMethodName, String[] timeoutMethodParams)
+         Serializable info, boolean persistent, Method timeoutMethod)
    {
       super(id, timerService, calendarTimeout.getFirstTimeout().getTime(), 0, info, persistent);
       this.calendarTimeout = calendarTimeout;
@@ -137,11 +121,10 @@ public class CalendarTimer extends TimerImpl
       }
       // set this as an auto-timer if the passed timeout method name 
       // is not null
-      if (timeoutMethodName != null)
+      if (timeoutMethod != null)
       {
          this.autoTimer = true;
-         this.timeoutMethodName = timeoutMethodName;
-         this.timeoutMethodParams = timeoutMethodParams;
+         this.timeoutMethod = timeoutMethod;
       }
    }
 
@@ -161,9 +144,13 @@ public class CalendarTimer extends TimerImpl
       if (persistedCalendarTimer.isAutoTimer())
       {
          this.autoTimer = true;
-         TimeoutMethod timeoutMethod = persistedCalendarTimer.getTimeoutMethod();
-         this.timeoutMethodName = timeoutMethod.getMethodName();
-         this.timeoutMethodParams = timeoutMethod.getMethodParams();
+         TimeoutMethod timeoutMethodInfo = persistedCalendarTimer.getTimeoutMethod();
+         this.timeoutMethod = this.getTimeoutMethod(timeoutMethodInfo);
+         if (this.timeoutMethod == null)
+         {
+            throw new IllegalStateException("Could not find timeout method: " + timeoutMethodInfo);
+         }
+
       }
    }
 
@@ -217,34 +204,6 @@ public class CalendarTimer extends TimerImpl
    }
 
    /**
-    * Returns the timeout method if this is an auto-timer.
-    * @return
-    * @throws IllegalStateException If this is not an auto-timer
-    */
-   public String getTimeoutMethod()
-   {
-      if (this.autoTimer == false)
-      {
-         throw new IllegalStateException("Cannot invoke getTimeoutMethod on a timer which is not an auto-timer");
-      }
-      return this.timeoutMethodName;
-   }
-
-   /**
-    * Returns the timeout method params, if this is an auto-timer
-    * @return
-    * @throws IllegalStateException If this is not an auto-timer
-    */
-   public String[] getTimeoutMethodParams()
-   {
-      if (this.autoTimer == false)
-      {
-         throw new IllegalStateException("Cannot invoke getTimeoutMethodParams on a timer which is not an auto-timer");
-      }
-      return this.timeoutMethodParams;
-   }
-
-   /**
     * Returns the task which handles the timeouts on this {@link CalendarTimer}
     * 
     * @see CalendarTimerTask
@@ -253,6 +212,92 @@ public class CalendarTimer extends TimerImpl
    protected TimerTask<?> getTimerTask()
    {
       return new CalendarTimerTask(this);
+   }
+
+   public Method getTimeoutMethod()
+   {
+      if (this.autoTimer == false)
+      {
+         throw new IllegalStateException("Cannot invoke getTimeoutMethod on a timer which is not an auto-timer");
+      }
+      return this.timeoutMethod;
+   }
+
+   /**
+    * Returns the {@link Method}, represented by the {@link TimeoutMethod}
+    * <p>
+    *   Note: This method uses the {@link Thread#getContextClassLoader()} to load the 
+    *   relevant classes while getting the {@link Method}
+    * </p>
+    * @param timeoutMethodInfo The timeout method 
+    * 
+    * @return
+    * 
+    */
+   private Method getTimeoutMethod(TimeoutMethod timeoutMethodInfo)
+   {
+
+      ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+      String declaringClass = timeoutMethodInfo.getDeclaringClass();
+      Class<?> timeoutMethodDeclaringClass = null;
+      try
+      {
+         timeoutMethodDeclaringClass = Class.forName(declaringClass, false, tccl);
+      }
+      catch (ClassNotFoundException cnfe)
+      {
+         throw new RuntimeException("Could not load declaring class: " + declaringClass + " of timeout method");
+      }
+
+      String timeoutMethodName = timeoutMethodInfo.getMethodName();
+      String[] timeoutMethodParams = timeoutMethodInfo.getMethodParams();
+      // load the method param classes
+      Class<?>[] timeoutMethodParamTypes = new Class<?>[]
+      {};
+      if (timeoutMethodParams != null)
+      {
+         timeoutMethodParamTypes = new Class<?>[timeoutMethodParams.length];
+         int i = 0;
+         for (String paramClassName : timeoutMethodParams)
+         {
+            Class<?> methodParamClass = null;
+            try
+            {
+               methodParamClass = Class.forName(paramClassName, false, tccl);
+            }
+            catch (ClassNotFoundException cnfe)
+            {
+               throw new RuntimeException("Could not load method param class: " + paramClassName + " of timeout method");
+            }
+            timeoutMethodParamTypes[i++] = methodParamClass;
+         }
+      }
+      // now start looking for the method
+      Method[] methods = timeoutMethodDeclaringClass.getMethods();
+      for (Method method : methods)
+      {
+         if (method.getName().equals(timeoutMethodName))
+         {
+            Class<?>[] methodParamTypes = method.getParameterTypes();
+            // param length doesn't match
+            if (timeoutMethodParamTypes.length != methodParamTypes.length)
+            {
+               continue;
+            }
+            for (int i = 0; i < methodParamTypes.length; i++)
+            {
+               // param type doesn't match
+               if (timeoutMethodParamTypes[i].equals(methodParamTypes[i]) == false)
+               {
+                  continue;
+               }
+            }
+            // match found
+            return method;
+         }
+      }
+      // no match found
+      return null;
    }
 
 }

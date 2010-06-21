@@ -155,7 +155,7 @@ public class TimerServiceImpl implements TimerService
    {
       Serializable info = timerConfig == null ? null : timerConfig.getInfo();
       boolean persistent = timerConfig == null ? true : timerConfig.isPersistent();
-      return this.createCalendarTimer(schedule, info, persistent, null, null);
+      return this.createCalendarTimer(schedule, info, persistent, null);
    }
 
    /**
@@ -296,18 +296,16 @@ public class TimerServiceImpl implements TimerService
    }
 
    @Override
-   public org.jboss.ejb3.timerservice.extension.Timer getAutoTimer(ScheduleExpression schedule,
-         String timeoutMethodName, String[] methodParams)
+   public org.jboss.ejb3.timerservice.extension.Timer getAutoTimer(ScheduleExpression schedule, Method timeoutMethod)
    {
-      return this.createCalendarTimer(schedule, null, true, timeoutMethodName, methodParams);
+      return this.createCalendarTimer(schedule, null, true, timeoutMethod);
    }
 
    @Override
    public org.jboss.ejb3.timerservice.extension.Timer getAutoTimer(ScheduleExpression schedule,
-         TimerConfig timerConfig, String timeoutMethodName, String[] methodParams)
+         TimerConfig timerConfig, Method timeoutMethod)
    {
-      return this.createCalendarTimer(schedule, timerConfig.getInfo(), timerConfig.isPersistent(), timeoutMethodName,
-            methodParams);
+      return this.createCalendarTimer(schedule, timerConfig.getInfo(), timerConfig.isPersistent(), timeoutMethod);
    }
 
    /**
@@ -392,7 +390,7 @@ public class TimerServiceImpl implements TimerService
     * @throws IllegalStateException If this method was invoked during a lifecycle callback on the EJB
     */
    private org.jboss.ejb3.timerservice.extension.Timer createCalendarTimer(ScheduleExpression schedule,
-         Serializable info, boolean persistent, String timeoutMethod, String[] methodParams)
+         Serializable info, boolean persistent, Method timeoutMethod)
    {
       if (this.isLifecycleCallbackInvocation())
       {
@@ -417,7 +415,7 @@ public class TimerServiceImpl implements TimerService
       // generate a id for the timer
       UUID uuid = UUID.randomUUID();
       // create the timer
-      TimerImpl timer = new CalendarTimer(uuid, this, calendarTimeout, info, persistent, timeoutMethod, methodParams);
+      TimerImpl timer = new CalendarTimer(uuid, this, calendarTimeout, info, persistent, timeoutMethod);
       // persist it if it's persistent
       if (persistent)
       {

@@ -81,6 +81,13 @@
     	<artifactId>jboss-interceptors-api_1.1_spec</artifactId>
     	<version>1.0.0.Beta1</version>
     </dependency>
+    
+    <!-- Bean validation -->
+    <dependency>
+    	<groupId>javax.validation</groupId>
+    	<artifactId>validation-api</artifactId>
+    	<version>1.0.0.GA</version>
+    </dependency>
   	
 	<dependency>
       <groupId>org.jboss.kernel</groupId>
@@ -112,7 +119,7 @@
 	<dependency>
       <groupId>org.jboss.ejb3</groupId>
       <artifactId>jboss-ejb3-timerservice-spi</artifactId>
-      <version>1.0.1</version>
+      <version>1.0.2</version>
       <exclusions>
         <!-- Make sure the EJB 3.0 API doesn't get in here -->
         <exclusion>

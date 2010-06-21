@@ -32,6 +32,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 /**
  * TimeoutMethod
@@ -48,20 +49,27 @@ public class TimeoutMethod implements Serializable
    @GeneratedValue(strategy = GenerationType.AUTO)
    private Long id;
 
+   @NotNull (message = "Declaring class for timeout method cannot be null")
+   private String declaringClass;
+   
+   @NotNull (message = "Method name for timeout method cannot be null")
    private String methodName;
 
    // TODO: Ordering of method params is *not* considered right now
    // (mainly because we expect atmost one param for a timeout method)
    @ElementCollection
    private List<String> methodParams;
+   
+   private String cachedToString;
 
    public TimeoutMethod()
    {
 
    }
 
-   public TimeoutMethod(String methodName, String[] methodParams)
+   public TimeoutMethod(String declaringClass, String methodName, String[] methodParams)
    {
+      this.declaringClass = declaringClass;
       this.methodName = methodName;
       if (methodParams != null)
       {
@@ -89,6 +97,37 @@ public class TimeoutMethod implements Serializable
       }
       return methodParams.toArray(new String[]{});
    }
+
+   public String getDeclaringClass()
+   {
+      return declaringClass;
+   }
    
+   @Override
+   public String toString()
+   {
+      if (this.cachedToString == null)
+      {
+         StringBuilder sb = new StringBuilder();
+         sb.append(this.declaringClass);
+         sb.append(".");
+         sb.append(this.methodName);
+         sb.append("(");
+         if (this.methodParams != null)
+         {
+            for (int i = 0; i < this.methodParams.size(); i++)
+            {
+               sb.append(this.methodParams.get(i));
+               if (i != this.methodParams.size() -1)
+               {
+                  sb.append(",");
+               }
+            }
+         }
+         sb.append(")");
+         this.cachedToString = sb.toString();
+      }
+      return this.cachedToString;
+   }
 
 }

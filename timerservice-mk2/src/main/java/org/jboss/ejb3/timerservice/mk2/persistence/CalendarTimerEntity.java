@@ -21,6 +21,7 @@
  */
 package org.jboss.ejb3.timerservice.mk2.persistence;
 
+import java.lang.reflect.Method;
 import java.util.Date;
 
 import javax.ejb.ScheduleExpression;
@@ -88,8 +89,14 @@ public class CalendarTimerEntity extends TimerEntity
       this.autoTimer = calendarTimer.isAutoTimer();
       if (calendarTimer.isAutoTimer())
       {
-         String timeoutMethodName = calendarTimer.getTimeoutMethod();
-         this.timeoutMethod = new TimeoutMethod(timeoutMethodName, calendarTimer.getTimeoutMethodParams());
+         Method method = calendarTimer.getTimeoutMethod();
+         Class<?>[] methodParams = method.getParameterTypes();
+         String[] params = new String[methodParams.length];
+         for (int i = 0; i < methodParams.length; i++)
+         {
+            params[i] = methodParams[i].getName();
+         }
+         this.timeoutMethod = new TimeoutMethod(method.getDeclaringClass().getName(), method.getName(), params);
       }
       
       this.second = this.scheduleExpression.getSecond();
