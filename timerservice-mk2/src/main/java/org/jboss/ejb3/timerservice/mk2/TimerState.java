@@ -34,10 +34,7 @@ package org.jboss.ejb3.timerservice.mk2;
  *  <li> {@link #CREATED} -> {@link #ACTIVE}  - when started without Tx</li>
  *  <li> {@link #STARTED_IN_TX} -> {@link #ACTIVE} - on Tx commit</li>
  *  <li> {@link #STARTED_IN_TX} -> {@link #CANCELED} - on Tx rollback</li>
- *  <li> {@link #ACTIVE} -> {@link #CANCELED_IN_TX} - on cancel() with Tx</li>
  *  <li> {@link #ACTIVE} -> {@link #CANCELED} - on cancel() without Tx</li>
- *  <li> {@link #CANCELED_IN_TX} -> {@link #CANCELED} - on Tx commit</li>
- *  <li> {@link #CANCELED_IN_TX} -> {@link #ACTIVE} - on Tx rollback</li>
  *  <li> {@link #ACTIVE} -> {@link #IN_TIMEOUT} - on TimerTask run</li>
  *  <li> {@link #IN_TIMEOUT} -> {@link #ACTIVE} - on Tx commit if intervalDuration > 0</li>
  *  <li> {@link #IN_TIMEOUT} -> {@link #EXPIRED} -> on Tx commit if intervalDuration == 0</li>
@@ -59,24 +56,11 @@ public enum TimerState
    CREATED,
 
    /**
-    * State when a timer has been started and is waiting for the transaction
-    * to either commit or rollback, to either move to {@link #ACTIVE} or {@link #CANCELED}
-    * state.
-    */
-   STARTED_IN_TX,
-
-   /**
     * State indicating that the timer is active and will receive 
     * any timeout notifications
     */
    ACTIVE,
 
-   /**
-    * State indicating that the timer has been marked for cancellation and is waiting 
-    * for the current transaction to complete to either move to {@link #CANCELED} (if tx committed)
-    * or move to {@link #ACTIVE} (if tx was rolled back)
-    */
-   CANCELED_IN_TX,
 
    /**
     * State indicating that the timer has been cancelled and will not

@@ -316,9 +316,10 @@ public class TimerServiceImpl implements TimerService
    {
       if (this.isLifecycleCallbackInvocation())
       {
-         throw new IllegalStateException("getTimers() method invocation is not allowed during lifecycle callback of EJBs");
+         throw new IllegalStateException(
+               "getTimers() method invocation is not allowed during lifecycle callback of EJBs");
       }
-      
+
       Set<Timer> activeTimers = new HashSet<Timer>();
       for (TimerImpl timer : this.timers.values())
       {
@@ -487,7 +488,7 @@ public class TimerServiceImpl implements TimerService
          TimerHandleImpl timerHandle = (TimerHandleImpl) handle;
          return this.getPersistedTimer(timerHandle);
       }
-         
+
    }
 
    /**
@@ -607,17 +608,17 @@ public class TimerServiceImpl implements TimerService
       // TODO: Now all that bolierplate for tx management (which
       // needs to go once we have the timer service "managed")
       Transaction previousTx = null;
+      boolean newTxStarted = false;
       try
       {
          previousTx = this.transactionManager.getTransaction();
-         // we persist in a separate tx (REQUIRES_NEW), so suspend
-         // any current tx
-         if (previousTx != null)
+         // we persist with REQUIRED tx semantics
+         // if there's no current tx in progress, then create a new one
+         if (previousTx == null)
          {
-            this.transactionManager.suspend();
+            this.startNewTx();
+            newTxStarted = true;
          }
-         // start new tx
-         this.transactionManager.begin();
 
          EntityManager em = this.emf.createEntityManager();
          em.joinTransaction();
@@ -626,7 +627,7 @@ public class TimerServiceImpl implements TimerService
 
          // do the actual persistence
          em.persist(mergedTimerEntity);
-         
+
       }
       catch (Throwable t)
       {
@@ -636,9 +637,11 @@ public class TimerServiceImpl implements TimerService
       }
       finally
       {
-         // since we started a new tx (for REQUIRES_NEW) semantics,
-         // resume any previously suspended tx
-         this.restorePreviousTx(previousTx);
+         // since we started a new tx, end it (either commit or rollback) ourselves
+         if (newTxStarted)
+         {
+            this.endTx();
+         }
       }
 
    }
@@ -670,7 +673,6 @@ public class TimerServiceImpl implements TimerService
     * This includes timers whose {@link TimerState} is <b>neither</b> of the following:
     * <ul>
     *   <li>{@link TimerState#CANCELED}</li>
-    *   <li>{@link TimerState#CANCELED_IN_TX}</li>
     *   <li>{@link TimerState#EXPIRED}</li>
     * </ul>
     * </p>
@@ -691,7 +693,6 @@ public class TimerServiceImpl implements TimerService
       Set<TimerState> ineligibleTimerStates = new HashSet<TimerState>();
       ineligibleTimerStates.add(TimerState.CANCELED);
       ineligibleTimerStates.add(TimerState.EXPIRED);
-      ineligibleTimerStates.add(TimerState.CANCELED_IN_TX);
 
       EntityManager em = this.emf.createEntityManager();
 
@@ -787,19 +788,17 @@ public class TimerServiceImpl implements TimerService
     */
    protected void startInTx(TimerImpl timer)
    {
-      if (this.getTransaction() != null)
-      {
-         // don't schedule the timeout yet
-         timer.setTimerState(TimerState.STARTED_IN_TX);
-      }
-      else
+      timer.setTimerState(TimerState.ACTIVE);
+      // persist changes
+      this.persistTimer(timer);
+
+      // if there's no transaction, then trigger a schedule immidiately.
+      // Else, the timer will be scheduled on tx synchronization callback
+      if (this.getTransaction() == null)
       {
          // create and schedule a timer task
          timer.scheduleTimeout();
-         timer.setTimerState(TimerState.ACTIVE);
       }
-      // persist changes
-      this.persistTimer(timer);
 
    }
 
@@ -844,7 +843,7 @@ public class TimerServiceImpl implements TimerService
       // not an lifecycle callback
       return false;
    }
-   
+
    private TimerImpl getPersistedTimer(TimerHandleImpl timerHandle)
    {
       UUID id = timerHandle.getId();
@@ -853,7 +852,7 @@ public class TimerServiceImpl implements TimerService
       Query query = em.createQuery("from TimerEntity t where t.id = :id and t.timedObjectId = :timedObjectId");
       query.setParameter("id", id);
       query.setParameter("timedObjectId", timedObjectId);
-      
+
       List<TimerEntity> timers = query.getResultList();
       if (timers == null || timers.isEmpty())
       {
@@ -869,85 +868,86 @@ public class TimerServiceImpl implements TimerService
          return new CalendarTimer((CalendarTimerEntity) timerEntity, this);
       }
       return new TimerImpl(timerEntity, this);
-      
+
    }
+
    private org.jboss.ejb3.timerservice.extension.Timer getExistingAutoTimer(ScheduleExpression schedule,
          TimerConfig timerConfig, String timeoutMethodName, String[] methodParams)
    {
-//      if (timerConfig != null && timerConfig.isPersistent() == false)
-//      {
-//         return null;
-//      }
-//      // we need to restore only those timers which correspond to the 
-//      // timed object invoker to which this timer service belongs. So
-//      // first get hold of the timed object id
-//      String timedObjectId = this.getInvoker().getTimedObjectId();
-//
-//      // TODO: Again the boilerplate transaction management code
-//      // (which will go, once the timer service is "managed")
-//      boolean thisMethodStartedTx = this.startTxIfNone();
-//
-//      try
-//      {
-//
-//         // join the transaction, since the entity manager was created
-//         // outside the transaction context
-//         this.em.joinTransaction();
-//
-//         Query autoTimersQuery = this.em
-//               .createQuery("from CalendarTimerEntity t where t.timedObjectId = :timedObjectId and t.autoTimer is true");
-//         autoTimersQuery.setParameter("timedObjectId", timedObjectId);
-//
-//         List<CalendarTimerEntity> autoTimers = autoTimersQuery.getResultList();
-//         for (CalendarTimerEntity autoTimer : autoTimers)
-//         {
-//            TimeoutMethod timeoutMethod = autoTimer.getTimeoutMethod();
-//            if (this.doesTimeoutMethodMatch(timeoutMethod, timeoutMethodName, methodParams) == false)
-//            {
-//               continue;
-//            }
-//            if (timerConfig != null)
-//            {
-//               Serializable info = timerConfig.getInfo();
-//               if (info != null)
-//               {
-//                  if (info.equals(autoTimer.getInfo()) == false)
-//                  {
-//                     continue;
-//                  }
-//               }
-//               else
-//               {
-//                  if (autoTimer.getInfo() != null)
-//                  {
-//                     continue;
-//                  }
-//               }
-//            }
-//            // now onto schedule
-//            ScheduleExpression autoTimerSchedule = autoTimer.getScheduleExpression();
-//            if (this.doSchedulesMatch(autoTimerSchedule, schedule))
-//            {
-//               return new CalendarTimer(autoTimer, this);
-//            }
-//            
-//         }
-//      }
-//      catch (Throwable t)
-//      {
-//         // TODO: Again the tx management boilerplate
-//         this.setRollbackOnly();
-//         throw new RuntimeException(t);
-//      }
-//      finally
-//      {
-//         // TODO: Remove this once the timer service implementation
-//         // becomes "managed"
-//         if (thisMethodStartedTx)
-//         {
-//            this.endTransaction();
-//         }
-//      }
+      //      if (timerConfig != null && timerConfig.isPersistent() == false)
+      //      {
+      //         return null;
+      //      }
+      //      // we need to restore only those timers which correspond to the 
+      //      // timed object invoker to which this timer service belongs. So
+      //      // first get hold of the timed object id
+      //      String timedObjectId = this.getInvoker().getTimedObjectId();
+      //
+      //      // TODO: Again the boilerplate transaction management code
+      //      // (which will go, once the timer service is "managed")
+      //      boolean thisMethodStartedTx = this.startTxIfNone();
+      //
+      //      try
+      //      {
+      //
+      //         // join the transaction, since the entity manager was created
+      //         // outside the transaction context
+      //         this.em.joinTransaction();
+      //
+      //         Query autoTimersQuery = this.em
+      //               .createQuery("from CalendarTimerEntity t where t.timedObjectId = :timedObjectId and t.autoTimer is true");
+      //         autoTimersQuery.setParameter("timedObjectId", timedObjectId);
+      //
+      //         List<CalendarTimerEntity> autoTimers = autoTimersQuery.getResultList();
+      //         for (CalendarTimerEntity autoTimer : autoTimers)
+      //         {
+      //            TimeoutMethod timeoutMethod = autoTimer.getTimeoutMethod();
+      //            if (this.doesTimeoutMethodMatch(timeoutMethod, timeoutMethodName, methodParams) == false)
+      //            {
+      //               continue;
+      //            }
+      //            if (timerConfig != null)
+      //            {
+      //               Serializable info = timerConfig.getInfo();
+      //               if (info != null)
+      //               {
+      //                  if (info.equals(autoTimer.getInfo()) == false)
+      //                  {
+      //                     continue;
+      //                  }
+      //               }
+      //               else
+      //               {
+      //                  if (autoTimer.getInfo() != null)
+      //                  {
+      //                     continue;
+      //                  }
+      //               }
+      //            }
+      //            // now onto schedule
+      //            ScheduleExpression autoTimerSchedule = autoTimer.getScheduleExpression();
+      //            if (this.doSchedulesMatch(autoTimerSchedule, schedule))
+      //            {
+      //               return new CalendarTimer(autoTimer, this);
+      //            }
+      //            
+      //         }
+      //      }
+      //      catch (Throwable t)
+      //      {
+      //         // TODO: Again the tx management boilerplate
+      //         this.setRollbackOnly();
+      //         throw new RuntimeException(t);
+      //      }
+      //      finally
+      //      {
+      //         // TODO: Remove this once the timer service implementation
+      //         // becomes "managed"
+      //         if (thisMethodStartedTx)
+      //         {
+      //            this.endTransaction();
+      //         }
+      //      }
       return null;
    }
 
@@ -955,6 +955,7 @@ public class TimerServiceImpl implements TimerService
    {
       return true;
    }
+
    private boolean doesTimeoutMethodMatch(TimeoutMethod timeoutMethod, String timeoutMethodName, String[] methodParams)
    {
       if (timeoutMethod.getMethodName().equals(timeoutMethodName) == false)
@@ -968,7 +969,7 @@ public class TimerServiceImpl implements TimerService
       }
       return this.methodParamsMatch(timeoutMethodParams, methodParams);
    }
-   
+
    private boolean doesTimerConfigMatch(TimerConfig timerConfig)
    {
       return true;
@@ -1026,25 +1027,27 @@ public class TimerServiceImpl implements TimerService
       }
       catch (IllegalStateException ise)
       {
-         logger.error("Could set transaction to rollback only", ise);
+         logger.error("Ignoring exception during setRollbackOnly: ", ise);
       }
       catch (SystemException se)
       {
-         logger.error("Could set transaction to rollback only", se);
+         logger.error("Ignoring exception during setRollbackOnly: ", se);
       }
    }
 
-   /**
-    * Resumes a previously suspended transaction. Before doing that,
-    *  this method ends (either commits or rolls back, depending on tx state) the current
-    *  tx.
-    * @param previousTx The previous transaction which was suspended and which now
-    *           needs to be resumed
-    * NOTE: This method will soon be removed, once this timer service
-    * implementation becomes "managed"
-    *             
-    */
-   private void restorePreviousTx(Transaction previousTx)
+   private void startNewTx()
+   {
+      try
+      {
+         this.transactionManager.begin();
+      }
+      catch (Throwable t)
+      {
+         throw new RuntimeException("Could not start transaction", t);
+      }
+   }
+
+   private void endTx()
    {
       try
       {
@@ -1066,17 +1069,6 @@ public class TimerServiceImpl implements TimerService
       catch (Exception e)
       {
          throw new RuntimeException("Could not end transaction", e);
-      }
-      finally
-      {
-         try
-         {
-            this.transactionManager.resume(previousTx);
-         }
-         catch (Exception e)
-         {
-            throw new RuntimeException("Could not resume previous transaction " + previousTx, e);
-         }
       }
    }
 
@@ -1109,97 +1101,27 @@ public class TimerServiceImpl implements TimerService
             TimerState timerState = this.timer.getState();
             switch (timerState)
             {
-               case STARTED_IN_TX :
+               case ACTIVE :
+                  // the timer was started/activated in a tx.
+                  // now it's time to schedule the task
                   this.timer.scheduleTimeout();
-                  // set the timer state 
-                  this.timer.setTimerState(TimerState.ACTIVE);
-                  // persist changes
-                  TimerServiceImpl.this.persistTimer(this.timer);
+                  break;
+                  
+               case CANCELED:
+                  this.timer.cancelTimer();
                   break;
 
-               case CANCELED_IN_TX :
-                  this.timer.cancel();
-                  break;
-
-               case IN_TIMEOUT :
-               case RETRY_TIMEOUT :
-                  if (this.timer.getInterval() == 0)
-                  {
-                     this.timer.setTimerState(TimerState.EXPIRED);
-                     this.timer.cancel();
-                  }
-                  else
-                  {
-                     this.timer.setTimerState(TimerState.ACTIVE);
-                     // persist changes
-                     TimerServiceImpl.this.persistTimer(this.timer);
-                  }
-                  break;
-            }
-         }
-         else if (status == Status.STATUS_ROLLEDBACK)
-         {
-            logger.debug("rollback: " + this);
-            TimerState timerState = this.timer.getState();
-            switch (timerState)
-            {
-               case STARTED_IN_TX :
-                  this.timer.cancel();
-                  break;
-
-               case CANCELED_IN_TX :
-                  this.timer.setTimerState(TimerState.ACTIVE);
-                  // persist changes
-                  TimerServiceImpl.this.persistTimer(this.timer);
-                  break;
-
-               case IN_TIMEOUT :
-                  this.timer.setTimerState(TimerState.RETRY_TIMEOUT);
-                  // persist changes
-                  TimerServiceImpl.this.persistTimer(this.timer);
-                  logger.debug("retry: " + this.timer);
-                  TimerServiceImpl.this.retryTimeout(this.timer);
-                  break;
-
-               case RETRY_TIMEOUT :
-                  if (this.timer.getInterval() == 0)
-                  {
-                     this.timer.setTimerState(TimerState.EXPIRED);
-                     this.timer.cancel();
-                  }
-                  else
-                  {
-                     this.timer.setTimerState(TimerState.ACTIVE);
-                     // persist changes
-                     TimerServiceImpl.this.persistTimer(this.timer);
-                  }
-                  break;
             }
          }
       }
-
-      /**
-       * {@inheritDoc}
-       */
+      
       @Override
       public void beforeCompletion()
       {
-         TimerState timerState = this.timer.getState();
-         switch (timerState)
-         {
-            case CANCELED_IN_TX :
-               TimerServiceImpl.this.removeTimer(this.timer);
-               break;
-
-            case IN_TIMEOUT :
-            case RETRY_TIMEOUT :
-               if (this.timer.getInterval() == 0)
-               {
-                  TimerServiceImpl.this.removeTimer(this.timer);
-               }
-               break;
-         }
+         // TODO Auto-generated method stub
+         
       }
+
    }
 
 }

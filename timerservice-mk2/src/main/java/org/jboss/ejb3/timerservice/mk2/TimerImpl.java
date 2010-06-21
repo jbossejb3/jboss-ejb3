@@ -213,7 +213,12 @@ public class TimerImpl implements Timer
    {
       // first check whether the timer has expired or has been cancelled
       this.assertTimerState();
-      this.cancelTimer();
+      if (timerState != TimerState.EXPIRED)
+      {
+         setTimerState(TimerState.CANCELED);
+      }
+      // persist changes
+      timerService.persistTimer(this);
    }
 
    /**
@@ -318,17 +323,12 @@ public class TimerImpl implements Timer
     */
    protected void cancelTimer()
    {
-      if (timerState != TimerState.EXPIRED)
-      {
-         setTimerState(TimerState.CANCELED);
-      }
       // cancel any scheduled timer task
       if (this.future != null)
       {
          future.cancel(false);
       }
-      // persist changes
-      timerService.persistTimer(this);
+
    }
 
    /**
@@ -386,14 +386,13 @@ public class TimerImpl implements Timer
    }
 
    /**
-    * Returns true if this timer is either in {@link TimerState#CANCELED_IN_TX} or in
-    * {@link TimerState#CANCELED} state. Else returns false.
+    * Returns true if this timer is in {@link TimerState#CANCELED} state. Else returns false.
     * 
     * @return
     */
    public boolean isCanceled()
    {
-      return timerState == TimerState.CANCELED_IN_TX || timerState == TimerState.CANCELED;
+      return timerState == TimerState.CANCELED;
    }
 
    /**
@@ -446,7 +445,6 @@ public class TimerImpl implements Timer
     * Asserts that the timer is <i>not</i> in any of the following states:
     * <ul>
     *   <li>{@link TimerState#CANCELED}</li>
-    *   <li>{@link TimerState#CANCELED_IN_TX}</li>
     *   <li>{@link TimerState#EXPIRED}</li>
     * </ul>
     * @throws NoSuchObjectLocalException if the txtimer was canceled or has expired
@@ -455,7 +453,7 @@ public class TimerImpl implements Timer
    {
       if (timerState == TimerState.EXPIRED)
          throw new NoSuchObjectLocalException("Timer has expired");
-      if (timerState == TimerState.CANCELED_IN_TX || timerState == TimerState.CANCELED)
+      if (timerState == TimerState.CANCELED)
          throw new NoSuchObjectLocalException("Timer was canceled");
    }
 
