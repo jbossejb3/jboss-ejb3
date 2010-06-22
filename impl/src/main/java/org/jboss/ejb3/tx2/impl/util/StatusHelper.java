@@ -19,16 +19,47 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.tx2.spi;
+package org.jboss.ejb3.tx2.impl.util;
 
-import org.jboss.ejb3.context.spi.InvocationContext;
-
-import javax.ejb.TransactionAttributeType;
+import javax.transaction.Status;
 
 /**
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public interface TransactionalInvocationContext extends InvocationContext
+public class StatusHelper
 {
-   TransactionAttributeType getTransactionAttribute();
+   /** Transaction Status Strings */
+   private static final String[] TxStatusStrings =
+   {
+      "STATUS_ACTIVE",
+      "STATUS_MARKED_ROLLBACK",
+      "STATUS_PREPARED",
+      "STATUS_COMMITTED",
+      "STATUS_ROLLEDBACK",
+      "STATUS_UNKNOWN",
+      "STATUS_NO_TRANSACTION",
+      "STATUS_PREPARING",
+      "STATUS_COMMITTING",
+      "STATUS_ROLLING_BACK"
+   };
+
+   /**
+    * Converts a tx Status index to a String
+    *
+    * @see javax.transaction.Status
+    *
+    * @param status the Status index
+    * @return status as String or "STATUS_INVALID(value)"
+    */
+   public static String statusAsString(int status)
+   {
+      if (status >= Status.STATUS_ACTIVE && status <= Status.STATUS_ROLLING_BACK)
+      {
+         return TxStatusStrings[status];
+      }
+      else
+      {
+         return "STATUS_INVALID(" + status + ")";
+      }
+   }   
 }

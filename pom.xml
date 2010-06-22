@@ -52,10 +52,22 @@
          </dependency>
 
          <dependency>
+            <groupId>${javax.transaction.groupId}</groupId>
+            <artifactId>${javax.transaction.artifactId}</artifactId>
+            <version>${javax.transaction.version}</version>
+         </dependency>
+
+         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.4</version>
             <scope>test</scope>
+         </dependency>
+
+         <dependency>
+            <groupId>org.jboss.ejb3.context</groupId>
+            <artifactId>jboss-ejb3-context-base</artifactId>
+            <version>0.1.1</version>
          </dependency>
 
          <dependency>
@@ -72,6 +84,7 @@
    </issueManagement>
 
    <modules>
+      <module>antediluvian</module>
       <module>aop</module>
       <module>impl</module>
       <module>spi</module>
@@ -85,6 +98,10 @@
       <javax.interceptor.groupId>org.jboss.interceptor</javax.interceptor.groupId>
       <javax.interceptor.artifactId>jboss-interceptor-api</javax.interceptor.artifactId>
       <javax.interceptor.version>1.0</javax.interceptor.version>
+
+      <javax.transaction.groupId>org.jboss.javaee</javax.transaction.groupId>
+      <javax.transaction.artifactId>jboss-transaction-api</javax.transaction.artifactId>
+      <javax.transaction.version>1.0.1.GA</javax.transaction.version>
    </properties>
 
    <scm>

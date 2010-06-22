@@ -19,16 +19,46 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.tx2.spi;
+package org.jboss.ejb3.tx2.impl;
 
-import org.jboss.ejb3.context.spi.InvocationContext;
+import org.jboss.ejb3.tx2.spi.TransactionalInvocationContext;
+import org.jboss.logging.Logger;
 
-import javax.ejb.TransactionAttributeType;
+import javax.interceptor.AroundInvoke;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
 
 /**
+ * Suspend an incoming tx.
+ * 
+ * @author <a href="mailto:bill@jboss.org">Bill Burke</a>
+ * @author <a href="mailto:osh@sparre.dk">Ole Husgaard</a>
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public interface TransactionalInvocationContext extends InvocationContext
+public abstract class BMTInterceptor
 {
-   TransactionAttributeType getTransactionAttribute();
+   private static final Logger log = Logger.getLogger(BMTInterceptor.class);
+
+   protected final TransactionManager tm;
+
+   protected BMTInterceptor(TransactionManager tm)
+   {
+      this.tm = tm;
+   }
+
+   protected abstract Object handleInvocation(TransactionalInvocationContext invocation) throws Exception;
+
+   @AroundInvoke
+   public Object invoke(TransactionalInvocationContext invocation) throws Exception
+   {
+      Transaction oldTx = tm.suspend();
+      try
+      {
+         return handleInvocation(invocation);
+      }
+      finally
+      {
+         if (oldTx != null) tm.resume(oldTx);
+      }
+   }
 }
