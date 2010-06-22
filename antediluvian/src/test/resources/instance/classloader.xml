@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+   The core classloading system
+-->
+<deployment xmlns="urn:jboss:bean-deployer:2.0">
+
+   <classloader><inject bean="bootstrap-classloader:0.0.0"/></classloader>
+
+   <!--
+      The classloader implementation
+   -->
+   <bean name="ClassLoaderSystem" class="org.jboss.classloader.spi.ClassLoaderSystem">
+      <classloader><null/></classloader>
+      <constructor factoryClass="org.jboss.classloader.spi.ClassLoaderSystem" factoryMethod="getInstance"/>
+   </bean>
+
+   <!-- 
+      ClassLoader management and resolution
+   -->
+   <bean name="ClassLoading" class="org.jboss.classloading.spi.dependency.ClassLoading">
+      <classloader><null/></classloader>
+      <incallback method="addModule" state="Configured"/>
+      <uncallback method="removeModule" state="Configured"/>
+   </bean>
+
+   <classloader name="bootstrap-classloader" xmlns="urn:jboss:classloader:1.0" export-all="NON_EMPTY" import-all="true">
+      <!-- FIXME Move to Deployers - ->
+      <root>${jboss.lib.url}jboss-deployers-core-spi.jar</root>
+      <root>${jboss.lib.url}jboss-deployers-core.jar</root>
+      <root>${jboss.lib.url}jboss-deployers-client-spi.jar</root>
+      <root>${jboss.lib.url}jboss-deployers-client.jar</root>
+      <root>${jboss.lib.url}jboss-deployers-structure-spi.jar</root>
+      <root>${jboss.lib.url}jboss-deployers-spi.jar</root>
+      <root>${jboss.lib.url}jboss-deployers-impl.jar</root>
+      <root>${jboss.lib.url}jboss-deployers-vfs-spi.jar</root>
+      <root>${jboss.lib.url}jboss-deployers-vfs.jar</root>
+      -->
+      <!-- System - ->
+      <root>${jboss.lib.url}jboss-system.jar</root>
+      -->
+      <!-- FIXME Move to JMX - ->
+      <root>${jboss.lib.url}jboss-j2se.jar</root>
+      <root>${jboss.lib.url}jboss-mbeans.jar</root>
+      <root>${jboss.lib.url}jboss-jmx.jar</root>
+      <root>${jboss.lib.url}jboss-system-jmx.jar</root>
+      <root>${jboss.lib.url}dom4j.jar</root>
+      -->
+      <!-- JAXB impl here, api is in endorsed - ->
+      <root>${jboss.lib.url}jaxb-impl.jar</root>
+      -->
+      <!-- STAX2 impl here, api is in endorsed - ->
+      <root>${jboss.lib.url}wstx.jar</root>
+      -->
+   </classloader>
+   
+</deployment>
