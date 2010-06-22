@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   vi:ts=3:sw=3:expandtab:
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+   <parent>
+      <groupId>org.jboss</groupId>
+      <artifactId>jboss-parent</artifactId>
+      <version>4</version>
+   </parent>
+
+   <modelVersion>4.0.0</modelVersion>
+
+   <groupId>org.jboss.ejb3.tx2</groupId>
+   <artifactId>jboss-ejb3-tx2</artifactId>
+   <version>0.0.1-SNAPSHOT</version>
+
+   <packaging>pom</packaging>
+
+   <name>JBoss EJB 3 TX2</name>
+   <description>
+      Aggregator for EJB 3 transaction requirements implementation.
+   </description>
+
+   <url>http://www.jboss.org/ejb3</url>
+
+   <build>
+      <plugins>
+         <plugin>
+            <artifactId>maven-release-plugin</artifactId>
+            <configuration>
+               <autoVersionSubmodules>true</autoVersionSubmodules>
+            </configuration>
+         </plugin>
+      </plugins>
+   </build>
+
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <groupId>${javax.ejb.groupId}</groupId>
+            <artifactId>${javax.ejb.artifactId}</artifactId>
+            <version>${javax.ejb.version}</version>
+         </dependency>
+
+         <dependency>
+            <groupId>${javax.interceptor.groupId}</groupId>
+            <artifactId>${javax.interceptor.artifactId}</artifactId>
+            <version>${javax.interceptor.version}</version>
+         </dependency>
+
+         <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.4</version>
+            <scope>test</scope>
+         </dependency>
+
+         <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-spi</artifactId>
+            <version>2.1.0.GA</version>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
+
+   <issueManagement>
+      <system>jira</system>
+      <url>https://jira.jboss.org/jira/browse/EJBTHREE</url>
+   </issueManagement>
+
+   <modules>
+      <module>aop</module>
+      <module>impl</module>
+      <module>spi</module>
+   </modules>
+
+   <properties>
+      <javax.ejb.groupId>org.jboss.javaee</javax.ejb.groupId>
+      <javax.ejb.artifactId>jboss-ejb-api</javax.ejb.artifactId>
+      <javax.ejb.version>3.0.0.GA</javax.ejb.version>
+
+      <javax.interceptor.groupId>org.jboss.interceptor</javax.interceptor.groupId>
+      <javax.interceptor.artifactId>jboss-interceptor-api</javax.interceptor.artifactId>
+      <javax.interceptor.version>1.0</javax.interceptor.version>
+   </properties>
+
+   <scm>
+      <connection>scm:git:git://github.com/wolfc/jboss-ejb3-tx2.git</connection>
+      <developerConnection>scm:git:git@github.com:wolfc/jboss-ejb3-tx2.git</developerConnection>
+      <url>http://github.com/wolfc/jboss-ejb3-tx2</url>
+   </scm>
+</project>
