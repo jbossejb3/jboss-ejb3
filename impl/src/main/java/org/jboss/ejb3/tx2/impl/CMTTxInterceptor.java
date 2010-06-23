@@ -26,6 +26,7 @@ import org.jboss.logging.Logger;
 import org.jboss.tm.TransactionTimeoutConfiguration;
 import org.jboss.util.deadlock.ApplicationDeadlockException;
 
+import javax.annotation.Resource;
 import javax.ejb.*;
 import javax.interceptor.AroundInvoke;
 import javax.transaction.*;
@@ -423,6 +424,12 @@ public class CMTTxInterceptor
       }
    }
 
+   @Resource
+   public void setTransactionManager(TransactionManager tm)
+   {
+      this.tm = tm;
+   }
+   
    protected Object supports(TransactionalInvocationContext invocation) throws Exception
    {
       Transaction tx = tm.getTransaction();

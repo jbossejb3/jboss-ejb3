@@ -21,7 +21,13 @@
       <dependency>
          <groupId>org.jboss.aop</groupId>
          <artifactId>jboss-aop</artifactId>
+         <!-- AOP must not leak to the parent, so we specify the version here -->
          <version>2.1.6.GA</version>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jboss.integration</groupId>
+         <artifactId>jboss-transaction-spi</artifactId>
       </dependency>
 
       <dependency>
