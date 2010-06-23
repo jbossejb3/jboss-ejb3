@@ -23,6 +23,7 @@ package org.jboss.ejb3.tx2.spi;
 
 import org.jboss.ejb3.context.spi.InvocationContext;
 
+import javax.ejb.ApplicationException;
 import javax.ejb.TransactionAttributeType;
 
 /**
@@ -30,5 +31,15 @@ import javax.ejb.TransactionAttributeType;
  */
 public interface TransactionalInvocationContext extends InvocationContext
 {
+   ApplicationException getApplicationException(Class<?> e);
+
+   /**
+    * The transaction attribute for this invocation.
+    */
    TransactionAttributeType getTransactionAttribute();
+
+   /**
+    * The transaction timeout for this invocation in seconds.
+    */
+   int getTransactionTimeout();
 }
