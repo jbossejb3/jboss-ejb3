@@ -97,11 +97,19 @@
    </issueManagement>
 
    <modules>
-      <module>antediluvian</module>
       <module>aop</module>
       <module>impl</module>
       <module>spi</module>
    </modules>
+
+   <profiles>
+      <profile>
+         <id>antediluvian</id>
+         <modules>
+            <module>antediluvian</module>
+         </modules>
+      </profile>
+   </profiles>
 
    <properties>
       <javax.ejb.groupId>org.jboss.javaee</javax.ejb.groupId>
