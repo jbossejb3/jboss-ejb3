@@ -10,7 +10,7 @@
 
    <groupId>org.jboss.ejb3.context</groupId>
    <artifactId>jboss-ejb3-context</artifactId>
-   <version>0.1.2-SNAPSHOT</version>
+   <version>0.2.0-SNAPSHOT</version>
 
    <packaging>pom</packaging>
 
@@ -56,6 +56,7 @@
    <modules>
       <module>base</module>
       <module>naming</module>
+      <module>spi</module>
    </modules>
 
    <profiles>
