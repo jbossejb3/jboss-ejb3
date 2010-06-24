@@ -21,6 +21,9 @@
  */
 package org.jboss.ejb3.timerservice.mk2.persistence;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
@@ -47,26 +50,27 @@ import org.jboss.ejb3.timerservice.mk2.TimerState;
 public class TimerEntity implements Serializable
 {
    @Id
-   private UUID id;
+   protected UUID id;
 
    @Column(nullable = false)
    @NotNull
-   private String timedObjectId;
+   protected String timedObjectId;
 
    @Column(nullable = false)
    @NotNull
-   private Date initialDate;
+   protected Date initialDate;
 
-   private long interval;
+   protected long interval;
 
-   private Date nextDate;
+   protected Date nextDate;
 
-   private Date previousRun;
+   protected Date previousRun;
 
    @Lob
-   private Serializable info;
+   protected byte[] info;
 
-   private TimerState timerState;
+
+   protected TimerState timerState;
 
    public TimerEntity()
    {
@@ -76,13 +80,17 @@ public class TimerEntity implements Serializable
    public TimerEntity(TimerImpl timer)
    {
       this.id = timer.getId();
-      this.info = timer.getInfo();
       this.initialDate = timer.getInitialExpiration();
       this.interval = timer.getInterval();
       this.nextDate = timer.getNextTimeout();
       this.previousRun = timer.getPreviousRun();
       this.timerState = timer.getState();
       this.timedObjectId = timer.getTimedObjectId();
+      if (timer.getInfo() != null)
+      {
+         this. info = this.getBytes(timer.getInfo());
+      }
+
    }
 
    public UUID getId()
@@ -105,9 +113,9 @@ public class TimerEntity implements Serializable
       return interval;
    }
 
-   public Serializable getInfo()
+   public byte[] getInfo()
    {
-      return info;
+      return this.info;
    }
 
    public Date getNextDate()
@@ -145,4 +153,49 @@ public class TimerEntity implements Serializable
       return false;
    }
 
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (obj == null)
+      {
+         return false;
+      }
+      if (obj instanceof TimerEntity == false)
+      {
+         return false;
+      }
+      TimerEntity other = (TimerEntity) obj;
+      if (this.id == null)
+      {
+         return false;
+      }
+      return this.id.equals(other.id);
+   }
+
+   @Override
+   public int hashCode()
+   {
+      if (this.id == null)
+      {
+         return super.hashCode();
+      }
+      return this.id.hashCode();
+   }
+
+   private byte[] getBytes(Serializable ser)
+   {
+      try
+      {
+         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+         ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+         objectOutputStream.writeObject(ser);
+         return outputStream.toByteArray();
+      }
+      catch (IOException ioe)
+      {
+         throw new RuntimeException("Could not get bytes out of serializable object: " + ser, ioe);
+      }
+
+   }
+   
 }

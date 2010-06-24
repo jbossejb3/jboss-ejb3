@@ -72,9 +72,11 @@ public class CalendarTimerEntity extends TimerEntity
 
    private Date endDate;
 
+   private String timezone;
+
    private boolean autoTimer;
 
-   @OneToOne (cascade = CascadeType.ALL)
+   @OneToOne(cascade = CascadeType.ALL)
    private TimeoutMethod timeoutMethod;
 
    public CalendarTimerEntity()
@@ -98,7 +100,7 @@ public class CalendarTimerEntity extends TimerEntity
          }
          this.timeoutMethod = new TimeoutMethod(method.getDeclaringClass().getName(), method.getName(), params);
       }
-      
+
       this.second = this.scheduleExpression.getSecond();
       this.minute = this.scheduleExpression.getMinute();
       this.hour = this.scheduleExpression.getHour();
@@ -108,6 +110,7 @@ public class CalendarTimerEntity extends TimerEntity
       this.year = this.scheduleExpression.getYear();
       this.startDate = this.scheduleExpression.getStart();
       this.endDate = this.scheduleExpression.getEnd();
+      this.timezone = this.scheduleExpression.getTimezone();
 
    }
 
@@ -123,7 +126,7 @@ public class CalendarTimerEntity extends TimerEntity
       {
          this.scheduleExpression = new ScheduleExpression();
          this.scheduleExpression.second(this.second).minute(this.minute).hour(this.hour).dayOfWeek(this.dayOfWeek)
-               .dayOfMonth(this.dayOfMonth).month(this.month).year(this.year);
+               .dayOfMonth(this.dayOfMonth).month(this.month).year(this.year).timezone(this.timezone);
 
       }
       return scheduleExpression;
@@ -211,6 +214,45 @@ public class CalendarTimerEntity extends TimerEntity
    public void setAutoTimer(boolean autoTimer)
    {
       this.autoTimer = autoTimer;
+   }
+
+   public String getTimezone()
+   {
+      return timezone;
+   }
+
+   public void setTimezone(String timezone)
+   {
+      this.timezone = timezone;
+   }
+   
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (obj == null)
+      {
+         return false;
+      }
+      if (obj instanceof CalendarTimerEntity == false)
+      {
+         return false;
+      }
+      CalendarTimerEntity other = (CalendarTimerEntity) obj;
+      if (this.id == null)
+      {
+         return false;
+      }
+      return this.id.equals(other.id);
+   }
+   
+   @Override
+   public int hashCode()
+   {
+      if (this.id == null)
+      {
+         return super.hashCode();
+      }
+      return this.id.hashCode();
    }
 
 }

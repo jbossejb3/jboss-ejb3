@@ -21,6 +21,10 @@
  */
 package org.jboss.ejb3.timerservice.mk2;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -94,11 +98,12 @@ public class TimerServiceImpl implements TimerService
    private ScheduledExecutorService executor;
 
    /**
-    * All available timers which were created by this {@link TimerService} 
+    * All non-persistent timers which were created by this {@link TimerService} 
     * 
     */
-   // TODO: Do we really need this?
-   private Map<TimerHandle, TimerImpl> timers = new HashMap<TimerHandle, TimerImpl>();
+   private Map<TimerHandle, TimerImpl> nonPersistentTimers = new HashMap<TimerHandle, TimerImpl>();
+   
+   private ThreadLocal<EntityManager> transactionScopedEntityManager = new ThreadLocal<EntityManager>();
 
    /**
     * Creates a {@link TimerServiceImpl}
@@ -321,13 +326,16 @@ public class TimerServiceImpl implements TimerService
       }
 
       Set<Timer> activeTimers = new HashSet<Timer>();
-      for (TimerImpl timer : this.timers.values())
+      // get all active non-persistent timers for this timerservice
+      for (TimerImpl timer : this.nonPersistentTimers.values())
       {
          if (timer != null && timer.isActive())
          {
             activeTimers.add(timer);
          }
       }
+      // now get all active persistent timers for this timerservice
+      activeTimers.addAll(this.getActiveTimers());
       return activeTimers;
    }
 
@@ -373,8 +381,12 @@ public class TimerServiceImpl implements TimerService
       // and scheduling the timer task
       this.startTimer(timer);
 
-      // add this timer to our local map
-      this.addTimer(timer);
+      // If this *isn't* a persistent timer, then we need to maintain this in our local
+      // map
+      if (!persistent)
+      {
+         this.addTimer(timer);
+      }
       // return the newly created timer
       return timer;
    }
@@ -409,26 +421,29 @@ public class TimerServiceImpl implements TimerService
          // TODO: Think about this. It might be possible that a timer creation request
          // was issued for a schedule which is in past (i.e. doesn't have any future timeouts)
          // For ex: through the use of a @Schedule on a method. How should we handle such timers?
-         throw new IllegalStateException("The schedule " + schedule + " doesn't have a timeout in future from now "
-               + new Date());
+         logger.warn("The schedule " + schedule + " doesn't have a timeout in future from now " + new Date());
+         throw new IllegalArgumentException("Invalid schedule expression: " + schedule);
       }
 
       // generate a id for the timer
       UUID uuid = UUID.randomUUID();
       // create the timer
       TimerImpl timer = new CalendarTimer(uuid, this, calendarTimeout, info, persistent, timeoutMethod);
-      // persist it if it's persistent
-      if (persistent)
-      {
-         this.persistTimer(timer);
-      }
 
       // now "start" the timer. This involves, moving the timer to an ACTIVE state
       // and scheduling the timer task
       this.startTimer(timer);
 
-      // add this timer to our local map
-      this.addTimer(timer);
+      // If this *isn't* a persistent timer, then we need to maintain this in our local
+      // map
+      if (!persistent)
+      {
+         this.addTimer(timer);
+      }
+      else
+      {
+         this.persistTimer(timer);
+      }
       // return the timer
       return timer;
    }
@@ -441,9 +456,9 @@ public class TimerServiceImpl implements TimerService
     */
    protected void addTimer(TimerImpl timer)
    {
-      synchronized (timers)
+      synchronized (nonPersistentTimers)
       {
-         timers.put(timer.getHandle(), timer);
+         nonPersistentTimers.put(timer.getHandle(), timer);
       }
    }
 
@@ -478,7 +493,7 @@ public class TimerServiceImpl implements TimerService
       // Looks needless and could perhaps lead to inconsistencies. 
       // Let's instead just rely on DB? But then again what about non-persistent timers.
       // Overall, needs a bit of thinking
-      TimerImpl timer = timers.get(handle);
+      TimerImpl timer = nonPersistentTimers.get(handle);
       if (timer != null)
       {
          return timer;
@@ -513,9 +528,9 @@ public class TimerServiceImpl implements TimerService
     */
    void removeTimer(TimerImpl txtimer)
    {
-      synchronized (timers)
+      synchronized (nonPersistentTimers)
       {
-         timers.remove(txtimer.getHandle());
+         nonPersistentTimers.remove(txtimer.getHandle());
       }
       // TODO: I don't really like the idea of removing/deleting
       // persisted timers from the persistent store. This method
@@ -620,8 +635,7 @@ public class TimerServiceImpl implements TimerService
             newTxStarted = true;
          }
 
-         EntityManager em = this.emf.createEntityManager();
-         em.joinTransaction();
+         EntityManager em = this.getCurrentEntityManager();
          // merge the state
          TimerEntity mergedTimerEntity = em.merge(timerEntity);
 
@@ -659,7 +673,7 @@ public class TimerServiceImpl implements TimerService
    {
       // TODO: Is this map the definitive place to find 
       // all currently active timers?
-      Collection<TimerImpl> timers = this.timers.values();
+      Collection<TimerImpl> timers = this.nonPersistentTimers.values();
       for (TimerImpl timer : timers)
       {
          // suspend each timer
@@ -682,51 +696,18 @@ public class TimerServiceImpl implements TimerService
     */
    public void restoreTimers()
    {
-      // we need to restore only those timers which correspond to the 
-      // timed object invoker to which this timer service belongs. So
-      // first get hold of the timed object id
-      String timedObjectId = this.getInvoker().getTimedObjectId();
-
-      // timers which are eligible for being restored (see javadoc of this
-      // method for details)
-      List<TimerImpl> restorableTimers = new ArrayList<TimerImpl>();
-      Set<TimerState> ineligibleTimerStates = new HashSet<TimerState>();
-      ineligibleTimerStates.add(TimerState.CANCELED);
-      ineligibleTimerStates.add(TimerState.EXPIRED);
-
-      EntityManager em = this.emf.createEntityManager();
-
-      Query restorableTimersQuery = em
-            .createQuery("from TimerEntity t where t.timedObjectId = :timedObjectId and t.timerState not in (:timerStates)");
-      restorableTimersQuery.setParameter("timedObjectId", timedObjectId);
-      restorableTimersQuery.setParameter("timerStates", ineligibleTimerStates);
-
-      List<TimerEntity> persistedTimers = restorableTimersQuery.getResultList();
-      for (TimerEntity persistedTimer : persistedTimers)
-      {
-         TimerImpl activeTimer = null;
-         if (persistedTimer.isCalendarTimer())
-         {
-            CalendarTimerEntity calendarTimerEntity = (CalendarTimerEntity) persistedTimer;
-            // create a timer instance from the persisted calendar timer
-            activeTimer = new CalendarTimer(calendarTimerEntity, this);
-         }
-         else
-         {
-            // create the timer instance from the persisted state
-            activeTimer = new TimerImpl(persistedTimer, this);
-         }
-         // add it to the list of timers which will be restored
-         restorableTimers.add(activeTimer);
-      }
-
-      logger.debug("Found " + restorableTimers.size() + " active timers for timedObjectId: " + timedObjectId);
+      // get the persisted timers which are considered active
+      List<TimerImpl> restorableTimers = this.getActiveTimers();
+      
+      logger.debug("Found " + restorableTimers.size() + " active timers for timedObjectId: " + this.invoker.getTimedObjectId());
       // now "start" each of the restorable timer. This involves, moving the timer to an ACTIVE state
       // and scheduling the timer task
       for (TimerImpl activeTimer : restorableTimers)
       {
          this.startTimer(activeTimer);
          logger.debug("Started timer: " + activeTimer);
+         // save any changes to the state (that will have happened on call to startTimer) 
+         this.persistTimer(activeTimer);
       }
 
    }
@@ -789,8 +770,6 @@ public class TimerServiceImpl implements TimerService
    protected void startInTx(TimerImpl timer)
    {
       timer.setTimerState(TimerState.ACTIVE);
-      // persist changes
-      this.persistTimer(timer);
 
       // if there's no transaction, then trigger a schedule immidiately.
       // Else, the timer will be scheduled on tx synchronization callback
@@ -869,6 +848,61 @@ public class TimerServiceImpl implements TimerService
       }
       return new TimerImpl(timerEntity, this);
 
+   }
+   
+   private List<TimerImpl> getActiveTimers()
+   {
+      // we need only those timers which correspond to the 
+      // timed object invoker to which this timer service belongs. So
+      // first get hold of the timed object id
+      String timedObjectId = this.getInvoker().getTimedObjectId();
+
+      // timer states which do *not* represent an active timer
+      Set<TimerState> ineligibleTimerStates = new HashSet<TimerState>();
+      ineligibleTimerStates.add(TimerState.CANCELED);
+      ineligibleTimerStates.add(TimerState.EXPIRED);
+
+      EntityManager em = this.emf.createEntityManager();
+
+      Query activeTimersQuery = em
+            .createQuery("from TimerEntity t where t.timedObjectId = :timedObjectId and t.timerState not in (:timerStates)");
+      activeTimersQuery.setParameter("timedObjectId", timedObjectId);
+      activeTimersQuery.setParameter("timerStates", ineligibleTimerStates);
+
+      List<TimerEntity> persistedTimers = activeTimersQuery.getResultList();
+      List<TimerImpl> activeTimers = new ArrayList<TimerImpl>();
+      for (TimerEntity persistedTimer : persistedTimers)
+      {
+         TimerImpl activeTimer = null;
+         if (persistedTimer.isCalendarTimer())
+         {
+            CalendarTimerEntity calendarTimerEntity = (CalendarTimerEntity) persistedTimer;
+            // create a timer instance from the persisted calendar timer
+            activeTimer = new CalendarTimer(calendarTimerEntity, this);
+         }
+         else
+         {
+            // create the timer instance from the persisted state
+            activeTimer = new TimerImpl(persistedTimer, this);
+         }
+         // add it to the list of timers which will be restored
+         activeTimers.add(activeTimer);
+      }
+
+      return activeTimers;
+   }
+   
+   private Serializable clone(Serializable info) throws Exception
+   {
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+      ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+      objectOutputStream.writeObject(info);
+
+      ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+      ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
+      Object clonedInfo = objectInputStream.readObject();
+
+      return (Serializable) clonedInfo;
    }
 
    private org.jboss.ejb3.timerservice.extension.Timer getExistingAutoTimer(ScheduleExpression schedule,
@@ -1060,7 +1094,7 @@ public class TimerServiceImpl implements TimerService
          {
             this.transactionManager.rollback();
          }
-         else
+         else if (tx.getStatus() == Status.STATUS_ACTIVE)
          {
             // Commit tx
             this.transactionManager.commit();
@@ -1124,4 +1158,56 @@ public class TimerServiceImpl implements TimerService
 
    }
 
+   
+   private class EntityManagerTransactionSynchronization implements Synchronization
+   {
+
+      @Override
+      public void afterCompletion(int status)
+      {
+         EntityManager em = TimerServiceImpl.this.transactionScopedEntityManager.get();
+         TimerServiceImpl.this.transactionScopedEntityManager.remove();
+         if (em != null)
+         {
+            try
+            {
+               em.close();
+            }
+            catch (Exception e)
+            {
+               logger.debug("Ignoring exception during entity manager close: ", e);
+            }
+         }
+         
+         
+      }
+
+      @Override
+      public void beforeCompletion()
+      {
+         // TODO Auto-generated method stub
+         
+      }
+      
+   }
+   
+   private EntityManager getCurrentEntityManager() throws Exception
+   {
+      EntityManager em = this.transactionScopedEntityManager.get();
+      if (em != null)
+      {
+         return em;
+      }
+      Transaction tx = this.transactionManager.getTransaction();
+      if (tx == null)
+      {
+         throw new IllegalStateException("No transaction in progress. Cannot create an entity manager");
+      }
+      em = this.emf.createEntityManager();
+      em.joinTransaction();
+      this.transactionScopedEntityManager.set(em);
+      tx.registerSynchronization(new EntityManagerTransactionSynchronization());
+      
+      return em;
+   }
 }

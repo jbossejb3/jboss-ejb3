@@ -107,9 +107,20 @@ public class CalendarBasedTimeout
     */
    public CalendarBasedTimeout(ScheduleExpression schedule)
    {
+      if (schedule == null)
+      {
+         throw new IllegalArgumentException("Cannot create " + this.getClass().getName()
+               + " from a null schedule expression");
+      }
+      // make sure that the schedule doesn't have null values for its various attributes
+      this.nullCheckScheduleAttributes(schedule);
+      
       // store the original expression from which this
-      // CalendarBasedTimeout was created
-      this.scheduleExpression = schedule;
+      // CalendarBasedTimeout was created. Since the ScheduleExpression
+      // is mutable, we will have to store a clone copy of the schedule,
+      // so that any subsequent changes after the CalendarBasedTimeout construction,
+      // do not affect this internal schedule expression.
+      this.scheduleExpression = this.clone(schedule);
 
       // Start parsing the values in the ScheduleExpression
       this.second = new Second(schedule.getSecond());
@@ -137,7 +148,7 @@ public class CalendarBasedTimeout
             logger.warn("Unknown timezone id: " + timezoneId
                   + " found in schedule expression. Ignoring it and using server's timezone: "
                   + TimeZone.getDefault().getID());
-            
+
             // use server's timezone
             this.timezone = TimeZone.getDefault();
          }
@@ -180,7 +191,7 @@ public class CalendarBasedTimeout
       }
       return next;
    }
-   
+
    public Calendar getNextTimeout()
    {
       Calendar now = new GregorianCalendar(this.timezone);
@@ -241,4 +252,55 @@ public class CalendarBasedTimeout
    {
       return this.scheduleExpression;
    }
+
+   private void nullCheckScheduleAttributes(ScheduleExpression schedule)
+   {
+      if (schedule.getSecond() == null)
+      {
+         throw new IllegalArgumentException("Second cannot be null in schedule expression " + schedule);
+      }
+      if (schedule.getMinute() == null)
+      {
+         throw new IllegalArgumentException("Minute cannot be null in schedule expression " + schedule);
+      }
+      if (schedule.getHour() == null)
+      {
+         throw new IllegalArgumentException("Hour cannot be null in schedule expression " + schedule);
+      }
+      if (schedule.getDayOfMonth() == null)
+      {
+         throw new IllegalArgumentException("day-of-month cannot be null in schedule expression " + schedule);
+      }
+      if (schedule.getDayOfWeek() == null)
+      {
+         throw new IllegalArgumentException("day-of-week cannot be null in schedule expression " + schedule);
+      }
+      if (schedule.getMonth() == null)
+      {
+         throw new IllegalArgumentException("Month cannot be null in schedule expression " + schedule);
+      }
+      if (schedule.getYear() == null)
+      {
+         throw new IllegalArgumentException("Year cannot be null in schedule expression " + schedule);
+      }
+   }
+
+   private ScheduleExpression clone(ScheduleExpression schedule)
+   {
+      // clone the schedule 
+      ScheduleExpression clonedSchedule = new ScheduleExpression();
+      clonedSchedule.second(schedule.getSecond());
+      clonedSchedule.minute(schedule.getMinute());
+      clonedSchedule.hour(schedule.getHour());
+      clonedSchedule.dayOfWeek(schedule.getDayOfWeek());
+      clonedSchedule.dayOfMonth(schedule.getDayOfMonth());
+      clonedSchedule.month(schedule.getMonth());
+      clonedSchedule.year(schedule.getYear());
+      clonedSchedule.timezone(schedule.getTimezone());
+      clonedSchedule.start(schedule.getStart());
+      clonedSchedule.end(schedule.getEnd());
+
+      return clonedSchedule;
+   }
+
 }

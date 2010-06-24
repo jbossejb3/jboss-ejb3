@@ -21,6 +21,11 @@
  */
 package org.jboss.ejb3.timerservice.mk2;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectStreamClass;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
@@ -154,7 +159,6 @@ public class TimerImpl implements Timer
 
       this.id = id;
       this.timerService = service;
-      this.timerService.addTimer(this);
 
       this.timedObjectInvoker = service.getInvoker();
       this.info = info;
@@ -168,7 +172,7 @@ public class TimerImpl implements Timer
       this.handle = new TimerHandleImpl(this.id, this.timedObjectInvoker.getTimedObjectId(), service);
 
       setTimerState(TimerState.CREATED);
-      
+
    }
 
    /**
@@ -180,8 +184,9 @@ public class TimerImpl implements Timer
    public TimerImpl(TimerEntity persistedTimer, TimerServiceImpl service)
    {
       this(persistedTimer.getId(), service, persistedTimer.getInitialDate(), persistedTimer.getInterval(),
-            persistedTimer.getNextDate(), persistedTimer.getInfo(), true);
+            persistedTimer.getNextDate(), null, true);
       this.previousRun = persistedTimer.getPreviousRun();
+      this.info = this.deserialize(persistedTimer.getInfo());
    }
 
    /**
@@ -313,7 +318,7 @@ public class TimerImpl implements Timer
    {
       return false;
    }
-   
+
    /**
     * Cancels any scheduled timer task and appropriately updates the state of this timer
     * to {@link TimerState#CANCELED}
@@ -527,12 +532,17 @@ public class TimerImpl implements Timer
          this.future.cancel(false);
       }
    }
-   
+
    /**
     * Creates and schedules a {@link TimerTask} for the next timeout of this timer
     */
    public void scheduleTimeout()
    {
+      if (this.nextExpiration == null)
+      {
+         logger.info("Next expiration is null. No tasks will be scheduled");
+         return;
+      }
       // create the timer task
       Runnable timerTask = this.getTimerTask();
       // find out how long is it away from now
@@ -577,7 +587,7 @@ public class TimerImpl implements Timer
    {
       return new TimerTask<TimerImpl>(this);
    }
-   
+
    /**
     * A nice formatted string output for this timer
     * {@inheritDoc}
@@ -622,6 +632,65 @@ public class TimerImpl implements Timer
       sb.append(this.timerState);
 
       return sb.toString();
+   }
+
+   private Serializable deserialize(byte[] bytes)
+   {
+      if (bytes == null)
+      {
+         return null;
+      }
+      try
+      {
+         ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+         ObjectInputStream ois = new ObjectInputStreamWithTCCL(bais);
+         return (Serializable) ois.readObject();
+      }
+      catch (IOException ioe)
+      {
+         throw new RuntimeException("Could not deserialize info in timer", ioe);
+      }
+      catch (ClassNotFoundException cnfe)
+      {
+         throw new RuntimeException("Could not deserialize info in timer", cnfe);
+      }
+   }
+
+   /**
+    * {@link ObjectInputStreamWithTCCL} during {@link #resolveClass(ObjectStreamClass)}
+    * first tries to resolve the class in the thread context classloader
+    * {@link Thread#getContextClassLoader()}. If it cannot resolve in the current context
+    * loader, it passes on the control to {@link ObjectInputStream} to resolve the class
+    */
+   private static final class ObjectInputStreamWithTCCL extends ObjectInputStream
+   {
+
+      public ObjectInputStreamWithTCCL(InputStream in) throws IOException
+      {
+         super(in);
+      }
+
+      protected Class<?> resolveClass(ObjectStreamClass v) throws IOException, ClassNotFoundException
+      {
+         String className = v.getName();
+         Class<?> resolvedClass = null;
+
+         logger.trace("Attempting to locate class [" + className + "]");
+
+         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+         try
+         {
+            resolvedClass = tccl.loadClass(className);
+            logger.trace("Class resolved through context class loader");
+         }
+         catch (ClassNotFoundException e)
+         {
+            logger.trace("Asking super to resolve");
+            resolvedClass = super.resolveClass(v);
+         }
+
+         return resolvedClass;
+      }
    }
 
 }

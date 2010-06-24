@@ -19,35 +19,43 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.timer.schedule;
+package org.jboss.ejb3.timer.schedule.test;
 
-import javax.ejb.ScheduleExpression;
+import junit.framework.Assert;
+
+import org.jboss.ejb3.timer.schedule.RangeValue;
+import org.junit.Test;
 
 /**
- * Represents a value for a {@link ScheduleExpression} which is expressed as a single value
+ * RangeValueTestCase
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class SingleValue
+public class RangeValueTestCase
 {
 
-   /**
-    * The value 
-    */
-   private String value;
-   
-   /**
-    * 
-    * @param val
-    */
-   public SingleValue(String val)
+   @Test
+   public void testInvalidRange()
    {
-      this.value = val.trim();
-   }
-   
-   public String getValue()
-   {
-      return this.value;
+      String[] invalidRangeValues =
+      {null, "", " ", "0.1", "1d", "1.0", "?", "%", "$", "!", "&", "-", "/", ",", ".", "1-", "1-2-3", "1+2",
+            "**", "*-", "*,1", "1,*", "5/*", "1, 2/2", "---", "-", "--",
+            " -2 -3 -4", "-0", "1--"};
+      for (String invalidRange : invalidRangeValues)
+      {
+         boolean accepts = RangeValue.accepts(invalidRange);
+         Assert.assertFalse("Range value accepted an invalid value: " + invalidRange, accepts);
+
+         try
+         {
+            RangeValue invalidRangeValue = new RangeValue(invalidRange);
+            Assert.fail("Range value did *not* throw IllegalArgumentException for an invalid range: " + invalidRange);
+         }
+         catch (IllegalArgumentException iae)
+         {
+            // expected
+         }
+      }
    }
 }

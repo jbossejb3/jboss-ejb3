@@ -77,8 +77,8 @@ public class IncrementValue
          throw new IllegalArgumentException("Invalid increment value: " + value);
       }
       
-      this.start = tokenizer.nextToken();
-      this.interval = tokenizer.nextToken();
+      this.start = tokenizer.nextToken().trim();
+      this.interval = tokenizer.nextToken().trim();
    }
 
    /**

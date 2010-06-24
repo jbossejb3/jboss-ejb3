@@ -22,6 +22,7 @@
 package org.jboss.ejb3.timer.schedule;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.ejb.ScheduleExpression;
@@ -48,7 +49,7 @@ public abstract class IntegerBasedExpression
    protected Set<Integer> processListValue(ListValue list)
    {
       Set<Integer> values = new HashSet<Integer>();
-      Set<String> listItems = list.getValues();
+      List<String> listItems = list.getValues();
       for (String listItem : listItems)
       {
          values.addAll(this.processListItem(listItem));
@@ -65,7 +66,8 @@ public abstract class IntegerBasedExpression
       switch (listItemType)
       {
          case SINGLE_VALUE :
-            Integer value = this.get(listItem);
+            SingleValue singleVal = new SingleValue(listItem);
+            Integer value = this.processSingleValue(singleVal);
             Set<Integer> values = new HashSet<Integer>();
             values.add(value);
             return values;
@@ -87,17 +89,9 @@ public abstract class IntegerBasedExpression
       Integer rangeEnd = this.get(end);
 
       // validations
-      if (rangeStart > this.getMaxValue() || rangeStart < this.getMinValue())
-      {
-         throw new IllegalArgumentException("Invalid value for range start: " + rangeStart
-               + " Valid values are between " + this.getMinValue() + " and " + this.getMaxValue());
-      }
-      if (rangeEnd > this.getMaxValue() || rangeEnd < this.getMinValue())
-      {
-         throw new IllegalArgumentException("Invalid value for range end: " + rangeEnd
-               + " Valid values are between " + this.getMinValue() + " and " + this.getMaxValue());
-         
-      }
+      this.assertValid(rangeStart);
+      this.assertValid(rangeEnd);
+
       // start and end are both the same. So it's just a single value
       if (rangeStart == rangeEnd)
       {
@@ -132,7 +126,9 @@ public abstract class IntegerBasedExpression
    protected Set<Integer> processIncrement(IncrementValue incr)
    {
       String startValue = incr.getStart();
-      Integer start = startValue.equals("*") ? 0 : Integer.parseInt(startValue);
+      Integer start = startValue.equals("*") ? 0 : this.get(startValue);
+      // make sure it's a valid value
+      this.assertValid(start);
       Integer interval = this.get(incr.getInterval());
       Set<Integer> values = new HashSet<Integer>();
       values.add(start);
@@ -148,9 +144,11 @@ public abstract class IntegerBasedExpression
 
    protected Integer processSingleValue(SingleValue singleValue)
    {
-      return this.get(singleValue.getValue());
+      Integer val = this.get(singleValue.getValue());
+      this.assertValid(val);
+      return val;
    }
-   
+
    protected Integer get(String alias)
    {
       if (alias == null)
@@ -158,5 +156,20 @@ public abstract class IntegerBasedExpression
          return null;
       }
       return Integer.parseInt(alias.trim());
+   }
+
+   protected void assertValid(Integer value) throws IllegalArgumentException
+   {
+      if (value == null)
+      {
+         throw new IllegalArgumentException("Null value in schedule expression");
+      }
+      int max = this.getMaxValue();
+      int min = this.getMinValue();
+      if (value > max || value < min)
+      {
+         throw new IllegalArgumentException("Invalid value: " + value + " Valid values are between " + min + " and "
+               + max);
+      }
    }
 }

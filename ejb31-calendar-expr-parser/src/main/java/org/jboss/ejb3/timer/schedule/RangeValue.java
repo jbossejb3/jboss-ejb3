@@ -21,7 +21,8 @@
  */
 package org.jboss.ejb3.timer.schedule;
 
-import java.util.StringTokenizer;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.ejb.ScheduleExpression;
 
@@ -72,15 +73,14 @@ public class RangeValue
     */
    public RangeValue(String range)
    {
-      StringTokenizer tokenizer = new StringTokenizer(range, RANGE_SEPARATOR);
-      int numberOfTokens = tokenizer.countTokens();
-      if (numberOfTokens != 2)
+      String[] values = getRangeValues(range);
+      if (values == null || values.length != 2)
       {
          throw new IllegalArgumentException("Invalid range value: " + range);
       }
 
-      this.rangeStart = tokenizer.nextToken();
-      this.rangeEnd = tokenizer.nextToken();
+      this.rangeStart = values[0];
+      this.rangeEnd = values[1];
    }
 
    /**
@@ -99,5 +99,82 @@ public class RangeValue
    public String getEnd()
    {
       return this.rangeEnd;
+   }
+
+   public static boolean accepts(String value)
+   {
+      String[] rangeValues = getRangeValues(value);
+      if (rangeValues == null || rangeValues.length != 2)
+      {
+         return false;
+      }
+      return true;
+   }
+   
+   private static String[] getRangeValues(String val)
+   {
+      if (val == null)
+      {
+         return null;
+      }
+      String trimmedVal = val.trim();
+      int indexOfRangeSeparator = getIndexOfRangeSeparator(trimmedVal);
+      if (indexOfRangeSeparator == -1)
+      {
+         return null;
+      }
+      String[] leftAndRightValues = new String[2];
+      if (indexOfRangeSeparator == 0 || indexOfRangeSeparator == trimmedVal.length() - 1)
+      {
+         return null;
+      }
+      String leftSideValue = trimmedVal.substring(0, indexOfRangeSeparator);
+      leftSideValue = leftSideValue.trim();
+      if (leftSideValue.isEmpty() || leftSideValue.contains(RANGE_SEPARATOR))
+      {
+         return null;
+      }
+      String rightSideValue = trimmedVal.substring(indexOfRangeSeparator + 1, trimmedVal.length());
+      rightSideValue = rightSideValue.trim();
+      if (rightSideValue.isEmpty() || rightSideValue.contains(RANGE_SEPARATOR))
+      {
+         return null;
+      }
+      leftAndRightValues[0] = leftSideValue;
+      leftAndRightValues[1] = rightSideValue;
+      return leftAndRightValues;
+
+   }
+
+   private static int getIndexOfRangeSeparator(final String val)
+   {
+      if (val == null || val.isEmpty() || val.contains("-") == false)
+      {
+         return -1;
+      }
+      List<Integer> indexesOfRangeSeparator = new ArrayList<Integer>();
+      int currentIndex = 0;
+      for (int i = 0; i < val.length(); i = currentIndex)
+      {
+         int indexOfRangeSeparator = val.indexOf(RANGE_SEPARATOR, currentIndex);
+         if (indexOfRangeSeparator == -1)
+         {
+            break;
+         }
+         indexesOfRangeSeparator.add(indexOfRangeSeparator);
+         currentIndex = indexOfRangeSeparator + 1;
+      }
+      switch (indexesOfRangeSeparator.size())
+      {
+         case 0 :
+            return -1;
+         case 1 :
+            return indexesOfRangeSeparator.get(0);
+         case 2 :
+         case 3 :
+            return indexesOfRangeSeparator.get(1);
+         default :
+            return -1;
+      }
    }
 }

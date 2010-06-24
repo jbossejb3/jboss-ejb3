@@ -21,9 +21,12 @@
  */
 package org.jboss.ejb3.timer.schedule;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
+
+import javax.ejb.ScheduleExpression;
 
 /**
  * Represents a value for a {@link ScheduleExpression} which is expressed as an list type. An
@@ -56,7 +59,7 @@ public class ListValue
     *   or a {@link RangeValue}
     * </p>
     */
-   private Set<String> values = new HashSet<String>();
+   private List<String> values = new ArrayList<String>();
 
    /**
     * Creates a {@link ListValue} by parsing the passed <code>value</code>.
@@ -68,11 +71,21 @@ public class ListValue
     */
    public ListValue(String list)
    {
+      if (list == null || list.isEmpty())
+      {
+         throw new IllegalArgumentException("Invalid list expression: " + list);
+      }
       StringTokenizer tokenizer = new StringTokenizer(list, LIST_SEPARATOR);
       while (tokenizer.hasMoreTokens())
       {
-         String value = tokenizer.nextToken();
+         String value = tokenizer.nextToken().trim();
          this.values.add(value);
+      }
+      // a list MUST minimally contain 2 elements
+      // Ex: "," "1," ", 2" are all invalid
+      if(this.values.size() < 2)
+      {
+         throw new IllegalArgumentException("Invalid list expression: " + list);
       }
    }
 
@@ -84,7 +97,7 @@ public class ListValue
     * </p>
     * @return
     */
-   public Set<String> getValues()
+   public List<String> getValues()
    {
       return this.values;
    }

@@ -40,17 +40,24 @@ public class ScheduleExpressionTypeUtil
     */
    public static ScheduleExpressionType getType(String value)
    {
-      if (value.equals("*"))
+      if (value == null)
+      {
+         throw new IllegalArgumentException("Value cannot be null");
+      }
+      // Order of check is important.
+      // TODO: Explain why this order is important
+      
+      if (value.trim().equals("*"))
       {
          return ScheduleExpressionType.WILDCARD;
-      }
-      if (value.contains("-"))
-      {
-         return ScheduleExpressionType.RANGE;
       }
       if (value.contains(","))
       {
          return ScheduleExpressionType.LIST;
+      }
+      if (value.contains("-") && RangeValue.accepts(value))
+      {
+         return ScheduleExpressionType.RANGE;
       }
       if (value.contains("/"))
       {
