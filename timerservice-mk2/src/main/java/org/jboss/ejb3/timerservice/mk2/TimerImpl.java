@@ -228,9 +228,31 @@ public class TimerImpl implements Timer
 
    /**
     * {@inheritDoc}
+    * @see #getTimerHandle()
     */
    @Override
    public TimerHandle getHandle() throws IllegalStateException, NoSuchObjectLocalException, EJBException
+   {
+      // make sure it's in correct state
+      this.assertTimerState();
+      
+      // for non-persistent timers throws an exception (mandated by EJB3 spec)
+      if (this.persistent == false)
+      {
+         throw new IllegalStateException("EJB3.1 Spec 18.2.6 Timer handles are only available for persistent timers.");
+      }
+      return this.handle;
+   }
+   
+   /**
+    * This method returns the {@link TimerHandle} corresponding to this {@link TimerImpl}. 
+    * Unlike the {@link #getHandle()} method, this method does <i>not</i> throw an {@link IllegalStateException}
+    * or {@link NoSuchObjectLocalException} or {@link EJBException}, for non-persistent timers. 
+    * Instead this method returns the {@link TimerHandle} corresponding to that non-persistent
+    * timer (remember that {@link TimerImpl} creates {@link TimerHandle} for both persistent and non-persistent timers) 
+    * @return
+    */
+   public TimerHandle getTimerHandle()
    {
       return this.handle;
    }
@@ -241,20 +263,39 @@ public class TimerImpl implements Timer
    @Override
    public boolean isPersistent() throws IllegalStateException, NoSuchObjectLocalException, EJBException
    {
+      // make sure the call is allowed in the current timer state
+      this.assertTimerState();
+      
       return this.persistent;
    }
 
    /**
     * {@inheritDoc}
+    * @see #getTimerInfo()
     */
    @Override
    public Serializable getInfo() throws IllegalStateException, NoSuchObjectLocalException, EJBException
    {
+      // make sure this call is allowed
+      this.assertTimerState();
+      
       return this.info;
    }
 
    /**
+    * This method is similar to {@link #getInfo()}, except that this method does <i>not</i> check the timer state
+    * and hence does <i>not</i> throw either {@link IllegalStateException} or {@link NoSuchObjectLocalException} 
+    * or {@link EJBException}.
+    * @return
+    */
+   public Serializable getTimerInfo()
+   {
+      return this.info;
+   }
+   
+   /**
     * {@inheritDoc}
+    * @see #getNextExpiration()
     */
    @Override
    public Date getNextTimeout() throws IllegalStateException, NoSuchObjectLocalException, EJBException
@@ -264,6 +305,17 @@ public class TimerImpl implements Timer
       return this.nextExpiration;
    }
 
+   /**
+    * This method is similar to {@link #getNextTimeout()}, except that this method does <i>not</i> check the timer state
+    * and hence does <i>not</i> throw either {@link IllegalStateException} or {@link NoSuchObjectLocalException} 
+    * or {@link EJBException}. 
+    * @return
+    */
+   public Date getNextExpiration()
+   {
+      return this.nextExpiration;
+   }
+   
    /**
     * Sets the next timeout of this timer
     * @param next The next scheduled timeout of this timer
@@ -588,6 +640,35 @@ public class TimerImpl implements Timer
       return new TimerTask<TimerImpl>(this);
    }
 
+   /**
+    * A {@link javax.ejb.Timer} is equal to another {@link javax.ejb.Timer} if their
+    * {@link TimerHandle}s are equal
+    */
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (obj == null)
+      {
+         return false;
+      }
+      if (this.handle == null)
+      {
+         return false;
+      }
+      if (obj instanceof TimerImpl == false)
+      {
+         return false;
+      }
+      TimerImpl otherTimer = (TimerImpl) obj;
+      return this.handle.equals(otherTimer.getTimerHandle());
+   }
+   
+   @Override
+   public int hashCode()
+   {
+      return this.handle.hashCode();
+   }
+   
    /**
     * A nice formatted string output for this timer
     * {@inheritDoc}

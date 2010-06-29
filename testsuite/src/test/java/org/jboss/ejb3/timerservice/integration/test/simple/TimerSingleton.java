@@ -27,9 +27,11 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.ejb.Remote;
+import javax.ejb.ScheduleExpression;
 import javax.ejb.Singleton;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
 import javax.ejb.TimerHandle;
 import javax.ejb.TimerService;
 
@@ -59,14 +61,23 @@ public class TimerSingleton implements TimerUtil
    @Override
    public void createTimer(Date firstExpiration, long interval, int maxTimeouts)
    {
-      this.timerService.createTimer(firstExpiration, interval, maxTimeouts);
+      ScheduleExpression expr = new ScheduleExpression();
+      expr.second("*/5");
+      expr.minute("*");
+      expr.hour("*");
+      this.timerService.createCalendarTimer(expr, new TimerConfig());
     
    }
    
    @Timeout
-   public void timeout(Timer timer)
+   private void timeout(Timer timer)
    {
       logger.info("Timeout method called for timer " + timer + " on bean " + this + " at " + new Date());
+      logger.info("Timer service is " + this.timerService.toString());
+      if (true)
+      {
+         throw new NullPointerException();
+      }
       this.timeoutTracker.trackTimeout(timer);
       int numTimeouts = timeoutTracker.getTimeoutCount();
       Integer maxTimeouts = (Integer) timer.getInfo();

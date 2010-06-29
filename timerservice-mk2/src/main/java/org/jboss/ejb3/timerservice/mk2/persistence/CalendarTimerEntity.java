@@ -87,7 +87,7 @@ public class CalendarTimerEntity extends TimerEntity
    public CalendarTimerEntity(CalendarTimer calendarTimer)
    {
       super(calendarTimer);
-      this.scheduleExpression = calendarTimer.getSchedule();
+      this.scheduleExpression = calendarTimer.getScheduleExpression();
       this.autoTimer = calendarTimer.isAutoTimer();
       if (calendarTimer.isAutoTimer())
       {

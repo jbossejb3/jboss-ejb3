@@ -102,7 +102,9 @@ public class TimerServiceImpl implements TimerService
     * 
     */
    private Map<TimerHandle, TimerImpl> nonPersistentTimers = new HashMap<TimerHandle, TimerImpl>();
-   
+
+   private Map<TimerHandle, TimerImpl> persistentWaitingOnTxCompletionTimers = new HashMap<TimerHandle, TimerImpl>();
+
    private ThreadLocal<EntityManager> transactionScopedEntityManager = new ThreadLocal<EntityManager>();
 
    /**
@@ -334,6 +336,16 @@ public class TimerServiceImpl implements TimerService
             activeTimers.add(timer);
          }
       }
+      // get all active timers which are persistent, but haven't yet been
+      // persisted (waiting for tx to complete)
+      for (TimerImpl timer : this.persistentWaitingOnTxCompletionTimers.values())
+      {
+         if (timer != null && timer.isActive())
+         {
+            activeTimers.add(timer);
+         }
+      }
+
       // now get all active persistent timers for this timerservice
       activeTimers.addAll(this.getActiveTimers());
       return activeTimers;
@@ -381,12 +393,7 @@ public class TimerServiceImpl implements TimerService
       // and scheduling the timer task
       this.startTimer(timer);
 
-      // If this *isn't* a persistent timer, then we need to maintain this in our local
-      // map
-      if (!persistent)
-      {
-         this.addTimer(timer);
-      }
+      this.addTimer(timer);
       // return the newly created timer
       return timer;
    }
@@ -430,20 +437,16 @@ public class TimerServiceImpl implements TimerService
       // create the timer
       TimerImpl timer = new CalendarTimer(uuid, this, calendarTimeout, info, persistent, timeoutMethod);
 
+      if (persistent)
+      {
+         this.persistTimer(timer);
+      }
+      
       // now "start" the timer. This involves, moving the timer to an ACTIVE state
       // and scheduling the timer task
       this.startTimer(timer);
 
-      // If this *isn't* a persistent timer, then we need to maintain this in our local
-      // map
-      if (!persistent)
-      {
-         this.addTimer(timer);
-      }
-      else
-      {
-         this.persistTimer(timer);
-      }
+      this.addTimer(timer);
       // return the timer
       return timer;
    }
@@ -456,9 +459,19 @@ public class TimerServiceImpl implements TimerService
     */
    protected void addTimer(TimerImpl timer)
    {
-      synchronized (nonPersistentTimers)
+      if (timer.persistent == false)
       {
-         nonPersistentTimers.put(timer.getHandle(), timer);
+         synchronized (nonPersistentTimers)
+         {
+            nonPersistentTimers.put(timer.getTimerHandle(), timer);
+         }
+      }
+      else
+      {
+         synchronized (this.persistentWaitingOnTxCompletionTimers)
+         {
+            this.persistentWaitingOnTxCompletionTimers.put(timer.getTimerHandle(), timer);
+         }
       }
    }
 
@@ -498,11 +511,13 @@ public class TimerServiceImpl implements TimerService
       {
          return timer;
       }
-      else
+      timer = this.persistentWaitingOnTxCompletionTimers.get(handle);
+      if (timer != null)
       {
-         TimerHandleImpl timerHandle = (TimerHandleImpl) handle;
-         return this.getPersistedTimer(timerHandle);
+         return timer;
       }
+      TimerHandleImpl timerHandle = (TimerHandleImpl) handle;
+      return this.getPersistedTimer(timerHandle);
 
    }
 
@@ -526,11 +541,21 @@ public class TimerServiceImpl implements TimerService
    /**
     * Remove a txtimer from the list of active timers
     */
-   void removeTimer(TimerImpl txtimer)
+   void removeTimer(TimerImpl timer)
    {
-      synchronized (nonPersistentTimers)
+      if (timer.persistent == false)
       {
-         nonPersistentTimers.remove(txtimer.getHandle());
+         synchronized (nonPersistentTimers)
+         {
+            nonPersistentTimers.remove(timer.getTimerHandle());
+         }
+      }
+      else
+      {
+         synchronized (this.persistentWaitingOnTxCompletionTimers)
+         {
+            this.persistentWaitingOnTxCompletionTimers.remove(timer.getTimerHandle());
+         }
       }
       // TODO: I don't really like the idea of removing/deleting
       // persisted timers from the persistent store. This method
@@ -612,7 +637,7 @@ public class TimerServiceImpl implements TimerService
    public void persistTimer(TimerImpl timer)
    {
       // if not persistent, then do nothing
-      if (timer == null || timer.isPersistent() == false)
+      if (timer == null || timer.persistent == false)
       {
          return;
       }
@@ -698,8 +723,9 @@ public class TimerServiceImpl implements TimerService
    {
       // get the persisted timers which are considered active
       List<TimerImpl> restorableTimers = this.getActiveTimers();
-      
-      logger.debug("Found " + restorableTimers.size() + " active timers for timedObjectId: " + this.invoker.getTimedObjectId());
+
+      logger.debug("Found " + restorableTimers.size() + " active timers for timedObjectId: "
+            + this.invoker.getTimedObjectId());
       // now "start" each of the restorable timer. This involves, moving the timer to an ACTIVE state
       // and scheduling the timer task
       for (TimerImpl activeTimer : restorableTimers)
@@ -770,7 +796,8 @@ public class TimerServiceImpl implements TimerService
    protected void startInTx(TimerImpl timer)
    {
       timer.setTimerState(TimerState.ACTIVE);
-
+      this.persistTimer(timer);
+      
       // if there's no transaction, then trigger a schedule immidiately.
       // Else, the timer will be scheduled on tx synchronization callback
       if (this.getTransaction() == null)
@@ -849,7 +876,7 @@ public class TimerServiceImpl implements TimerService
       return new TimerImpl(timerEntity, this);
 
    }
-   
+
    private List<TimerImpl> getActiveTimers()
    {
       // we need only those timers which correspond to the 
@@ -891,7 +918,7 @@ public class TimerServiceImpl implements TimerService
 
       return activeTimers;
    }
-   
+
    private Serializable clone(Serializable info) throws Exception
    {
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -1128,6 +1155,13 @@ public class TimerServiceImpl implements TimerService
       @Override
       public void afterCompletion(int status)
       {
+         if (this.timer.persistent)
+         {
+            synchronized (TimerServiceImpl.this.persistentWaitingOnTxCompletionTimers)
+            {
+               TimerServiceImpl.this.persistentWaitingOnTxCompletionTimers.remove(this.timer.getTimerHandle());
+            }
+         }
          if (status == Status.STATUS_COMMITTED)
          {
             logger.debug("commit: " + this);
@@ -1140,25 +1174,24 @@ public class TimerServiceImpl implements TimerService
                   // now it's time to schedule the task
                   this.timer.scheduleTimeout();
                   break;
-                  
-               case CANCELED:
+
+               case CANCELED :
                   this.timer.cancelTimer();
                   break;
 
             }
          }
       }
-      
+
       @Override
       public void beforeCompletion()
       {
          // TODO Auto-generated method stub
-         
+
       }
 
    }
 
-   
    private class EntityManagerTransactionSynchronization implements Synchronization
    {
 
@@ -1178,19 +1211,18 @@ public class TimerServiceImpl implements TimerService
                logger.debug("Ignoring exception during entity manager close: ", e);
             }
          }
-         
-         
+
       }
 
       @Override
       public void beforeCompletion()
       {
          // TODO Auto-generated method stub
-         
+
       }
-      
+
    }
-   
+
    private EntityManager getCurrentEntityManager() throws Exception
    {
       EntityManager em = this.transactionScopedEntityManager.get();
@@ -1207,7 +1239,7 @@ public class TimerServiceImpl implements TimerService
       em.joinTransaction();
       this.transactionScopedEntityManager.set(em);
       tx.registerSynchronization(new EntityManagerTransactionSynchronization());
-      
+
       return em;
    }
 }

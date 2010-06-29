@@ -96,6 +96,14 @@ public class DayOfWeek extends MixedValueTypeExpression
                   "Increment type expression is not allowed for day-of-week value. Invalid value: " + value);
 
       }
+      for (Integer dayOfWeek : this.daysOfWeek)
+      {
+         if (dayOfWeek == 7)
+         {
+            this.daysOfWeek.remove(dayOfWeek);
+            this.daysOfWeek.add(new Integer(0));
+         }
+      }
       if (OFFSET != 0)
       {
          for (Integer dayOfWeek : this.daysOfWeek)
@@ -139,9 +147,6 @@ public class DayOfWeek extends MixedValueTypeExpression
       next.setFirstDayOfWeek(current.getFirstDayOfWeek());
 
       Integer currentDayOfWeek = current.get(Calendar.DAY_OF_WEEK);
-      // Calendar.SUNDAY starts with 1 whereas our daysOfWeek is 0 based.
-      // So decrement the currentDayOfWeek by 1 to adjust the offset
-      //currentDayOfWeek = currentDayOfWeek - 1;
 
       Integer nextDayOfWeek = this.offsetAdjustedDaysOfWeek.first();
       for (Integer dayOfWeek : this.offsetAdjustedDaysOfWeek)
@@ -176,14 +181,5 @@ public class DayOfWeek extends MixedValueTypeExpression
       return next;
    }
    
-   public int getFirst()
-   {
-      if (this.expressionType == ScheduleExpressionType.WILDCARD)
-      {
-         return new GregorianCalendar().get(Calendar.DAY_OF_WEEK);
-      }
-      return this.offsetAdjustedDaysOfWeek.first();
-   }
-
-
+  
 }

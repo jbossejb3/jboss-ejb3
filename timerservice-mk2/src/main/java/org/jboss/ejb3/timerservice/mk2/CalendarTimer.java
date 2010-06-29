@@ -30,6 +30,7 @@ import javax.ejb.EJBException;
 import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.ScheduleExpression;
 import javax.ejb.Timer;
+import javax.ejb.TimerHandle;
 
 import org.jboss.ejb3.timer.schedule.CalendarBasedTimeout;
 import org.jboss.ejb3.timerservice.mk2.persistence.CalendarTimerEntity;
@@ -156,11 +157,23 @@ public class CalendarTimer extends TimerImpl
 
    /**
     * {@inheritDoc}
+    * @see #getScheduleExpression()
     */
    @Override
    public ScheduleExpression getSchedule() throws IllegalStateException, NoSuchObjectLocalException, EJBException
    {
       this.assertTimerState();
+      return this.calendarTimeout.getScheduleExpression();
+   }
+   
+   /**
+    * This method is similar to {@link #getSchedule()}, except that this method does <i>not</i> check the timer state
+    * and hence does <i>not</i> throw either {@link IllegalStateException} or {@link NoSuchObjectLocalException} 
+    * or {@link EJBException}.
+    * @return
+    */
+   public ScheduleExpression getScheduleExpression()
+   {
       return this.calendarTimeout.getScheduleExpression();
    }
 
@@ -222,6 +235,30 @@ public class CalendarTimer extends TimerImpl
       }
       return this.timeoutMethod;
    }
+   
+   /**
+    * A {@link javax.ejb.Timer} is equal to another {@link javax.ejb.Timer} if their
+    * {@link TimerHandle}s are equal
+    */
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (obj == null)
+      {
+         return false;
+      }
+      if (this.handle == null)
+      {
+         return false;
+      }
+      if (obj instanceof CalendarTimer == false)
+      {
+         return false;
+      }
+      CalendarTimer otherTimer = (CalendarTimer) obj;
+      return this.handle.equals(otherTimer.getTimerHandle());
+   }
+
 
    /**
     * Returns the {@link Method}, represented by the {@link TimeoutMethod}
@@ -273,31 +310,38 @@ public class CalendarTimer extends TimerImpl
          }
       }
       // now start looking for the method
-      Method[] methods = timeoutMethodDeclaringClass.getMethods();
-      for (Method method : methods)
+      Class<?> klass = timeoutMethodDeclaringClass;
+      while (klass != null)
       {
-         if (method.getName().equals(timeoutMethodName))
+         Method[] methods = klass.getDeclaredMethods();
+         for (Method method : methods)
          {
-            Class<?>[] methodParamTypes = method.getParameterTypes();
-            // param length doesn't match
-            if (timeoutMethodParamTypes.length != methodParamTypes.length)
+            if (method.getName().equals(timeoutMethodName))
             {
-               continue;
-            }
-            for (int i = 0; i < methodParamTypes.length; i++)
-            {
-               // param type doesn't match
-               if (timeoutMethodParamTypes[i].equals(methodParamTypes[i]) == false)
+               Class<?>[] methodParamTypes = method.getParameterTypes();
+               // param length doesn't match
+               if (timeoutMethodParamTypes.length != methodParamTypes.length)
                {
                   continue;
                }
+               for (int i = 0; i < methodParamTypes.length; i++)
+               {
+                  // param type doesn't match
+                  if (timeoutMethodParamTypes[i].equals(methodParamTypes[i]) == false)
+                  {
+                     continue;
+                  }
+               }
+               // match found
+               return method;
             }
-            // match found
-            return method;
          }
+         klass = klass.getSuperclass();
+         
       }
       // no match found
       return null;
    }
+   
 
 }

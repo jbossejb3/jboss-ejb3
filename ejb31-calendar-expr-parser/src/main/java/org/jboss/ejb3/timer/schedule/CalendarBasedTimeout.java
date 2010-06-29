@@ -167,11 +167,21 @@ public class CalendarBasedTimeout
    public Calendar getNextTimeout(Calendar current)
    {
       Calendar next = new GregorianCalendar(this.timezone);
-      next.setTime(current.getTime());
+      Date start = this.scheduleExpression.getStart();
+      if (start != null && current.getTime().before(start))
+      {
+         next.setTime(start);
+      }
+      else
+      {
+         next.setTime(current.getTime());
+         // increment the current second by 1
+         next.add(Calendar.SECOND, 1);
+         
+      }
+      
       next.setFirstDayOfWeek(Calendar.SUNDAY);
 
-      // increment the current second by 1
-      next.add(Calendar.SECOND, 1);
 
       next = this.second.getNextSecond(next);
       next = this.minute.getNextMinute(next);

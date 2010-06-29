@@ -82,13 +82,13 @@ public class TimerEntity implements Serializable
       this.id = timer.getId();
       this.initialDate = timer.getInitialExpiration();
       this.interval = timer.getInterval();
-      this.nextDate = timer.getNextTimeout();
+      this.nextDate = timer.getNextExpiration();
       this.previousRun = timer.getPreviousRun();
       this.timerState = timer.getState();
       this.timedObjectId = timer.getTimedObjectId();
-      if (timer.getInfo() != null)
+      if (timer.getTimerInfo() != null)
       {
-         this. info = this.getBytes(timer.getInfo());
+         this. info = this.getBytes(timer.getTimerInfo());
       }
 
    }

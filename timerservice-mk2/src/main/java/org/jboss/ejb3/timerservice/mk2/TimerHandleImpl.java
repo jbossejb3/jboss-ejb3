@@ -147,4 +147,10 @@ public class TimerHandleImpl implements TimerHandle
       return false;
    }
    
+   @Override
+   public int hashCode()
+   {
+      return this.id.hashCode();
+   }
+   
 }

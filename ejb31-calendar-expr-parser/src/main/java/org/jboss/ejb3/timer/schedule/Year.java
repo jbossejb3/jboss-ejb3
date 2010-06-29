@@ -155,24 +155,50 @@ public class Year extends IntegerBasedExpression
 
    public Calendar getNextYear(Calendar current)
    {
+      boolean isFeb29 = this.isFeb29(current); 
+      if (this.expressionType == ScheduleExpressionType.WILDCARD)
+      {
+         if (isFeb29)
+         {
+            if (isLeapYear(current.get(Calendar.YEAR)))
+            {
+               return current;
+            }
+            else
+            {
+               int nextLeapYear = this.getNextLeapYear(current.get(Calendar.YEAR));
+               current.set(Calendar.YEAR, nextLeapYear);
+               return current;
+            }
+         }
+         return current;
+      }
+
       Calendar next = new GregorianCalendar(current.getTimeZone());
       next.setTime(current.getTime());
 
       Integer currentYear = current.get(Calendar.YEAR);
-      if (this.expressionType == ScheduleExpressionType.WILDCARD)
-      {
-         return current;
-      }
+
       Integer nextYear = this.years.first();
       for (Integer year : this.years)
       {
          if (currentYear.equals(year))
          {
+            if (isFeb29 && this.isLeapYear(year) == false)
+            {
+               continue;
+            }
+               
             nextYear = currentYear;
             break;
          }
          if (year.intValue() > currentYear.intValue())
          {
+            if (isFeb29 && this.isLeapYear(year) == false)
+            {
+               continue;
+            }
+
             nextYear = year;
             break;
          }
@@ -182,19 +208,66 @@ public class Year extends IntegerBasedExpression
          // no more years
          return null;
       }
+      if (isFeb29 && this.isLeapYear(nextYear) == false)
+      {
+         return null;
+      }
       next.set(Calendar.YEAR, nextYear);
 
       return next;
    }
 
-   public int getFirst()
+   private boolean isFeb29(Calendar cal)
    {
-      if (this.expressionType == ScheduleExpressionType.WILDCARD)
+      int date = cal.get(Calendar.DATE);
+      int month = cal.get(Calendar.MONTH);
+      if (date == 29 && month == Calendar.FEBRUARY)
       {
-         return new GregorianCalendar().get(Calendar.YEAR);
+         return true;
       }
-      return this.years.first();
+      return false;
    }
 
+   private boolean isLeapYear(int year)
+   {
+      if (isDivisibleBy4(year))
+      {
+         if (isDivisibleBy100(year))
+         {
+            if (isDivisibleBy400(year))
+            {
+               return true;
+            }
+            return false;
+         }
+         return true;
+      }
+      return false;
+      
+   }
+   
+   private boolean isDivisibleBy4(int num)
+   {
+      return num % 4 == 0;
+   }
+   
+   private boolean isDivisibleBy100(int num)
+   {
+      return num % 100 == 0;
+   }
+   
+   private boolean isDivisibleBy400(int num)
+   {
+      return num % 400 == 0;
+   }
+   
+   private int getNextLeapYear(int year)
+   {
+      while (this.isLeapYear(year) == false)
+      {
+         year ++;
+      }
+      return year;
+   }
 
 }

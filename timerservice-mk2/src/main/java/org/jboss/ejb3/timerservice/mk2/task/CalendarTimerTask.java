@@ -21,7 +21,12 @@
  */
 package org.jboss.ejb3.timerservice.mk2.task;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
 import org.jboss.ejb3.timerservice.mk2.CalendarTimer;
+import org.jboss.ejb3.timerservice.mk2.TimerState;
 import org.jboss.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.logging.Logger;
 import org.jboss.ejb3.timerservice.spi.MultiTimeoutMethodTimedObjectInvoker;
@@ -54,25 +59,72 @@ public class CalendarTimerTask extends TimerTask<CalendarTimer>
    {
       CalendarTimer calendarTimer = this.getTimer();
 
-      calendarTimer.scheduleTimeout();
-      // finally invoke the timeout method through the invoker
-      if (calendarTimer.isAutoTimer())
+      try
       {
-         TimedObjectInvoker invoker = this.timerService.getInvoker();
-         if (invoker instanceof MultiTimeoutMethodTimedObjectInvoker == false)
+         // if we have any more schedules remaining, then schedule a new task
+         if (calendarTimer.getNextExpiration() != null)
          {
-            String msg = "Cannot invoke timeout method because timer: " + calendarTimer
-                  + " is an auto timer, but invoker is not of type" + MultiTimeoutMethodTimedObjectInvoker.class;
-            logger.error(msg);
-            throw new RuntimeException(msg);
+            calendarTimer.scheduleTimeout();
          }
-         // call the timeout method
-         ((MultiTimeoutMethodTimedObjectInvoker) invoker).callTimeout(calendarTimer, calendarTimer.getTimeoutMethod());
+
+         // finally invoke the timeout method through the invoker
+         if (calendarTimer.isAutoTimer())
+         {
+            TimedObjectInvoker invoker = this.timerService.getInvoker();
+            if (invoker instanceof MultiTimeoutMethodTimedObjectInvoker == false)
+            {
+               String msg = "Cannot invoke timeout method because timer: " + calendarTimer
+                     + " is an auto timer, but invoker is not of type" + MultiTimeoutMethodTimedObjectInvoker.class;
+               logger.error(msg);
+               throw new RuntimeException(msg);
+            }
+            // call the timeout method
+            ((MultiTimeoutMethodTimedObjectInvoker) invoker).callTimeout(calendarTimer, calendarTimer
+                  .getTimeoutMethod());
+         }
+         else
+         {
+            this.timerService.getInvoker().callTimeout(calendarTimer);
+         }
       }
-      else
+      finally
       {
-         this.timerService.getInvoker().callTimeout(calendarTimer);
+         TimerState timerState = calendarTimer.getState();
+         if (timerState == TimerState.IN_TIMEOUT)
+         {
+            if (calendarTimer.getNextExpiration() == null)
+            {
+               calendarTimer.expireTimer();
+            }
+            else
+            {
+               calendarTimer.setTimerState(TimerState.ACTIVE);
+               // persist changes
+               timerService.persistTimer(calendarTimer);
+            }
+         }
       }
+   }
+
+   @Override
+   protected Date calculateNextTimeout()
+   {
+      // The next timeout for the calendar timer will have to be computed using the
+      // current "nextExpiration"
+      Date currentTimeout = this.getTimer().getNextExpiration();
+      if (currentTimeout == null)
+      {
+         return null;
+      }
+      Calendar cal = new GregorianCalendar();
+      cal.setTime(currentTimeout);
+      // now compute the next timeout date
+      Calendar nextTimeout = this.getTimer().getCalendarTimeout().getNextTimeout(cal);
+      if (nextTimeout != null)
+      {
+         return nextTimeout.getTime();
+      }
+      return null;
    }
 
 }
