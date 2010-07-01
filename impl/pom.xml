@@ -6,7 +6,7 @@
    <parent>
       <groupId>org.jboss.ejb3.tx2</groupId>
       <artifactId>jboss-ejb3-tx2</artifactId>
-      <version>0.0.1</version>
+      <version>0.0.2-SNAPSHOT</version>
    </parent>
 
    <modelVersion>4.0.0</modelVersion>
