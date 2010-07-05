@@ -312,10 +312,14 @@ public class TimerImpl implements Timer
     * @see #getNextExpiration()
     */
    @Override
-   public Date getNextTimeout() throws IllegalStateException, NoSuchObjectLocalException, EJBException
+   public Date getNextTimeout() throws IllegalStateException, NoSuchObjectLocalException, NoMoreTimeoutsException,  EJBException
    {
       // first check the validity of the timer state
       this.assertTimerState();
+      if (this.nextExpiration == null)
+      {
+         throw new NoMoreTimeoutsException("No more timeouts for timer " + this);
+      }
       return this.nextExpiration;
    }
 
@@ -353,7 +357,7 @@ public class TimerImpl implements Timer
     * {@inheritDoc}
     */
    @Override
-   public long getTimeRemaining() throws IllegalStateException, NoSuchObjectLocalException, EJBException
+   public long getTimeRemaining() throws IllegalStateException, NoSuchObjectLocalException, NoMoreTimeoutsException, EJBException
    {
       // TODO: Rethink this implementation
 
