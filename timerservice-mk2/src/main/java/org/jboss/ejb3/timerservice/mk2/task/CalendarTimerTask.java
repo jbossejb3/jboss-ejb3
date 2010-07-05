@@ -55,54 +55,33 @@ public class CalendarTimerTask extends TimerTask<CalendarTimer>
    }
 
    @Override
-   protected void handleTimeout() throws Exception
+   protected void callTimeout() throws Exception
    {
       CalendarTimer calendarTimer = this.getTimer();
 
-      try
+      // if we have any more schedules remaining, then schedule a new task
+      if (calendarTimer.getNextExpiration() != null && calendarTimer.isInRetry() == false)
       {
-         // if we have any more schedules remaining, then schedule a new task
-         if (calendarTimer.getNextExpiration() != null)
-         {
-            calendarTimer.scheduleTimeout();
-         }
-
-         // finally invoke the timeout method through the invoker
-         if (calendarTimer.isAutoTimer())
-         {
-            TimedObjectInvoker invoker = this.timerService.getInvoker();
-            if (invoker instanceof MultiTimeoutMethodTimedObjectInvoker == false)
-            {
-               String msg = "Cannot invoke timeout method because timer: " + calendarTimer
-                     + " is an auto timer, but invoker is not of type" + MultiTimeoutMethodTimedObjectInvoker.class;
-               logger.error(msg);
-               throw new RuntimeException(msg);
-            }
-            // call the timeout method
-            ((MultiTimeoutMethodTimedObjectInvoker) invoker).callTimeout(calendarTimer, calendarTimer
-                  .getTimeoutMethod());
-         }
-         else
-         {
-            this.timerService.getInvoker().callTimeout(calendarTimer);
-         }
+         calendarTimer.scheduleTimeout();
       }
-      finally
+
+      // finally invoke the timeout method through the invoker
+      if (calendarTimer.isAutoTimer())
       {
-         TimerState timerState = calendarTimer.getState();
-         if (timerState == TimerState.IN_TIMEOUT)
+         TimedObjectInvoker invoker = this.timerService.getInvoker();
+         if (invoker instanceof MultiTimeoutMethodTimedObjectInvoker == false)
          {
-            if (calendarTimer.getNextExpiration() == null)
-            {
-               calendarTimer.expireTimer();
-            }
-            else
-            {
-               calendarTimer.setTimerState(TimerState.ACTIVE);
-               // persist changes
-               timerService.persistTimer(calendarTimer);
-            }
+            String msg = "Cannot invoke timeout method because timer: " + calendarTimer
+                  + " is an auto timer, but invoker is not of type" + MultiTimeoutMethodTimedObjectInvoker.class;
+            logger.error(msg);
+            throw new RuntimeException(msg);
          }
+         // call the timeout method
+         ((MultiTimeoutMethodTimedObjectInvoker) invoker).callTimeout(calendarTimer, calendarTimer.getTimeoutMethod());
+      }
+      else
+      {
+         this.timerService.getInvoker().callTimeout(calendarTimer);
       }
    }
 
@@ -125,6 +104,26 @@ public class CalendarTimerTask extends TimerTask<CalendarTimer>
          return nextTimeout.getTime();
       }
       return null;
+   }
+
+   @Override
+   protected void postTimeoutProcessing()
+   {
+      CalendarTimer calendarTimer = this.getTimer();
+      TimerState timerState = calendarTimer.getState();
+      if (timerState == TimerState.IN_TIMEOUT || timerState == TimerState.RETRY_TIMEOUT)
+      {
+         if (calendarTimer.getNextExpiration() == null)
+         {
+            calendarTimer.expireTimer();
+         }
+         else
+         {
+            calendarTimer.setTimerState(TimerState.ACTIVE);
+            // persist changes
+            timerService.persistTimer(calendarTimer);
+         }
+      }
    }
 
 }

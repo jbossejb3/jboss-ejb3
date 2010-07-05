@@ -696,13 +696,16 @@ public class TimerServiceImpl implements TimerService
     */
    public void suspendTimers()
    {
-      // TODO: Is this map the definitive place to find 
-      // all currently active timers?
-      Collection<TimerImpl> timers = this.nonPersistentTimers.values();
-      for (TimerImpl timer : timers)
+      // get all active timers (persistent/non-persistent inclusive)
+      Collection<Timer> timers = this.getTimers();
+      for (Timer timer : timers)
       {
-         // suspend each timer
-         timer.suspend();
+         if (timer instanceof TimerImpl == false)
+         {
+            continue;
+         }
+         // suspend the timer
+         ((TimerImpl) timer).suspend();
       }
    }
 
@@ -769,7 +772,7 @@ public class TimerServiceImpl implements TimerService
          try
          {
             // register for lifecycle events of transaction
-            tx.registerSynchronization(new TimerTransactionSynchronization(timer));
+            tx.registerSynchronization(new TimerCreationTransactionSynchronization(timer));
          }
          catch (RollbackException e)
          {
@@ -1133,14 +1136,14 @@ public class TimerServiceImpl implements TimerService
       }
    }
 
-   private class TimerTransactionSynchronization implements Synchronization
+   private class TimerCreationTransactionSynchronization implements Synchronization
    {
       /**
        * The timer being managed in the transaction
        */
       private TimerImpl timer;
 
-      public TimerTransactionSynchronization(TimerImpl timer)
+      public TimerCreationTransactionSynchronization(TimerImpl timer)
       {
          if (timer == null)
          {
@@ -1164,7 +1167,7 @@ public class TimerServiceImpl implements TimerService
          }
          if (status == Status.STATUS_COMMITTED)
          {
-            logger.debug("commit: " + this);
+            logger.debug("commit timer creation: " + this.timer);
 
             TimerState timerState = this.timer.getState();
             switch (timerState)
@@ -1174,13 +1177,24 @@ public class TimerServiceImpl implements TimerService
                   // now it's time to schedule the task
                   this.timer.scheduleTimeout();
                   break;
-
-               case CANCELED :
-                  this.timer.cancelTimer();
-                  break;
-
             }
          }
+         else if (status == Status.STATUS_ROLLEDBACK)
+         {
+            logger.debug("Rolling back timer creation: " + this.timer);
+
+            TimerState timerState = this.timer.getState();
+            switch (timerState)
+            {
+               case ACTIVE:
+                  // TODO: I think the timer state should be FAILED instead of
+                  // CANCELLED. Let's rethink this later
+                  this.timer.setTimerState(TimerState.CANCELED);
+                  break;
+            }
+            
+         }
+         
       }
 
       @Override
@@ -1191,6 +1205,8 @@ public class TimerServiceImpl implements TimerService
       }
 
    }
+   
+
 
    private class EntityManagerTransactionSynchronization implements Synchronization
    {

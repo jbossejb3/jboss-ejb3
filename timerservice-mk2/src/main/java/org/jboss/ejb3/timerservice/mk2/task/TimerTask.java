@@ -21,13 +21,10 @@
  */
 package org.jboss.ejb3.timerservice.mk2.task;
 
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 
 import javax.ejb.Timer;
 
-import org.jboss.ejb3.timerservice.mk2.CalendarTimer;
 import org.jboss.ejb3.timerservice.mk2.TimerImpl;
 import org.jboss.ejb3.timerservice.mk2.TimerServiceImpl;
 import org.jboss.ejb3.timerservice.mk2.TimerState;
@@ -127,37 +124,32 @@ public class TimerTask<T extends TimerImpl> implements Runnable
       try
       {
          // invoke timeout
-         this.handleTimeout();
+         this.callTimeout();
       }
       catch (Exception e)
       {
-         logger.error("Error invoking ejbTimeout", e);
-      }
-   }
-
-   protected void handleTimeout() throws Exception
-   {
-      try
-      {
-         this.timerService.getInvoker().callTimeout(this.timer);
+         logger.error("Error invoking timeout for timer: " + this.timer, e);
+         try
+         {
+            logger.info("Timer: " + this.timer + " will be retried");
+            retryTimeout();
+         }
+         catch (Exception retryException)
+         {
+            // that's it, we can't do anything more. Let's just log the exception
+            // and return
+            logger.error("Error during retyring timeout for timer: " + timer, e);
+         }
       }
       finally
       {
-         TimerState timerState = this.timer.getState();
-         if (timerState == TimerState.IN_TIMEOUT)
-         {
-            if (this.timer.getInterval() == 0)
-            {
-               this.timer.expireTimer();
-            }
-            else
-            {
-               this.timer.setTimerState(TimerState.ACTIVE);
-               // persist changes
-               timerService.persistTimer(this.timer);
-            }
-         }
+         this.postTimeoutProcessing();
       }
+   }
+
+   protected void callTimeout() throws Exception
+   {
+      this.timerService.getInvoker().callTimeout(this.timer);
    }
 
    protected Date calculateNextTimeout()
@@ -177,5 +169,39 @@ public class TimerTask<T extends TimerImpl> implements Runnable
    protected T getTimer()
    {
       return this.timer;
+   }
+
+   protected void retryTimeout() throws Exception
+   {
+      if (this.timer.isActive())
+      {
+         logger.info("Retrying timeout for timer: " + this.timer);
+         this.timer.setTimerState(TimerState.RETRY_TIMEOUT);
+         this.timerService.persistTimer(this.timer);
+         
+         this.callTimeout();
+      }
+      else
+      {
+         logger.info("Timer is not active, skipping retry of timer: " + this.timer);
+      }
+   }
+
+   protected void postTimeoutProcessing()
+   {
+      TimerState timerState = this.timer.getState();
+      if (timerState == TimerState.IN_TIMEOUT || timerState == TimerState.RETRY_TIMEOUT)
+      {
+         if (this.timer.getInterval() == 0)
+         {
+            this.timer.expireTimer();
+         }
+         else
+         {
+            this.timer.setTimerState(TimerState.ACTIVE);
+            // persist changes
+            timerService.persistTimer(this.timer);
+         }
+      }
    }
 }

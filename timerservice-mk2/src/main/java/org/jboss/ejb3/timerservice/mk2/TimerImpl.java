@@ -37,6 +37,9 @@ import javax.ejb.NoMoreTimeoutsException;
 import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.ScheduleExpression;
 import javax.ejb.TimerHandle;
+import javax.transaction.Status;
+import javax.transaction.Synchronization;
+import javax.transaction.Transaction;
 
 import org.jboss.ejb3.timerservice.extension.Timer;
 import org.jboss.ejb3.timerservice.extension.TimerService;
@@ -222,6 +225,17 @@ public class TimerImpl implements Timer
       {
          setTimerState(TimerState.CANCELED);
       }
+      // if in tx, register with tx so cancel on tx completion
+      Transaction currentTx = this.timerService.getTransaction();
+      if (currentTx == null)
+      {
+         this.cancelTimer();
+      }
+      else
+      {
+         this.registerTimerCancellationWithTx(currentTx);
+      }
+      
       // persist changes
       timerService.persistTimer(this);
    }
@@ -715,6 +729,18 @@ public class TimerImpl implements Timer
       return sb.toString();
    }
 
+   private void registerTimerCancellationWithTx(Transaction tx)
+   {
+      try
+      {
+         tx.registerSynchronization(new TimerCancellationTransactionSynchronization(this));
+      }
+      catch (Exception e)
+      {
+         throw new RuntimeException("Could not register with tx for timer cancellation: " , e);
+      }
+   }
+   
    private Serializable deserialize(byte[] bytes)
    {
       if (bytes == null)
@@ -774,4 +800,63 @@ public class TimerImpl implements Timer
       }
    }
 
+   private class TimerCancellationTransactionSynchronization implements Synchronization
+   {
+
+      /**
+       * The timer being managed in the transaction
+       */
+      private TimerImpl timer;
+
+      public TimerCancellationTransactionSynchronization(TimerImpl timer)
+      {
+         if (timer == null)
+         {
+            throw new IllegalStateException("Timer cannot be null");
+         }
+         this.timer = timer;
+      } 
+      
+      @Override
+      public void afterCompletion(int status)
+      {
+         if (status == Status.STATUS_COMMITTED)
+         {
+            logger.debug("commit timer cancellation: " + this.timer);
+
+            TimerState timerState = this.timer.getState();
+            switch (timerState)
+            {
+               case CANCELED :
+               case IN_TIMEOUT:
+               case RETRY_TIMEOUT:
+                  this.timer.cancelTimer();
+                  break;
+
+            }
+         }
+         else if (status == Status.STATUS_ROLLEDBACK)
+         {
+            logger.debug("rollback timer cancellation: " + this.timer);
+
+            TimerState timerState = this.timer.getState();
+            switch (timerState)
+            {
+               case CANCELED :
+                  this.timer.setTimerState(TimerState.ACTIVE);
+                  break;
+
+            }
+            
+         }
+      }
+
+      @Override
+      public void beforeCompletion()
+      {
+         // TODO Auto-generated method stub
+         
+      }
+      
+   }
 }
