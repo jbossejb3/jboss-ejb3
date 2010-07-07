@@ -61,6 +61,7 @@ import org.jboss.ejb3.timerservice.mk2.persistence.CalendarTimerEntity;
 import org.jboss.ejb3.timerservice.mk2.persistence.TimeoutMethod;
 import org.jboss.ejb3.timerservice.mk2.persistence.TimerEntity;
 import org.jboss.ejb3.timerservice.spi.TimedObjectInvoker;
+import org.jboss.ejb3.timerservice.spi.TimerServiceInvocationContext;
 import org.jboss.logging.Logger;
 
 /**
@@ -321,10 +322,10 @@ public class TimerServiceImpl implements TimerService
    @Override
    public Collection<Timer> getTimers() throws IllegalStateException, EJBException
    {
-      if (this.isLifecycleCallbackInvocation())
+      if (this.isLifecycleCallbackInvocation() && this.isSingletonBeanInvocation() == false)
       {
          throw new IllegalStateException(
-               "getTimers() method invocation is not allowed during lifecycle callback of EJBs");
+               "getTimers() method invocation is not allowed during lifecycle callback of non-singleton EJBs");
       }
 
       Set<Timer> activeTimers = new HashSet<Timer>();
@@ -367,9 +368,9 @@ public class TimerServiceImpl implements TimerService
     */
    private Timer createTimer(Date initialExpiration, long intervalDuration, Serializable info, boolean persistent)
    {
-      if (this.isLifecycleCallbackInvocation())
+      if (this.isLifecycleCallbackInvocation() && this.isSingletonBeanInvocation() == false)
       {
-         throw new IllegalStateException("Creation of timers is not allowed during lifecycle callback of EJBs");
+         throw new IllegalStateException("Creation of timers is not allowed during lifecycle callback of non-singleton EJBs");
       }
       if (initialExpiration == null)
       {
@@ -412,9 +413,9 @@ public class TimerServiceImpl implements TimerService
    private org.jboss.ejb3.timerservice.extension.Timer createCalendarTimer(ScheduleExpression schedule,
          Serializable info, boolean persistent, Method timeoutMethod)
    {
-      if (this.isLifecycleCallbackInvocation())
+      if (this.isLifecycleCallbackInvocation() && this.isSingletonBeanInvocation() == false)
       {
-         throw new IllegalStateException("Creation of timers is not allowed during lifecycle callback of EJBs");
+         throw new IllegalStateException("Creation of timers is not allowed during lifecycle callback of non-singleton EJBs");
       }
       if (schedule == null)
       {
@@ -851,6 +852,27 @@ public class TimerServiceImpl implements TimerService
       }
       // not an lifecycle callback
       return false;
+   }
+   
+   private boolean isSingletonBeanInvocation()
+   {
+      InvocationContext currentInvocationContext = null;
+      try
+      {
+         currentInvocationContext = CurrentInvocationContext.get();
+         
+         if (currentInvocationContext instanceof TimerServiceInvocationContext)
+         {
+            TimerServiceInvocationContext timerserviceInvocationCtx = (TimerServiceInvocationContext) currentInvocationContext;
+            return timerserviceInvocationCtx.isSingleton();
+         }
+         return false;
+      }
+      catch (IllegalStateException ise)
+      {
+         // no context info available so return false
+         return false;
+      }
    }
 
    private TimerImpl getPersistedTimer(TimerHandleImpl timerHandle)
