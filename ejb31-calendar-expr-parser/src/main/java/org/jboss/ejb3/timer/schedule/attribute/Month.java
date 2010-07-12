@@ -19,15 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.timer.schedule;
+package org.jboss.ejb3.timer.schedule.attribute;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import org.jboss.ejb3.timer.schedule.value.ScheduleExpressionType;
 
 /**
  * Month
@@ -35,7 +37,7 @@ import java.util.TreeSet;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class Month extends MixedValueTypeExpression
+public class Month extends IntegerBasedExpression
 {
 
    public static final Integer MAX_MONTH = 12;
@@ -46,79 +48,39 @@ public class Month extends MixedValueTypeExpression
 
    static
    {
-      MONTH_ALIAS.put("Jan", 1);
-      MONTH_ALIAS.put("Feb", 2);
-      MONTH_ALIAS.put("Mar", 3);
-      MONTH_ALIAS.put("Apr", 4);
-      MONTH_ALIAS.put("May", 5);
-      MONTH_ALIAS.put("Jun", 6);
-      MONTH_ALIAS.put("Jul", 7);
-      MONTH_ALIAS.put("Aug", 8);
-      MONTH_ALIAS.put("Sep", 9);
-      MONTH_ALIAS.put("Oct", 10);
-      MONTH_ALIAS.put("Nov", 11);
-      MONTH_ALIAS.put("Dec", 12);
+      MONTH_ALIAS.put("jan", 1);
+      MONTH_ALIAS.put("feb", 2);
+      MONTH_ALIAS.put("mar", 3);
+      MONTH_ALIAS.put("apr", 4);
+      MONTH_ALIAS.put("may", 5);
+      MONTH_ALIAS.put("jun", 6);
+      MONTH_ALIAS.put("jul", 7);
+      MONTH_ALIAS.put("aug", 8);
+      MONTH_ALIAS.put("sep", 9);
+      MONTH_ALIAS.put("oct", 10);
+      MONTH_ALIAS.put("nov", 11);
+      MONTH_ALIAS.put("dec", 12);
 
    }
 
-   private static final int OFFSET = MONTH_ALIAS.get("Jan") - Calendar.JANUARY;
-
-   private SortedSet<Integer> months = new TreeSet<Integer>();
+   private static final int OFFSET = MONTH_ALIAS.get("jan") - Calendar.JANUARY;
 
    private SortedSet<Integer> offsetAdjustedMonths = new TreeSet<Integer>();
 
-   private ScheduleExpressionType expressionType;
-
    public Month(String value)
    {
-      this.expressionType = ScheduleExpressionTypeUtil.getType(value);
-      Set<Integer> mths = null;
-      switch (this.expressionType)
-      {
-         case RANGE :
-            RangeValue range = new RangeValue(value);
-            mths = this.processRangeValue(range);
-            this.months.addAll(mths);
-            break;
-
-         case LIST :
-            ListValue list = new ListValue(value);
-            mths = this.processListValue(list);
-            this.months.addAll(mths);
-            break;
-
-         case SINGLE_VALUE :
-            SingleValue singleValue = new SingleValue(value);
-            // process the single value and get the integer value
-            // out of it
-            Integer month = this.processSingleValue(singleValue);
-            // add it to our sorted set
-            this.months.add(month);
-            break;
-         case WILDCARD :
-            break;
-         case INCREMENT :
-            throw new IllegalArgumentException(
-                  "Increment type expression is not allowed for month value. Invalid value: " + value);
-
-      }
+      super(value);
       if (OFFSET != 0)
       {
-         for (Integer month : this.months)
+         for (Integer month : this.absoluteValues)
          {
             this.offsetAdjustedMonths.add(month - OFFSET);
          }
       }
       else
       {
-         this.offsetAdjustedMonths = this.months;
+         this.offsetAdjustedMonths = this.absoluteValues;
       }
-   }
-
-   @Override
-   protected Map<String, Integer> getAliases()
-   {
-      return MONTH_ALIAS;
    }
 
    @Override
@@ -135,7 +97,7 @@ public class Month extends MixedValueTypeExpression
 
    public Calendar getNextMonth(Calendar current)
    {
-      if (this.expressionType == ScheduleExpressionType.WILDCARD)
+      if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD)
       {
          return current;
       }
@@ -214,6 +176,13 @@ public class Month extends MixedValueTypeExpression
       }
    }
 
+   @Override
+   public boolean isRelativeValue(String value)
+   {
+      // month doesn't support relative values, so always return false
+      return false;
+   }
+
    private boolean hasDateForMonth(int date, int month, int year)
    {
       Calendar cal = new GregorianCalendar();
@@ -229,14 +198,76 @@ public class Month extends MixedValueTypeExpression
 
    }
 
-   public int getFirst()
+   @Override
+   protected boolean accepts(ScheduleExpressionType scheduleExprType)
    {
-      if (this.expressionType == ScheduleExpressionType.WILDCARD)
+      switch (scheduleExprType)
       {
-         return new GregorianCalendar().get(Calendar.MONTH);
+         case RANGE :
+         case LIST :
+         case SINGLE_VALUE :
+         case WILDCARD :
+            return true;
+         // month doesn't support increment
+         case INCREMENT :
+         default :
+            return false;
       }
-      return this.months.first();
    }
-
-
+   
+   @Override
+   protected Integer parseInt(String alias)
+   {
+      try
+      {
+         return super.parseInt(alias);
+      }
+      catch (NumberFormatException nfe)
+      {
+         if (MONTH_ALIAS != null)
+         {
+            String lowerCaseAlias = alias.toLowerCase(Locale.ENGLISH);
+            return MONTH_ALIAS.get(lowerCaseAlias);
+         }
+      }
+      return null;
+   }
+   
+   public Integer getNextMatch(Calendar currentCal)
+   {
+      if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD)
+      {
+         return currentCal.get(Calendar.MONTH);
+      }
+      if (this.offsetAdjustedMonths.isEmpty())
+      {
+         return null;
+      }
+      int currentMonth = currentCal.get(Calendar.MONTH);
+      for (Integer month : this.offsetAdjustedMonths)
+      {
+         if (currentMonth == month)
+         {
+            return currentMonth;
+         }
+         if (month > currentMonth)
+         {
+            return month;
+         }
+      }
+      return this.offsetAdjustedMonths.first();
+   }
+   
+   public Integer getFirstMatch()
+   {
+      if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD)
+      {
+         return Calendar.JANUARY;
+      }
+      if (this.offsetAdjustedMonths.isEmpty())
+      {
+         throw new IllegalStateException("There are no valid seconds for expression: " + this.origValue);
+      }
+      return this.offsetAdjustedMonths.first();
+   }
 }

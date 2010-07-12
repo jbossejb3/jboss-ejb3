@@ -19,43 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.timer.schedule.test;
-
-import junit.framework.Assert;
-
-import org.jboss.ejb3.timer.schedule.value.RangeValue;
-import org.junit.Test;
+package org.jboss.ejb3.timer.schedule.value;
 
 /**
- * RangeValueTestCase
+ * ScheduleValue
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class RangeValueTestCase
+public interface ScheduleValue
 {
 
-   @Test
-   public void testInvalidRange()
-   {
-      String[] invalidRangeValues =
-      {null, "", " ", "0.1", "1d", "1.0", "?", "%", "$", "!", "&", "-", "/", ",", ".", "1-", "1-2-3", "1+2",
-            "**", "*-", "*,1", "1,*", "5/*", "1, 2/2", "---", "-", "--",
-            " -2 -3 -4", "-0", "1--"};
-      for (String invalidRange : invalidRangeValues)
-      {
-         boolean accepts = RangeValue.accepts(invalidRange);
-         Assert.assertFalse("Range value accepted an invalid value: " + invalidRange, accepts);
-
-         try
-         {
-            RangeValue invalidRangeValue = new RangeValue(invalidRange);
-            Assert.fail("Range value did *not* throw IllegalArgumentException for an invalid range: " + invalidRange);
-         }
-         catch (IllegalArgumentException iae)
-         {
-            // expected
-         }
-      }
-   }
+   
 }

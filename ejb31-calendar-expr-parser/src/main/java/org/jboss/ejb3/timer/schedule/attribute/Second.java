@@ -19,15 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.timer.schedule;
+package org.jboss.ejb3.timer.schedule.attribute;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 import javax.ejb.ScheduleExpression;
+
+import org.jboss.ejb3.timer.schedule.value.ScheduleExpressionType;
 
 /**
  * Represents the value of a second constructed out of a {@link ScheduleExpression#getSecond()}
@@ -62,20 +62,6 @@ public class Second extends IntegerBasedExpression
    public static final Integer MIN_SECOND = 0;
 
    /**
-    * A sorted set of valid values for seconds, created out
-    * of a {@link ScheduleExpression#getSecond()} 
-    */
-   private SortedSet<Integer> seconds = new TreeSet<Integer>();
-
-   /**
-    * The type of the expression, from which this {@link Second} was 
-    * constructed.
-    * 
-    * @see ScheduleExpressionType
-    */
-   private ScheduleExpressionType expressionType;
-
-   /**
     * Creates a {@link Second} by parsing the passed {@link String} <code>value</code>
     * <p>
     *   Valid values are of type {@link ScheduleExpressionType#WILDCARD}, {@link ScheduleExpressionType#RANGE},
@@ -91,56 +77,7 @@ public class Second extends IntegerBasedExpression
     */
    public Second(String value)
    {
-      // check the type of value
-      this.expressionType = ScheduleExpressionTypeUtil.getType(value);
-
-      Set<Integer> secs = null;
-      switch (this.expressionType)
-      {
-         case RANGE :
-            RangeValue range = new RangeValue(value);
-            // process the range value and get integer values
-            // out of it
-            secs = this.processRangeValue(range);
-            // add to our sorted set
-            this.seconds.addAll(secs);
-            break;
-
-         case LIST :
-            ListValue list = new ListValue(value);
-            // process the list value and get integer values
-            // out of it
-            secs = this.processListValue(list);
-            // add to our sorted set
-            this.seconds.addAll(secs);
-            break;
-
-         case INCREMENT :
-            IncrementValue incrValue = new IncrementValue(value);
-            // process the increment value and get integer values
-            // out of it
-            secs = this.processIncrement(incrValue);
-            // add to our sorted set
-            this.seconds.addAll(secs);
-            break;
-
-         case SINGLE_VALUE :
-            SingleValue singleValue = new SingleValue(value);
-            // process the single value and get the integer value
-            // out of it
-            Integer sec = this.processSingleValue(singleValue);
-            // add it to our sorted set
-            this.seconds.add(sec);
-            break;
-
-         case WILDCARD :
-            // a wildcard is equivalent to "all possible" values, so 
-            // do nothing
-            break;
-
-         default :
-            throw new IllegalArgumentException("Invalid value for second: " + value);
-      }
+      super(value);
    }
 
    public Calendar getNextSecond(Calendar current)
@@ -149,12 +86,13 @@ public class Second extends IntegerBasedExpression
       next.setTime(current.getTime());
 
       Integer currentSecond = current.get(Calendar.SECOND);
-      if (this.expressionType == ScheduleExpressionType.WILDCARD)
+      if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD)
       {
          return current;
       }
-      Integer nextSecond = seconds.first();
-      for (Integer second : seconds)
+      SortedSet<Integer> eligibleSeconds = this.absoluteValues;
+      Integer nextSecond = eligibleSeconds.first();
+      for (Integer second : this.absoluteValues)
       {
          if (currentSecond.equals(second))
          {
@@ -177,13 +115,42 @@ public class Second extends IntegerBasedExpression
       return next;
    }
    
+   public Integer getNextMatch(Calendar currentCal)
+   {
+      if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD)
+      {
+         return currentCal.get(Calendar.SECOND);
+      }
+      if (this.absoluteValues.isEmpty())
+      {
+         return null;
+      }
+      int currentSecond = currentCal.get(Calendar.SECOND);
+      for (Integer second : this.absoluteValues)
+      {
+         if (currentSecond == second)
+         {
+            return currentSecond;
+         }
+         if (second > currentSecond)
+         {
+            return second;
+         }
+      }
+      return this.absoluteValues.first();
+   }
+
    public int getFirst()
    {
-      if (this.expressionType == ScheduleExpressionType.WILDCARD)
+      if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD)
       {
-         return new GregorianCalendar().get(Calendar.SECOND);
+         return 0;
       }
-      return this.seconds.first();
+      if (this.absoluteValues.isEmpty())
+      {
+         throw new IllegalStateException("There are no valid seconds for expression: " + this.origValue);
+      }
+      return this.absoluteValues.first();
    }
 
    /**
@@ -208,5 +175,27 @@ public class Second extends IntegerBasedExpression
       return MIN_SECOND;
    }
 
-   
+   @Override
+   public boolean isRelativeValue(String value)
+   {
+      // seconds do not support relative values, so always return false
+      return false;
+   }
+
+   @Override
+   protected boolean accepts(ScheduleExpressionType scheduleExprType)
+   {
+      switch (scheduleExprType)
+      {
+         case RANGE :
+         case LIST :
+         case SINGLE_VALUE :
+         case WILDCARD :
+         case INCREMENT :
+            return true;
+         default :
+            return false;
+      }
+   }
+
 }

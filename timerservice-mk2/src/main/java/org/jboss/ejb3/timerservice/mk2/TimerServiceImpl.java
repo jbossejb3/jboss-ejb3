@@ -1,5 +1,5 @@
 /*
- * JBoss, Home of Professional Open Source.
+c * JBoss, Home of Professional Open Source.
  * Copyright 2009, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
@@ -430,7 +430,7 @@ public class TimerServiceImpl implements TimerService
          // was issued for a schedule which is in past (i.e. doesn't have any future timeouts)
          // For ex: through the use of a @Schedule on a method. How should we handle such timers?
          logger.warn("The schedule " + schedule + " doesn't have a timeout in future from now " + new Date());
-         throw new IllegalArgumentException("Invalid schedule expression: " + schedule);
+         throw new IllegalArgumentException("No timeout in future from now " + new Date() + " Invalid schedule expression: " + schedule);
       }
 
       // generate a id for the timer

@@ -19,15 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.timer.schedule;
+package org.jboss.ejb3.timer.schedule.attribute;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 import javax.ejb.ScheduleExpression;
+
+import org.jboss.ejb3.timer.schedule.value.ScheduleExpressionType;
 
 /**
  * Represents in the year value part constructed out of a {@link ScheduleExpression#getYear()}
@@ -59,19 +59,6 @@ public class Year extends IntegerBasedExpression
    // That's the reason we have set it to 1000 here.
    public static final Integer MIN_YEAR = 1000;
 
-   /**
-    * A sorted set of valid values for years, created out
-    * of a {@link ScheduleExpression#getYear()} 
-    */
-   private SortedSet<Integer> years = new TreeSet<Integer>();
-
-   /**
-    * The type of the expression, from which this {@link Year} was 
-    * constructed.
-    * 
-    * @see ScheduleExpressionType
-    */
-   private ScheduleExpressionType expressionType;
 
    /**
     * Creates a {@link Year} by parsing the passed {@link String} <code>value</code>
@@ -87,48 +74,7 @@ public class Year extends IntegerBasedExpression
     */
    public Year(String value)
    {
-      // check the type of value 
-      this.expressionType = ScheduleExpressionTypeUtil.getType(value);
-      Set<Integer> yrs = null;
-      switch (this.expressionType)
-      {
-         case RANGE :
-            RangeValue range = new RangeValue(value);
-            // process the range value to get integer values
-            // out of it
-            yrs = this.processRangeValue(range);
-            // store in our sorted set
-            this.years.addAll(yrs);
-            break;
-
-         case LIST :
-            ListValue list = new ListValue(value);
-            // process the list value and get integer values
-            // out of it
-            yrs = this.processListValue(list);
-            // add it to our sorted set 
-            this.years.addAll(yrs);
-            break;
-
-         case SINGLE_VALUE :
-            SingleValue singleValue = new SingleValue(value);
-            // process the single value and get the integer value
-            // out of it
-            Integer year = this.processSingleValue(singleValue);
-            // add this to our sorted set
-            this.years.add(year);
-            break;
-
-         case WILDCARD :
-            // a wildcard is equivalent to "all possible" values, so 
-            // do nothing
-            break;
-         case INCREMENT :
-            throw new IllegalArgumentException(
-                  "Increment type expression is not allowed for year value. Invalid value: " + value);
-         default :
-            throw new IllegalArgumentException("Invalid value for year: " + value);
-      }
+      super(value);
    }
 
    /**
@@ -155,8 +101,8 @@ public class Year extends IntegerBasedExpression
 
    public Calendar getNextYear(Calendar current)
    {
-      boolean isFeb29 = this.isFeb29(current); 
-      if (this.expressionType == ScheduleExpressionType.WILDCARD)
+      boolean isFeb29 = this.isFeb29(current);
+      if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD)
       {
          if (isFeb29)
          {
@@ -179,8 +125,9 @@ public class Year extends IntegerBasedExpression
 
       Integer currentYear = current.get(Calendar.YEAR);
 
-      Integer nextYear = this.years.first();
-      for (Integer year : this.years)
+      SortedSet<Integer> eligibleYears = this.getEligibleYears();
+      Integer nextYear = eligibleYears.first();
+      for (Integer year : eligibleYears)
       {
          if (currentYear.equals(year))
          {
@@ -188,7 +135,7 @@ public class Year extends IntegerBasedExpression
             {
                continue;
             }
-               
+
             nextYear = currentYear;
             break;
          }
@@ -217,6 +164,35 @@ public class Year extends IntegerBasedExpression
       return next;
    }
 
+   @Override
+   public boolean isRelativeValue(String value)
+   {
+      // year doesn't support relative values, so always return false
+      return false;
+   }
+
+   @Override
+   protected boolean accepts(ScheduleExpressionType scheduleExprType)
+   {
+      switch (scheduleExprType)
+      {
+         case RANGE :
+         case LIST :
+         case SINGLE_VALUE :
+         case WILDCARD :
+            return true;
+         // year doesn't support increment
+         case INCREMENT :
+         default :
+            return false;
+      }
+   }
+   
+   private SortedSet<Integer> getEligibleYears()
+   {
+      return this.absoluteValues;
+   }
+   
    private boolean isFeb29(Calendar cal)
    {
       int date = cal.get(Calendar.DATE);
@@ -243,31 +219,56 @@ public class Year extends IntegerBasedExpression
          return true;
       }
       return false;
-      
+
    }
-   
+
    private boolean isDivisibleBy4(int num)
    {
       return num % 4 == 0;
    }
-   
+
    private boolean isDivisibleBy100(int num)
    {
       return num % 100 == 0;
    }
-   
+
    private boolean isDivisibleBy400(int num)
    {
       return num % 400 == 0;
    }
-   
+
    private int getNextLeapYear(int year)
    {
       while (this.isLeapYear(year) == false)
       {
-         year ++;
+         year++;
       }
       return year;
    }
 
+   
+   public Integer getNextMatch(Calendar currentCal)
+   {
+      if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD)
+      {
+         return currentCal.get(Calendar.YEAR);
+      }
+      if (this.absoluteValues.isEmpty())
+      {
+         return null;
+      }
+      int currentYear = currentCal.get(Calendar.YEAR);
+      for (Integer year : this.absoluteValues)
+      {
+         if (currentYear == year)
+         {
+            return currentYear;
+         }
+         if (year > currentYear)
+         {
+            return year;
+         }
+      }
+      return this.absoluteValues.first();
+   }
 }

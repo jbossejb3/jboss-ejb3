@@ -19,15 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.timer.schedule;
+package org.jboss.ejb3.timer.schedule.attribute;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 import javax.ejb.ScheduleExpression;
+
+import org.jboss.ejb3.timer.schedule.value.ScheduleExpressionType;
 
 /**
  * Represents the value of a minute constructed out of a {@link ScheduleExpression#getMinute()}
@@ -62,20 +62,6 @@ public class Minute extends IntegerBasedExpression
    public static final Integer MIN_MINUTE = 0;
 
    /**
-    * A sorted set of valid values for minutes, created out
-    * of a {@link ScheduleExpression#getMinute()} 
-    */
-   private SortedSet<Integer> minutes = new TreeSet<Integer>();
-
-   /**
-    * The type of the expression, from which this {@link Minute} was 
-    * constructed.
-    * 
-    * @see ScheduleExpressionType
-    */
-   private ScheduleExpressionType expressionType;
-
-   /**
     * Creates a {@link Minute} by parsing the passed {@link String} <code>value</code>
     * <p>
     *   Valid values are of type {@link ScheduleExpressionType#WILDCARD}, {@link ScheduleExpressionType#RANGE},
@@ -90,56 +76,7 @@ public class Minute extends IntegerBasedExpression
     */
    public Minute(String value)
    {
-      // check the type of value
-      this.expressionType = ScheduleExpressionTypeUtil.getType(value);
-
-      Set<Integer> mins = null;
-      switch (this.expressionType)
-      {
-         case RANGE :
-            RangeValue range = new RangeValue(value);
-            // process the range value and get integer values 
-            // out of it
-            mins = this.processRangeValue(range);
-            // add them to our sorted set
-            this.minutes.addAll(mins);
-            break;
-
-         case LIST :
-            ListValue list = new ListValue(value);
-            // process the list value and get integer values
-            // out of it
-            mins = this.processListValue(list);
-            // add them to our sorted set
-            this.minutes.addAll(mins);
-            break;
-
-         case INCREMENT :
-            IncrementValue incrValue = new IncrementValue(value);
-            // process the increment value and get integer values
-            // out of it
-            mins = this.processIncrement(incrValue);
-            // add them to our sorted set
-            this.minutes.addAll(mins);
-            break;
-
-         case SINGLE_VALUE :
-            SingleValue singleValue = new SingleValue(value);
-            // process the single value and get the integer value
-            // out of it
-            Integer minute = this.processSingleValue(singleValue);
-            // add it to our sorted set
-            this.minutes.add(minute);
-            break;
-
-         case WILDCARD :
-            // a wildcard is equivalent to "all possible" values. So
-            // nothing to do here.
-            break;
-
-         default :
-            throw new IllegalArgumentException("Invalid value for minute: " + value);
-      }
+      super(value);
    }
 
    public Calendar getNextMinute(Calendar current)
@@ -148,12 +85,13 @@ public class Minute extends IntegerBasedExpression
       next.setTime(current.getTime());
 
       Integer currentMinute = current.get(Calendar.MINUTE);
-      if (this.expressionType == ScheduleExpressionType.WILDCARD)
+      if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD)
       {
          return current;
       }
-      Integer nextMinute = minutes.first();
-      for (Integer minute : minutes)
+      SortedSet<Integer> eligibleMinutes = this.getEligibleMinutes();
+      Integer nextMinute = eligibleMinutes.first();
+      for (Integer minute : eligibleMinutes)
       {
          if (currentMinute.equals(minute))
          {
@@ -178,11 +116,16 @@ public class Minute extends IntegerBasedExpression
 
    public int getFirst()
    {
-      if (this.expressionType == ScheduleExpressionType.WILDCARD)
+      if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD)
       {
-         return new GregorianCalendar().get(Calendar.MINUTE);
+         return 0;
       }
-      return this.minutes.first();
+      SortedSet<Integer> eligibleMinutes = this.getEligibleMinutes();
+      if (eligibleMinutes.isEmpty())
+      {
+         throw new IllegalStateException("There are no valid minutes for expression: " + this.origValue);
+      }
+      return eligibleMinutes.first();
    }
 
    /**
@@ -206,5 +149,58 @@ public class Minute extends IntegerBasedExpression
    {
       return MIN_MINUTE;
    }
+   
+   @Override
+   public boolean isRelativeValue(String value)
+   {
+      // minute doesn't support relative values, hence
+      // return false always
+      return false;
+   }
+   
+   @Override
+   protected boolean accepts(ScheduleExpressionType scheduleExprType)
+   {
+      switch (scheduleExprType)
+      {
+         case RANGE :
+         case LIST :
+         case SINGLE_VALUE :
+         case WILDCARD :
+         case INCREMENT :
+            return true;
+         default :
+            return false;
+      }
+   }
+   
+   private SortedSet<Integer> getEligibleMinutes()
+   {
+      return this.absoluteValues;
+   }
 
+   public Integer getNextMatch(Calendar currentCal)
+   {
+      if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD)
+      {
+         return currentCal.get(Calendar.MINUTE);
+      }
+      if (this.absoluteValues.isEmpty())
+      {
+         return null;
+      }
+      int currentMinute = currentCal.get(Calendar.MINUTE);
+      for (Integer minute : this.absoluteValues)
+      {
+         if (currentMinute == minute)
+         {
+            return currentMinute;
+         }
+         if (minute > currentMinute)
+         {
+            return minute;
+         }
+      }
+      return this.absoluteValues.first();
+   }
 }

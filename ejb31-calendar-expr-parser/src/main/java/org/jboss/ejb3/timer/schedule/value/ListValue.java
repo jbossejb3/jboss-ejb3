@@ -19,11 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.timer.schedule;
+package org.jboss.ejb3.timer.schedule.value;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.ejb.ScheduleExpression;
@@ -43,7 +42,7 @@ import javax.ejb.ScheduleExpression;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class ListValue
+public class ListValue implements ScheduleValue
 {
 
    /**

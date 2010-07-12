@@ -23,6 +23,9 @@ package org.jboss.ejb3.timer.schedule;
 
 import javax.ejb.ScheduleExpression;
 
+import org.jboss.ejb3.timer.schedule.value.RangeValue;
+import org.jboss.ejb3.timer.schedule.value.ScheduleExpressionType;
+
 
 /**
  * Utility for {@link ScheduleExpression}

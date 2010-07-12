@@ -19,15 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.timer.schedule;
+package org.jboss.ejb3.timer.schedule.attribute;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import javax.ejb.ScheduleExpression;
+
+import org.jboss.ejb3.timer.schedule.value.ScheduleExpressionType;
 
 /**
  * Represents the value of a hour constructed out of a {@link ScheduleExpression#getHour()}
@@ -61,20 +60,6 @@ public class Hour extends IntegerBasedExpression
    public static final Integer MIN_HOUR = 0;
 
    /**
-    * A sorted set of valid values for hours, created out
-    * of a {@link ScheduleExpression#getHour()} 
-    */
-   private SortedSet<Integer> hours = new TreeSet<Integer>();
-
-   /**
-    * The type of the expression, from which this {@link Hour} was 
-    * constructed.
-    * 
-    * @see ScheduleExpressionType
-    */
-   private ScheduleExpressionType expressionType;
-
-   /**
     * 
     * Creates a {@link Hour} by parsing the passed {@link String} <code>value</code>
     * <p>
@@ -90,56 +75,7 @@ public class Hour extends IntegerBasedExpression
     */
    public Hour(String value)
    {
-      // check the type of value
-      this.expressionType = ScheduleExpressionTypeUtil.getType(value);
-
-      Set<Integer> hrs = null;
-      switch (this.expressionType)
-      {
-         case RANGE :
-            RangeValue range = new RangeValue(value);
-            // process the range value and get the integer
-            // values out of it
-            hrs = this.processRangeValue(range);
-            // add those to our sorted set
-            this.hours.addAll(hrs);
-            break;
-
-         case LIST :
-            ListValue list = new ListValue(value);
-            // process the list value and get the integer
-            // values out of it
-            hrs = this.processListValue(list);
-            // add them to our sorted set
-            this.hours.addAll(hrs);
-            break;
-
-         case SINGLE_VALUE :
-            SingleValue singleValue = new SingleValue(value);
-            // process the single value and get the integer value
-            // out of it
-            Integer hour = this.processSingleValue(singleValue);
-            // add it to our sorted set
-            this.hours.add(hour);
-            break;
-
-         case INCREMENT :
-            IncrementValue incrValue = new IncrementValue(value);
-            // process the increment value and get integer values
-            // out of it
-            hrs = this.processIncrement(incrValue);
-            // add them to our sorted set
-            this.hours.addAll(hrs);
-            break;
-
-         case WILDCARD :
-            // a wildcard is equivalent to "all possible" values. So
-            // nothing to do here.
-            break;
-
-         default :
-            throw new IllegalArgumentException("Invalid value for hour: " + value);
-      }
+      super(value);
    }
 
    public Calendar getNextHour(Calendar current)
@@ -150,12 +86,12 @@ public class Hour extends IntegerBasedExpression
       // HOUR_OF_DAY is 24 hour based unlike HOUR which is 12 hour based
       // http://java.sun.com/j2se/1.5.0/docs/api/java/util/Calendar.html#HOUR_OF_DAY
       Integer currentHour = current.get(Calendar.HOUR_OF_DAY);
-      if (this.expressionType == ScheduleExpressionType.WILDCARD)
+      if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD)
       {
          return current;
       }
-      Integer nextHour = hours.first();
-      for (Integer hour : hours)
+      Integer nextHour = this.absoluteValues.first();
+      for (Integer hour : this.absoluteValues)
       {
          if (currentHour.equals(hour))
          {
@@ -182,14 +118,13 @@ public class Hour extends IntegerBasedExpression
 
    public int getFirst()
    {
-      if (this.expressionType == ScheduleExpressionType.WILDCARD)
+      if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD)
       {
-         return new GregorianCalendar().get(Calendar.HOUR_OF_DAY);
+         return 0;
       }
-      return this.hours.first();
+      return this.absoluteValues.first();
    }
 
-   
    /**
     * Returns the maximum allowed value for a {@link Hour}
     * 
@@ -212,4 +147,51 @@ public class Hour extends IntegerBasedExpression
       return MIN_HOUR;
    }
 
+   @Override
+   public boolean isRelativeValue(String value)
+   {
+      // hour doesn't support relative values
+      return false;
+   }
+
+   @Override
+   protected boolean accepts(ScheduleExpressionType scheduleExprType)
+   {
+      switch (scheduleExprType)
+      {
+         case RANGE :
+         case LIST :
+         case SINGLE_VALUE :
+         case WILDCARD :
+         case INCREMENT :
+            return true;
+         default :
+            return false;
+      }
+   }
+   
+   public Integer getNextMatch(Calendar currentCal)
+   {
+      if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD)
+      {
+         return currentCal.get(Calendar.HOUR_OF_DAY);
+      }
+      if (this.absoluteValues.isEmpty())
+      {
+         return null;
+      }
+      int currentHour = currentCal.get(Calendar.HOUR_OF_DAY);
+      for (Integer hour : this.absoluteValues)
+      {
+         if (currentHour == hour)
+         {
+            return currentHour;
+         }
+         if (hour > currentHour)
+         {
+            return hour;
+         }
+      }
+      return this.absoluteValues.first();
+   }
 }

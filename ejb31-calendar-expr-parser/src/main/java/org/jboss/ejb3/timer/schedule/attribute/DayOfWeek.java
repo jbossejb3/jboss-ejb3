@@ -19,15 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.timer.schedule;
+package org.jboss.ejb3.timer.schedule.attribute;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import org.jboss.ejb3.timer.schedule.value.ScheduleExpressionType;
 
 /**
  * DayOfWeek
@@ -35,7 +38,7 @@ import java.util.TreeSet;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class DayOfWeek extends MixedValueTypeExpression
+public class DayOfWeek extends IntegerBasedExpression
 {
 
    public static final Integer MAX_DAY_OF_WEEK = 7;
@@ -46,82 +49,43 @@ public class DayOfWeek extends MixedValueTypeExpression
 
    static
    {
-      DAY_OF_WEEK_ALIAS.put("Sun", 0);
-      DAY_OF_WEEK_ALIAS.put("Mon", 1);
-      DAY_OF_WEEK_ALIAS.put("Tue", 2);
-      DAY_OF_WEEK_ALIAS.put("Wed", 3);
-      DAY_OF_WEEK_ALIAS.put("Thu", 4);
-      DAY_OF_WEEK_ALIAS.put("Fri", 5);
-      DAY_OF_WEEK_ALIAS.put("Sat", 6);
+      DAY_OF_WEEK_ALIAS.put("sun", 0);
+      DAY_OF_WEEK_ALIAS.put("mon", 1);
+      DAY_OF_WEEK_ALIAS.put("tue", 2);
+      DAY_OF_WEEK_ALIAS.put("wed", 3);
+      DAY_OF_WEEK_ALIAS.put("thu", 4);
+      DAY_OF_WEEK_ALIAS.put("fri", 5);
+      DAY_OF_WEEK_ALIAS.put("sat", 6);
    }
 
-   private static final int OFFSET = DAY_OF_WEEK_ALIAS.get("Sun") - Calendar.SUNDAY;
-
-   private SortedSet<Integer> daysOfWeek = new TreeSet<Integer>();
+   private static final int OFFSET = DAY_OF_WEEK_ALIAS.get("sun") - Calendar.SUNDAY;
 
    private SortedSet<Integer> offsetAdjustedDaysOfWeek = new TreeSet<Integer>();
 
-   private ScheduleExpressionType expressionType;
-
    public DayOfWeek(String value)
    {
-      this.expressionType = ScheduleExpressionTypeUtil.getType(value);
-      Set<Integer> days = null;
-      switch (this.expressionType)
-      {
-         case RANGE :
-            RangeValue range = new RangeValue(value);
-            days = this.processRangeValue(range);
-            this.daysOfWeek.addAll(days);
-            break;
-
-         case LIST :
-            ListValue list = new ListValue(value);
-            days = this.processListValue(list);
-            this.daysOfWeek.addAll(days);
-            break;
-
-         case SINGLE_VALUE :
-            SingleValue singleValue = new SingleValue(value);
-            // process the single value and get the integer value
-            // out of it
-            Integer day = this.processSingleValue(singleValue);
-            // add it to our sorted set
-            this.daysOfWeek.add(day);
-            break;
-         case WILDCARD :
-            break;
-         case INCREMENT :
-            throw new IllegalArgumentException(
-                  "Increment type expression is not allowed for day-of-week value. Invalid value: " + value);
-
-      }
-      for (Integer dayOfWeek : this.daysOfWeek)
+      super(value);
+      for (Integer dayOfWeek : this.absoluteValues)
       {
          if (dayOfWeek == 7)
          {
-            this.daysOfWeek.remove(dayOfWeek);
-            this.daysOfWeek.add(new Integer(0));
+            this.absoluteValues.remove(dayOfWeek);
+            this.absoluteValues.add(new Integer(0));
          }
       }
       if (OFFSET != 0)
       {
-         for (Integer dayOfWeek : this.daysOfWeek)
+         for (Integer dayOfWeek : this.absoluteValues)
          {
             this.offsetAdjustedDaysOfWeek.add(dayOfWeek - OFFSET);
          }
       }
       else
       {
-         this.offsetAdjustedDaysOfWeek = this.daysOfWeek;
+         this.offsetAdjustedDaysOfWeek = this.absoluteValues;
       }
    }
 
-   @Override
-   protected Map<String, Integer> getAliases()
-   {
-      return DAY_OF_WEEK_ALIAS;
-   }
 
    @Override
    protected Integer getMaxValue()
@@ -137,7 +101,7 @@ public class DayOfWeek extends MixedValueTypeExpression
 
    public Calendar getNextDayOfWeek(Calendar current)
    {
-      if (this.expressionType == ScheduleExpressionType.WILDCARD)
+      if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD)
       {
          return current;
       }
@@ -181,5 +145,81 @@ public class DayOfWeek extends MixedValueTypeExpression
       return next;
    }
    
-  
+   public int getFirst()
+   {
+      if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD)
+      {
+         return Calendar.SUNDAY;
+      }
+      return this.offsetAdjustedDaysOfWeek.first();
+   }
+   
+   
+   public static Set<String> getDaysOfWeek()
+   {
+      return DAY_OF_WEEK_ALIAS.keySet();
+   }
+   
+   @Override
+   protected boolean accepts(ScheduleExpressionType scheduleExprType)
+   {
+      switch (scheduleExprType)
+      {
+         case RANGE :
+         case LIST :
+         case SINGLE_VALUE :
+         case WILDCARD :
+            return true;
+         // day-of-week doesn't support increment
+         case INCREMENT :
+         default :
+            return false;
+      }
+   }
+   
+   @Override
+   public boolean isRelativeValue(String value)
+   {
+      // day-of-week doesn't support relative values
+      return false;
+   }
+
+   @Override
+   protected Integer parseInt(String alias)
+   {
+      try
+      {
+         return super.parseInt(alias);
+      }
+      catch (NumberFormatException nfe)
+      {
+         if (DAY_OF_WEEK_ALIAS != null)
+         {
+            String lowerCaseAlias = alias.toLowerCase(Locale.ENGLISH);
+            return DAY_OF_WEEK_ALIAS.get(lowerCaseAlias);
+         }
+      }
+      return null;
+   }
+   
+   public Integer getNextMatch(Calendar currentCal)
+   {
+      if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD)
+      {
+         return currentCal.get(Calendar.DAY_OF_WEEK);
+      }
+      int currentDayOfWeek = currentCal.get(Calendar.DAY_OF_WEEK);
+      for (Integer dayOfWeek : this.offsetAdjustedDaysOfWeek)
+      {
+         if (currentDayOfWeek == dayOfWeek)
+         {
+            return currentDayOfWeek;
+         }
+         if (dayOfWeek > currentDayOfWeek)
+         {
+            return dayOfWeek;
+         }
+      }
+      return this.offsetAdjustedDaysOfWeek.first();
+   }
 }
