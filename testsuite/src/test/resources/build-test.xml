@@ -43,19 +43,18 @@
 			<arg value="${location.timerservice.mk2.package}"/>
 		</java>
 
+	    <!-- Not needed at present 
 		<echo>Installing timerservice deployer package</echo>
 		<java classname="org.jboss.ejb3.packagemanager.main.Main" classpathref="package.manager.classpath" fork="true">
 
-			<!-- package manager home -->
 			<arg value="-p" />
 			<arg value="${packagemanager.home}" />
-			<!-- JBoss Home -->
 			<arg value="-s" />
 			<arg value="${JBOSS_HOME}" />
 			<arg value="-u" />
 			<arg value="${location.timerservice.deployer.package}" />
 		</java>
-
+		-->
 
 	</target>
 

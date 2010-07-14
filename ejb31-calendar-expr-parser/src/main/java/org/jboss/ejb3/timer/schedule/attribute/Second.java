@@ -22,8 +22,6 @@
 package org.jboss.ejb3.timer.schedule.attribute;
 
 import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.SortedSet;
 
 import javax.ejb.ScheduleExpression;
 
@@ -80,40 +78,6 @@ public class Second extends IntegerBasedExpression
       super(value);
    }
 
-   public Calendar getNextSecond(Calendar current)
-   {
-      Calendar next = new GregorianCalendar(current.getTimeZone());
-      next.setTime(current.getTime());
-
-      Integer currentSecond = current.get(Calendar.SECOND);
-      if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD)
-      {
-         return current;
-      }
-      SortedSet<Integer> eligibleSeconds = this.absoluteValues;
-      Integer nextSecond = eligibleSeconds.first();
-      for (Integer second : this.absoluteValues)
-      {
-         if (currentSecond.equals(second))
-         {
-            nextSecond = currentSecond;
-            break;
-         }
-         if (second.intValue() > currentSecond.intValue())
-         {
-            nextSecond = second;
-            break;
-         }
-      }
-      if (nextSecond < currentSecond)
-      {
-         // advance to next minute
-         next.add(Calendar.MINUTE, 1);
-      }
-      next.set(Calendar.SECOND, nextSecond);
-
-      return next;
-   }
    
    public Integer getNextMatch(Calendar currentCal)
    {

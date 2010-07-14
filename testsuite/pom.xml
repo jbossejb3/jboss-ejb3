@@ -132,7 +132,7 @@
 									<type>jar</type>
 									<outputDirectory>${project.build.directory}/dependencies/packages</outputDirectory>
 								</artifactItem>
-
+                                <!-- 
 								<artifactItem>
 									<groupId>org.jboss.ejb3</groupId>
 									<artifactId>jboss-ejb3-timerservice-deployer</artifactId>
@@ -140,7 +140,7 @@
 									<type>jar</type>
 									<outputDirectory>${project.build.directory}/dependencies/packages</outputDirectory>
 								</artifactItem>
-								
+								-->
 
 								<artifactItem>
 									<groupId>junit</groupId>

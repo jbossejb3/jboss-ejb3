@@ -23,6 +23,8 @@ package org.jboss.ejb3.timer.schedule.value;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.ejb.ScheduleExpression;
 
@@ -49,6 +51,23 @@ public class RangeValue implements ScheduleValue
     * represents a {@link RangeValue} 
     */
    public static final String RANGE_SEPARATOR = "-";
+
+   private static final Pattern RANGE_PATTERN;
+
+   static
+   {
+      final String POSITIVE_OR_NEGATIVE_INTEGER = "\\s*-?\\s*\\d+\\s*";
+      final String WORD = "\\s*([1-5][a-zA-Z]{2})?\\s*[a-zA-Z]+\\s*[a-zA-Z]*\\s*";
+      final String OR = "|";
+      final String OPEN_GROUP = "(";
+      final String CLOSE_GROUP = ")";
+
+      String rangeRegex = OPEN_GROUP + POSITIVE_OR_NEGATIVE_INTEGER + OR + WORD + CLOSE_GROUP + RANGE_SEPARATOR
+      + OPEN_GROUP + POSITIVE_OR_NEGATIVE_INTEGER + OR + WORD + CLOSE_GROUP;
+      
+      RANGE_PATTERN = Pattern.compile(rangeRegex);
+      
+   }
 
    /**
     * The start value of the range
@@ -79,8 +98,8 @@ public class RangeValue implements ScheduleValue
          throw new IllegalArgumentException("Invalid range value: " + range);
       }
 
-      this.rangeStart = values[0];
-      this.rangeEnd = values[1];
+      this.rangeStart = values[0].trim();
+      this.rangeEnd = values[1].trim();
    }
 
    /**
@@ -103,81 +122,32 @@ public class RangeValue implements ScheduleValue
 
    public static boolean accepts(String value)
    {
-      String[] rangeValues = getRangeValues(value);
-      if (rangeValues == null || rangeValues.length != 2)
+      if (value == null)
       {
          return false;
       }
-      return true;
+      Matcher matcher = RANGE_PATTERN.matcher(value);
+      return matcher.matches();
    }
-   
-   private static String[] getRangeValues(String val)
+
+   private String[] getRangeValues(String val)
    {
       if (val == null)
       {
          return null;
       }
-      String trimmedVal = val.trim();
-      int indexOfRangeSeparator = getIndexOfRangeSeparator(trimmedVal);
-      if (indexOfRangeSeparator == -1)
+      Matcher matcher = RANGE_PATTERN.matcher(val);
+      if (!matcher.matches())
       {
          return null;
       }
-      String[] leftAndRightValues = new String[2];
-      if (indexOfRangeSeparator == 0 || indexOfRangeSeparator == trimmedVal.length() - 1)
-      {
-         return null;
-      }
-      String leftSideValue = trimmedVal.substring(0, indexOfRangeSeparator);
-      leftSideValue = leftSideValue.trim();
-      if (leftSideValue.isEmpty() || leftSideValue.contains(RANGE_SEPARATOR))
-      {
-         return null;
-      }
-      String rightSideValue = trimmedVal.substring(indexOfRangeSeparator + 1, trimmedVal.length());
-      rightSideValue = rightSideValue.trim();
-      if (rightSideValue.isEmpty() || rightSideValue.contains(RANGE_SEPARATOR))
-      {
-         return null;
-      }
-      leftAndRightValues[0] = leftSideValue;
-      leftAndRightValues[1] = rightSideValue;
-      return leftAndRightValues;
-
+      String rangeVals[] = new String[2];
+      rangeVals[0] = matcher.group(1);
+      rangeVals[1] = matcher.group(3);
+      
+      return rangeVals;
    }
 
-   private static int getIndexOfRangeSeparator(final String val)
-   {
-      if (val == null || val.isEmpty() || val.contains("-") == false)
-      {
-         return -1;
-      }
-      List<Integer> indexesOfRangeSeparator = new ArrayList<Integer>();
-      int currentIndex = 0;
-      for (int i = 0; i < val.length(); i = currentIndex)
-      {
-         int indexOfRangeSeparator = val.indexOf(RANGE_SEPARATOR, currentIndex);
-         if (indexOfRangeSeparator == -1)
-         {
-            break;
-         }
-         indexesOfRangeSeparator.add(indexOfRangeSeparator);
-         currentIndex = indexOfRangeSeparator + 1;
-      }
-      switch (indexesOfRangeSeparator.size())
-      {
-         case 0 :
-            return -1;
-         case 1 :
-            return indexesOfRangeSeparator.get(0);
-         case 2 :
-         case 3 :
-            return indexesOfRangeSeparator.get(1);
-         default :
-            return -1;
-      }
-   }
-   
    public String asString()
    {
       return this.rangeStart + RANGE_SEPARATOR + this.rangeStart;

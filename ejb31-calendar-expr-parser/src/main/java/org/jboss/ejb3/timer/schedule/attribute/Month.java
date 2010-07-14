@@ -22,7 +22,6 @@
 package org.jboss.ejb3.timer.schedule.attribute;
 
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -95,107 +94,11 @@ public class Month extends IntegerBasedExpression
       return MIN_MONTH;
    }
 
-   public Calendar getNextMonth(Calendar current)
-   {
-      if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD)
-      {
-         return current;
-      }
-
-      Calendar next = new GregorianCalendar(current.getTimeZone());
-      next.setTime(current.getTime());
-
-      // Calendar.JANUARY starts with 0 whereas our daysOfMonth is 1 based.
-      // So increment the currentMonth by 1 to adjust the offset
-      Integer currentMonth = current.get(Calendar.MONTH);
-      Integer nextMonth = this.offsetAdjustedMonths.first();
-      for (Integer month : this.offsetAdjustedMonths)
-      {
-         if (currentMonth.equals(month)
-               && this.hasDateForMonth(next.get(Calendar.DAY_OF_MONTH), month, next.get(Calendar.YEAR)))
-         {
-            nextMonth = currentMonth;
-         }
-         if (month.intValue() > currentMonth.intValue()
-               && this.hasDateForMonth(next.get(Calendar.DAY_OF_MONTH), month, next.get(Calendar.YEAR)))
-         {
-            nextMonth = month;
-            break;
-         }
-      }
-      if (nextMonth < currentMonth)
-      {
-         // advance to next year. But before doing that, make sure that the 
-         // month can handle the date value
-
-         int date = next.get(Calendar.DAY_OF_MONTH);
-         int nextYear = current.get(Calendar.YEAR) + 1;
-         if (nextMonth == Calendar.FEBRUARY && date == 29)
-         {
-            // special case
-            for (int i = 0; i < 5; i++)
-            {
-               if (this.hasDateForMonth(date, nextMonth, nextYear))
-               {
-                  next.set(Calendar.MONTH, nextMonth);
-                  next.set(Calendar.YEAR, nextYear);
-                  return next;
-               }
-               nextYear++;
-            }
-            return null;
-         }
-         else
-         {
-            if (hasDateForMonth(date, nextMonth, nextYear))
-            {
-               next.set(Calendar.MONTH, nextMonth);
-               next.set(Calendar.YEAR, nextYear);
-               return next;
-
-            }
-            return null;
-         }
-         //         int nextYear = current.get(Calendar.YEAR) + 1;
-         //         for (int i = 0; i < 5; i++)
-         //         {
-         //            if (this.hasDateForMonth(next.get(Calendar.DAY_OF_MONTH), nextMonth, nextYear))
-         //            {
-         //               next.set(Calendar.MONTH, nextMonth);
-         //               next.set(Calendar.YEAR, nextYear);
-         //               return next;
-         //            }
-         //            nextYear++;
-         //         }
-         //         return null;
-      }
-      else
-      {
-         next.set(Calendar.MONTH, nextMonth);
-         return next;
-      }
-   }
-
    @Override
    public boolean isRelativeValue(String value)
    {
       // month doesn't support relative values, so always return false
       return false;
-   }
-
-   private boolean hasDateForMonth(int date, int month, int year)
-   {
-      Calendar cal = new GregorianCalendar();
-      cal.set(Calendar.YEAR, year);
-      cal.set(Calendar.MONTH, month);
-      cal.set(Calendar.DAY_OF_MONTH, 1);
-      int maximumPossibleDateForTheMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
-      if (date > maximumPossibleDateForTheMonth)
-      {
-         return false;
-      }
-      return true;
-
    }
 
    @Override

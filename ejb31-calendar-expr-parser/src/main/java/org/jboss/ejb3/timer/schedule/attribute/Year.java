@@ -22,8 +22,6 @@
 package org.jboss.ejb3.timer.schedule.attribute;
 
 import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.SortedSet;
 
 import javax.ejb.ScheduleExpression;
 
@@ -99,71 +97,6 @@ public class Year extends IntegerBasedExpression
       return MIN_YEAR;
    }
 
-   public Calendar getNextYear(Calendar current)
-   {
-      boolean isFeb29 = this.isFeb29(current);
-      if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD)
-      {
-         if (isFeb29)
-         {
-            if (isLeapYear(current.get(Calendar.YEAR)))
-            {
-               return current;
-            }
-            else
-            {
-               int nextLeapYear = this.getNextLeapYear(current.get(Calendar.YEAR));
-               current.set(Calendar.YEAR, nextLeapYear);
-               return current;
-            }
-         }
-         return current;
-      }
-
-      Calendar next = new GregorianCalendar(current.getTimeZone());
-      next.setTime(current.getTime());
-
-      Integer currentYear = current.get(Calendar.YEAR);
-
-      SortedSet<Integer> eligibleYears = this.getEligibleYears();
-      Integer nextYear = eligibleYears.first();
-      for (Integer year : eligibleYears)
-      {
-         if (currentYear.equals(year))
-         {
-            if (isFeb29 && this.isLeapYear(year) == false)
-            {
-               continue;
-            }
-
-            nextYear = currentYear;
-            break;
-         }
-         if (year.intValue() > currentYear.intValue())
-         {
-            if (isFeb29 && this.isLeapYear(year) == false)
-            {
-               continue;
-            }
-
-            nextYear = year;
-            break;
-         }
-      }
-      if (nextYear < currentYear)
-      {
-         // no more years
-         return null;
-      }
-      if (isFeb29 && this.isLeapYear(nextYear) == false)
-      {
-         return null;
-      }
-      next.set(Calendar.YEAR, nextYear);
-
-      return next;
-   }
-
    @Override
    public boolean isRelativeValue(String value)
    {
@@ -187,65 +120,6 @@ public class Year extends IntegerBasedExpression
             return false;
       }
    }
-   
-   private SortedSet<Integer> getEligibleYears()
-   {
-      return this.absoluteValues;
-   }
-   
-   private boolean isFeb29(Calendar cal)
-   {
-      int date = cal.get(Calendar.DATE);
-      int month = cal.get(Calendar.MONTH);
-      if (date == 29 && month == Calendar.FEBRUARY)
-      {
-         return true;
-      }
-      return false;
-   }
-
-   private boolean isLeapYear(int year)
-   {
-      if (isDivisibleBy4(year))
-      {
-         if (isDivisibleBy100(year))
-         {
-            if (isDivisibleBy400(year))
-            {
-               return true;
-            }
-            return false;
-         }
-         return true;
-      }
-      return false;
-
-   }
-
-   private boolean isDivisibleBy4(int num)
-   {
-      return num % 4 == 0;
-   }
-
-   private boolean isDivisibleBy100(int num)
-   {
-      return num % 100 == 0;
-   }
-
-   private boolean isDivisibleBy400(int num)
-   {
-      return num % 400 == 0;
-   }
-
-   private int getNextLeapYear(int year)
-   {
-      while (this.isLeapYear(year) == false)
-      {
-         year++;
-      }
-      return year;
-   }
-
    
    public Integer getNextMatch(Calendar currentCal)
    {

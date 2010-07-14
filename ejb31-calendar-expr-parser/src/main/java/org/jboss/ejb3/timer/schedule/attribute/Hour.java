@@ -22,7 +22,6 @@
 package org.jboss.ejb3.timer.schedule.attribute;
 
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 
 import javax.ejb.ScheduleExpression;
 
@@ -76,44 +75,6 @@ public class Hour extends IntegerBasedExpression
    public Hour(String value)
    {
       super(value);
-   }
-
-   public Calendar getNextHour(Calendar current)
-   {
-      Calendar next = new GregorianCalendar(current.getTimeZone());
-      next.setTime(current.getTime());
-
-      // HOUR_OF_DAY is 24 hour based unlike HOUR which is 12 hour based
-      // http://java.sun.com/j2se/1.5.0/docs/api/java/util/Calendar.html#HOUR_OF_DAY
-      Integer currentHour = current.get(Calendar.HOUR_OF_DAY);
-      if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD)
-      {
-         return current;
-      }
-      Integer nextHour = this.absoluteValues.first();
-      for (Integer hour : this.absoluteValues)
-      {
-         if (currentHour.equals(hour))
-         {
-            nextHour = currentHour;
-            break;
-         }
-         if (hour.intValue() > currentHour.intValue())
-         {
-            nextHour = hour;
-            break;
-         }
-      }
-      if (nextHour < currentHour)
-      {
-         // advance to next day
-         next.add(Calendar.DATE, 1);
-      }
-      // HOUR_OF_DAY is 24 hour based unlike HOUR which is 12 hour based
-      // http://java.sun.com/j2se/1.5.0/docs/api/java/util/Calendar.html#HOUR_OF_DAY
-      next.set(Calendar.HOUR_OF_DAY, nextHour);
-
-      return next;
    }
 
    public int getFirst()

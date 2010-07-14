@@ -22,7 +22,6 @@
 package org.jboss.ejb3.timer.schedule.attribute;
 
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.SortedSet;
 
 import javax.ejb.ScheduleExpression;
@@ -77,41 +76,6 @@ public class Minute extends IntegerBasedExpression
    public Minute(String value)
    {
       super(value);
-   }
-
-   public Calendar getNextMinute(Calendar current)
-   {
-      Calendar next = new GregorianCalendar(current.getTimeZone());
-      next.setTime(current.getTime());
-
-      Integer currentMinute = current.get(Calendar.MINUTE);
-      if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD)
-      {
-         return current;
-      }
-      SortedSet<Integer> eligibleMinutes = this.getEligibleMinutes();
-      Integer nextMinute = eligibleMinutes.first();
-      for (Integer minute : eligibleMinutes)
-      {
-         if (currentMinute.equals(minute))
-         {
-            nextMinute = currentMinute;
-            break;
-         }
-         if (minute.intValue() > currentMinute.intValue())
-         {
-            nextMinute = minute;
-            break;
-         }
-      }
-      if (nextMinute < currentMinute)
-      {
-         // advance to next hour
-         next.add(Calendar.HOUR, 1);
-      }
-      next.set(Calendar.MINUTE, nextMinute);
-
-      return next;
    }
 
    public int getFirst()

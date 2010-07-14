@@ -39,9 +39,8 @@ public class RangeValueTestCase
    public void testInvalidRange()
    {
       String[] invalidRangeValues =
-      {null, "", " ", "0.1", "1d", "1.0", "?", "%", "$", "!", "&", "-", "/", ",", ".", "1-", "1-2-3", "1+2",
-            "**", "*-", "*,1", "1,*", "5/*", "1, 2/2", "---", "-", "--",
-            " -2 -3 -4", "-0", "1--"};
+      {null, "", " ", "0.1", "1d", "1.0", "?", "%", "$", "!", "&", "-", "/", ",", ".", "1-", "1-2-3", "1+2", "**",
+            "*-", "*,1", "1,*", "5/*", "1, 2/2", "---", "-", "--", " -2 -3 -4", "-0", "1--"};
       for (String invalidRange : invalidRangeValues)
       {
          boolean accepts = RangeValue.accepts(invalidRange);
@@ -56,6 +55,19 @@ public class RangeValueTestCase
          {
             // expected
          }
+      }
+   }
+
+   @Test
+   public void testValidRange()
+   {
+      String[] validRanges =
+      {"1-8", "-7--1", "7--1", "1st Fri-1st Mon"};
+      for (String validRange : validRanges)
+      {
+         boolean accepts = RangeValue.accepts(validRange);
+         Assert.assertTrue("Valid range value wasn't accepted: " + validRange, accepts);
+         RangeValue validRangeValue = new RangeValue(validRange);
       }
    }
 }

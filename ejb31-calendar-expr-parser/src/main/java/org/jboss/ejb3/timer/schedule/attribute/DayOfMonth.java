@@ -22,7 +22,6 @@
 package org.jboss.ejb3.timer.schedule.attribute;
 
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
@@ -34,7 +33,7 @@ import java.util.regex.Pattern;
 
 import javax.ejb.ScheduleExpression;
 
-import org.jboss.ejb3.timer.schedule.ScheduleExpressionCalendar;
+import org.jboss.ejb3.timer.schedule.util.CalendarUtil;
 import org.jboss.ejb3.timer.schedule.value.RangeValue;
 import org.jboss.ejb3.timer.schedule.value.ScheduleExpressionType;
 import org.jboss.ejb3.timer.schedule.value.ScheduleValue;
@@ -116,6 +115,8 @@ public class DayOfMonth extends IntegerBasedExpression
 
    private static final Set<String> ORDINALS = new HashSet<String>();
 
+   private static final Map<String, Integer> ORDINAL_TO_WEEK_NUMBER_MAPPING = new HashMap<String, Integer>();
+   
    static
    {
       ORDINALS.add("1st");
@@ -123,7 +124,17 @@ public class DayOfMonth extends IntegerBasedExpression
       ORDINALS.add("3rd");
       ORDINALS.add("4th");
       ORDINALS.add("5th");
+      ORDINALS.add("last");
+      
+      ORDINAL_TO_WEEK_NUMBER_MAPPING.put("1st", 1);
+      ORDINAL_TO_WEEK_NUMBER_MAPPING.put("2nd", 2);
+      ORDINAL_TO_WEEK_NUMBER_MAPPING.put("3rd", 3);
+      ORDINAL_TO_WEEK_NUMBER_MAPPING.put("4th", 4);
+      ORDINAL_TO_WEEK_NUMBER_MAPPING.put("5th", 5);
+      
    }
+   
+   
 
    /**
     * Creates a {@link DayOfMonth} by parsing the passed {@link String} <code>value</code>
@@ -162,50 +173,6 @@ public class DayOfMonth extends IntegerBasedExpression
    protected Integer getMinValue()
    {
       return MIN_DAY_OF_MONTH;
-   }
-
-   public Calendar getNextDayOfMonth(Calendar current)
-   {
-      if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD)
-      {
-         return current;
-      }
-
-      Calendar next = new ScheduleExpressionCalendar(current.getTimeZone());
-      next.setTime(current.getTime());
-      next.setFirstDayOfWeek(current.getFirstDayOfWeek());
-
-      Integer currentDayOfMonth = current.get(Calendar.DAY_OF_MONTH);
-
-      Integer nextDayOfMonth = this.getEligibleDaysOfMonth(next).first();
-      for (Integer dayOfMonth : this.getEligibleDaysOfMonth(next))
-      {
-         if (currentDayOfMonth.equals(dayOfMonth))
-         {
-            nextDayOfMonth = currentDayOfMonth;
-            break;
-         }
-         if (dayOfMonth.intValue() > currentDayOfMonth.intValue())
-         {
-            nextDayOfMonth = dayOfMonth;
-            break;
-         }
-      }
-      if (nextDayOfMonth < currentDayOfMonth)
-      {
-         // advance to next month
-         next.add(Calendar.MONTH, 1);
-      }
-      int maximumPossibleDateForTheMonth = next.getActualMaximum(Calendar.DAY_OF_MONTH);
-      while (nextDayOfMonth > maximumPossibleDateForTheMonth)
-      {
-         //
-         next.add(Calendar.MONTH, 1);
-         maximumPossibleDateForTheMonth = next.getActualMaximum(Calendar.DAY_OF_MONTH);
-      }
-      next.set(Calendar.DAY_OF_MONTH, nextDayOfMonth);
-
-      return next;
    }
 
    public Integer getNextMatch(Calendar currentCal)
@@ -291,6 +258,10 @@ public class DayOfMonth extends IntegerBasedExpression
             {
                dayOfMonthEnd = this.getAbsoluteDayOfMonth(cal, end);
             }
+            else
+            {
+               dayOfMonthEnd = this.parseInt(end);
+            }
             // validations
             this.assertValid(dayOfMonthStart);
             this.assertValid(dayOfMonthEnd);
@@ -339,33 +310,46 @@ public class DayOfMonth extends IntegerBasedExpression
       String trimmedRelativeDayOfMonth = relativeDayOfMonth.trim();
       if (trimmedRelativeDayOfMonth.equalsIgnoreCase("last"))
       {
-         int lastDayOfCurrentMonth = this.getMaximumDayOfMonth(cal);
+         int lastDayOfCurrentMonth = CalendarUtil.getLastDateOfMonth(cal);
          return lastDayOfCurrentMonth;
       }
       if (this.isValidNegativeDayOfMonth(trimmedRelativeDayOfMonth))
       {
          Integer negativeRelativeDayOfMonth = Integer.parseInt(trimmedRelativeDayOfMonth);
-         int lastDayOfCurrentMonth = this.getMaximumDayOfMonth(cal);
+         int lastDayOfCurrentMonth = CalendarUtil.getLastDateOfMonth(cal);
          return lastDayOfCurrentMonth + negativeRelativeDayOfMonth;
       }
       if (this.isDayOfWeekBased(trimmedRelativeDayOfMonth))
       {
 
-         //TODO: Implement this
-         logger
-               .warn("Relative day-of-month not fully implemented. Unexpected behaviour might be observed for values like \"1st Sun\", \"3rd Wed\" and values of similar form  ");
-         return 1;
+         String[] parts = trimmedRelativeDayOfMonth.split("\\s+");
+         String ordinal = parts[0];
+         String day = parts[1];
+         int dayOfWeek = DAY_OF_MONTH_ALIAS.get(day.toLowerCase(Locale.ENGLISH));
+         
+         Integer date = null;
+         if (ordinal.equalsIgnoreCase("last"))
+         {
+            date = CalendarUtil.getDateOfLastDayOfWeekInMonth(cal, dayOfWeek);
+         }
+         else
+         {
+            int weekNumber = ORDINAL_TO_WEEK_NUMBER_MAPPING.get(ordinal.toLowerCase(Locale.ENGLISH));
+            date = CalendarUtil.getNthDayOfMonth(cal, weekNumber, dayOfWeek);
+         }
+         
+         // TODO: Rethink about this. The reason why we have this currently is to handle cases like:
+         // 5th Wed which may not be valid for all months (i.e. all months do not have 5 weeks). In such
+         // cases we set the date to last date of the month. 
+         // This needs to be thought about a bit more in detail, to understand it's impact on other scenarios.
+         if (date == null)
+         {
+            date = CalendarUtil.getLastDateOfMonth(cal);
+         }
+         
+         return date;
       }
       throw new IllegalArgumentException(relativeDayOfMonth + " is not a relative value");
-   }
-
-   private int getMaximumDayOfMonth(Calendar cal)
-   {
-      Calendar tmpCal = new GregorianCalendar(cal.getTimeZone());
-      tmpCal.set(Calendar.YEAR, cal.get(Calendar.YEAR));
-      tmpCal.set(Calendar.MONTH, cal.get(Calendar.MONTH));
-      tmpCal.set(Calendar.DAY_OF_MONTH, 1);
-      return tmpCal.getActualMaximum(Calendar.DAY_OF_MONTH);
    }
 
    private boolean isValidNegativeDayOfMonth(String dayOfMonth)
@@ -412,7 +396,7 @@ public class DayOfMonth extends IntegerBasedExpression
          return false;
       }
       String lowerCaseDayOfWeek = dayOfWeek.toLowerCase(Locale.ENGLISH);
-      if (DAY_OF_MONTH_ALIAS.keySet().contains(lowerCaseDayOfWeek) == false)
+      if (DAY_OF_MONTH_ALIAS.containsKey(lowerCaseDayOfWeek) == false)
       {
          return false;
       }
@@ -462,7 +446,7 @@ public class DayOfMonth extends IntegerBasedExpression
    {
       if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD)
       {
-         return 1;
+         return Calendar.SUNDAY;
       }
       SortedSet<Integer> eligibleDaysOfMonth = this.getEligibleDaysOfMonth(cal);
       if (eligibleDaysOfMonth.isEmpty())

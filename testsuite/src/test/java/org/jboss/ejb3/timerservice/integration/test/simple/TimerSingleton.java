@@ -61,11 +61,7 @@ public class TimerSingleton implements TimerUtil
    @Override
    public void createTimer(Date firstExpiration, long interval, int maxTimeouts)
    {
-      ScheduleExpression expr = new ScheduleExpression();
-      expr.second("*/5");
-      expr.minute("*");
-      expr.hour("*");
-      this.timerService.createCalendarTimer(expr, new TimerConfig());
+      this.timerService.createTimer(firstExpiration, interval, maxTimeouts);
     
    }
    
@@ -73,11 +69,6 @@ public class TimerSingleton implements TimerUtil
    private void timeout(Timer timer)
    {
       logger.info("Timeout method called for timer " + timer + " on bean " + this + " at " + new Date());
-      logger.info("Timer service is " + this.timerService.toString());
-      if (true)
-      {
-         throw new NullPointerException();
-      }
       this.timeoutTracker.trackTimeout(timer);
       int numTimeouts = timeoutTracker.getTimeoutCount();
       Integer maxTimeouts = (Integer) timer.getInfo();

@@ -22,7 +22,6 @@
 package org.jboss.ejb3.timer.schedule.attribute;
 
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -99,51 +98,6 @@ public class DayOfWeek extends IntegerBasedExpression
       return MIN_DAY_OF_WEEK;
    }
 
-   public Calendar getNextDayOfWeek(Calendar current)
-   {
-      if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD)
-      {
-         return current;
-      }
-
-      Calendar next = new GregorianCalendar(current.getTimeZone());
-      next.setTime(current.getTime());
-      next.setFirstDayOfWeek(current.getFirstDayOfWeek());
-
-      Integer currentDayOfWeek = current.get(Calendar.DAY_OF_WEEK);
-
-      Integer nextDayOfWeek = this.offsetAdjustedDaysOfWeek.first();
-      for (Integer dayOfWeek : this.offsetAdjustedDaysOfWeek)
-      {
-         if (currentDayOfWeek.equals(dayOfWeek))
-         {
-            nextDayOfWeek = currentDayOfWeek;
-            break;
-         }
-         if (dayOfWeek.intValue() > currentDayOfWeek.intValue())
-         {
-            nextDayOfWeek = dayOfWeek;
-            break;
-         }
-      }
-      if (nextDayOfWeek < currentDayOfWeek)
-      {
-         // advance to next week
-         next.add(Calendar.WEEK_OF_MONTH, 1);
-      }
-      int maximumPossibleDateForTheMonth = next.getActualMaximum(Calendar.DAY_OF_MONTH);
-      int date = next.get(Calendar.DAY_OF_MONTH);
-      while (date > maximumPossibleDateForTheMonth)
-      {
-         //
-         next.add(Calendar.MONTH, 1);
-         maximumPossibleDateForTheMonth = next.getActualMaximum(Calendar.DAY_OF_MONTH);
-      }
-
-      next.set(Calendar.DAY_OF_WEEK, nextDayOfWeek);
-
-      return next;
-   }
    
    public int getFirst()
    {
