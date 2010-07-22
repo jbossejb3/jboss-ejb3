@@ -36,7 +36,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.ejb.EJBException;
 import javax.ejb.ScheduleExpression;
@@ -60,6 +62,7 @@ import org.jboss.ejb3.timerservice.extension.TimerService;
 import org.jboss.ejb3.timerservice.mk2.persistence.CalendarTimerEntity;
 import org.jboss.ejb3.timerservice.mk2.persistence.TimeoutMethod;
 import org.jboss.ejb3.timerservice.mk2.persistence.TimerEntity;
+import org.jboss.ejb3.timerservice.mk2.task.TimerTask;
 import org.jboss.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.ejb3.timerservice.spi.TimerServiceInvocationContext;
 import org.jboss.logging.Logger;
@@ -107,6 +110,11 @@ public class TimerServiceImpl implements TimerService
    private Map<TimerHandle, TimerImpl> persistentWaitingOnTxCompletionTimers = new HashMap<TimerHandle, TimerImpl>();
 
    private ThreadLocal<EntityManager> transactionScopedEntityManager = new ThreadLocal<EntityManager>();
+   
+   /**
+    * Holds the {@link Future} of each of the timer tasks that have been scheduled
+    */
+   private Map<TimerHandle, Future<?>> scheduledTimerFutures = new HashMap<TimerHandle, Future<?>>();
 
    /**
     * Creates a {@link TimerServiceImpl}
@@ -852,6 +860,61 @@ public class TimerServiceImpl implements TimerService
       }
       // not an lifecycle callback
       return false;
+   }
+   
+   /**
+    * Creates and schedules a {@link TimerTask} for the next timeout of the passed <code>timer</code>
+    */
+   protected void scheduleTimeout(TimerImpl timer)
+   {
+      Date nextExpiration = timer.getNextExpiration();
+      if (nextExpiration == null)
+      {
+         logger.info("Next expiration is null. No tasks will be scheduled for timer " + timer);
+         return;
+      }
+      // create the timer task
+      Runnable timerTask = timer.getTimerTask();
+      // find out how long is it away from now
+      long delay = nextExpiration.getTime() - System.currentTimeMillis();
+      // if in past, then trigger immediately
+      if (delay < 0)
+      {
+         delay = 0;
+      }
+      long intervalDuration = timer.getInterval();
+      if (intervalDuration > 0)
+      {
+         logger.debug("Scheduling timer " + timer + " at fixed rate, starting at " + delay
+               + " milli seconds from now with repeated interval=" + intervalDuration);
+         // schedule the task
+         Future<?> future = this.executor.scheduleAtFixedRate(timerTask, delay, intervalDuration, TimeUnit.MILLISECONDS);
+         // maintain it in timerservice for future use (like cancellation)
+         this.scheduledTimerFutures.put(timer.getTimerHandle(), future);
+      }
+      else
+      {
+         logger.debug("Scheduling a single action timer " + timer + " starting at " + delay + " milli seconds from now");
+         // schedule the task
+         Future<?> future = this.executor.schedule(timerTask, delay, TimeUnit.MILLISECONDS);
+         // maintain it in timerservice for future use (like cancellation)
+         this.scheduledTimerFutures.put(timer.getTimerHandle(), future);
+      }
+   }
+   
+   /**
+    * Cancels any scheduled {@link Future} corresponding to the passed <code>timer</code>
+    * @param timer
+    */
+   protected void cancelTimeout(TimerImpl timer)
+   {
+      TimerHandle handle = timer.getTimerHandle();
+      Future<?> scheduleFuture = this.scheduledTimerFutures.get(handle);
+      if (scheduleFuture != null)
+      {
+         scheduleFuture.cancel(false);
+      }
+      
    }
    
    private boolean isSingletonBeanInvocation()

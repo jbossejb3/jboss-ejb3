@@ -29,8 +29,6 @@ import java.io.ObjectStreamClass;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 import javax.ejb.EJBException;
 import javax.ejb.NoMoreTimeoutsException;
@@ -112,11 +110,6 @@ public class TimerImpl implements Timer
    protected Date nextExpiration;
 
    /**
-    * The {@link ScheduledFuture} for the next timeout of this timer
-    */
-   protected ScheduledFuture<?> future;
-
-   /**
     * The date of the previous run of this timer 
     */
    protected Date previousRun;
@@ -189,6 +182,7 @@ public class TimerImpl implements Timer
       this(persistedTimer.getId(), service, persistedTimer.getInitialDate(), persistedTimer.getInterval(),
             persistedTimer.getNextDate(), null, true);
       this.previousRun = persistedTimer.getPreviousRun();
+      this.timerState = persistedTimer.getTimerState();
       this.info = this.deserialize(persistedTimer.getInfo());
    }
 
@@ -229,7 +223,8 @@ public class TimerImpl implements Timer
       Transaction currentTx = this.timerService.getTransaction();
       if (currentTx == null)
       {
-         this.cancelTimer();
+         // cancel any scheduled Future for this timer
+         this.cancelTimeout();
       }
       else
       {
@@ -390,20 +385,13 @@ public class TimerImpl implements Timer
    }
 
    /**
-    * Cancels any scheduled timer task and appropriately updates the state of this timer
-    * to {@link TimerState#CANCELED}
-    * <p>
-    *   This method then persists the timer changes
-    * </p>
+    * Cancels any scheduled timer task for this timer
     */
-   protected void cancelTimer()
+   protected void cancelTimeout()
    {
-      // cancel any scheduled timer task
-      if (this.future != null)
-      {
-         future.cancel(false);
-      }
-
+      // delegate to the timerservice, so that it can cancel any scheduled Future
+      // for this timer
+      this.timerService.cancelTimeout(this);
    }
 
    /**
@@ -543,12 +531,9 @@ public class TimerImpl implements Timer
       setTimerState(TimerState.EXPIRED);
       // remove from timerservice
       timerService.removeTimer(this);
-      // Cancel any scheduled timer task
-      if (this.future != null)
-      {
-         future.cancel(false);
-      }
-
+      // Cancel any scheduled timer task for this timer
+      this.cancelTimeout();
+      
       // persist changes
       timerService.persistTimer(this);
    }
@@ -595,12 +580,12 @@ public class TimerImpl implements Timer
     *   timeout at appropriate times. 
     * </p>
     */
+   // TODO: Revisit this method, we probably don't need this any more.
+   // In terms of implementation, this is just equivalent to cancelTimeout() method
    public void suspend()
    {
-      if (this.future != null)
-      {
-         this.future.cancel(false);
-      }
+      // cancel any scheduled timer task (Future) for this timer
+      this.cancelTimeout();
    }
 
    /**
@@ -608,34 +593,8 @@ public class TimerImpl implements Timer
     */
    public void scheduleTimeout()
    {
-      if (this.nextExpiration == null)
-      {
-         logger.info("Next expiration is null. No tasks will be scheduled");
-         return;
-      }
-      // create the timer task
-      Runnable timerTask = this.getTimerTask();
-      // find out how long is it away from now
-      long delay = this.nextExpiration.getTime() - System.currentTimeMillis();
-      // if in past, then trigger immediately
-      if (delay < 0)
-      {
-         delay = 0;
-      }
-      if (this.intervalDuration > 0)
-      {
-         logger.debug("Scheduling timer " + this + " at fixed rate, starting at " + delay
-               + " milli seconds from now with repeated interval=" + this.intervalDuration);
-         // schedule the task
-         this.future = this.timerService.getExecutor().scheduleAtFixedRate(timerTask, delay, this.intervalDuration,
-               TimeUnit.MILLISECONDS);
-      }
-      else
-      {
-         logger.debug("Scheduling a single action timer " + this + " starting at " + delay + " milli seconds from now");
-         // schedule the task
-         this.future = this.getTimerService().getExecutor().schedule(timerTask, delay, TimeUnit.MILLISECONDS);
-      }
+      // just delegate to timerservice, for it to do the actual scheduling
+      this.timerService.scheduleTimeout(this);
    }
 
    /**
@@ -834,7 +793,7 @@ public class TimerImpl implements Timer
                case CANCELED :
                case IN_TIMEOUT:
                case RETRY_TIMEOUT:
-                  this.timer.cancelTimer();
+                  this.timer.cancelTimeout();
                   break;
 
             }
