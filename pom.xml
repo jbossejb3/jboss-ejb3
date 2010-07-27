@@ -116,6 +116,18 @@
                     </rules>
                 </configuration>
             </plugin>
+            
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                  <archive>
+                    <!--  We don't want .jar/META-INF/maven/* folder/files in the generated jar -->
+                    <addMavenDescriptor>false</addMavenDescriptor>
+                  </archive>
+                </configuration>
+          </plugin>
+            
         </plugins>
 
     </build>
