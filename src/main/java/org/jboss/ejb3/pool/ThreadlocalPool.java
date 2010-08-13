@@ -28,6 +28,8 @@ import org.jboss.injection.Injector;
 import org.jboss.lang.ref.WeakThreadLocal;
 import org.jboss.logging.Logger;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 
 /**
  * Pools EJBs within a ThreadLocal.
@@ -41,7 +43,7 @@ private static final Logger log = Logger.getLogger(ThreadlocalPool.class);
    
    protected Pool pool = new InfinitePool();
    protected WeakThreadLocal<BeanContext> currentBeanContext = new WeakThreadLocal<BeanContext>();
-   private int inUse = 0;
+   private AtomicInteger inUse = new AtomicInteger();
    
    public ThreadlocalPool()
    {
@@ -60,7 +62,7 @@ private static final Logger log = Logger.getLogger(ThreadlocalPool.class);
    public void discard(BeanContext obj)
    {
       pool.discard(obj);
-      --inUse;
+      inUse.decrementAndGet();
    }
    
    public void destroy()
@@ -72,47 +74,32 @@ private static final Logger log = Logger.getLogger(ThreadlocalPool.class);
       // This really serves little purpose, because we want the whole thread local map to die
       currentBeanContext.remove();
       
-      inUse = 0;
+      inUse.getAndSet(0);
    }
    
    public BeanContext get()
    {
-      BeanContext ctx = null;
-      
-      synchronized(pool)
-      {
-         ctx = currentBeanContext.get();
-         if (ctx != null)
-         {
-            currentBeanContext.set(null);
-            ++inUse;
-            return ctx;
-         }
-   
+      BeanContext ctx = currentBeanContext.get();
+      if (ctx != null)
+         currentBeanContext.set(null);
+      else
          ctx = create();
-         ++inUse;
-      }
+
+      inUse.incrementAndGet();
       
       return ctx;
    }
 
    public BeanContext get(Class[] initTypes, Object[] initValues)
    {
-      BeanContext ctx = null;
-      synchronized(pool)
-      {
-         ctx = currentBeanContext.get();
-         if (ctx != null)
-         {
-            currentBeanContext.set(null);
-            ++inUse;
-            return ctx;
-         }
-   
+      BeanContext ctx = currentBeanContext.get();
+      if (ctx != null)
+         currentBeanContext.set(null);
+      else
          ctx = create(initTypes, initValues);
-         ++inUse;
-      }
-      
+
+      inUse.incrementAndGet();
+
       return ctx;
    }
 
@@ -123,19 +110,12 @@ private static final Logger log = Logger.getLogger(ThreadlocalPool.class);
    
    public void release(BeanContext ctx)
    {
-      synchronized(pool)
-      {
-         if (currentBeanContext.get() != null)
-         {
-            remove(ctx);
-         }
-         else
-         {
-            currentBeanContext.set(ctx);
-         }
-         
-         --inUse;
-      }
+      if (currentBeanContext.get() != null)
+         remove(ctx);
+      else
+         currentBeanContext.set(ctx);
+
+      inUse.decrementAndGet();
    }
    
    public void remove(BeanContext ctx)
@@ -155,7 +135,7 @@ private static final Logger log = Logger.getLogger(ThreadlocalPool.class);
    
    public int getAvailableCount()
    {
-      return getMaxSize() - inUse;
+      return getMaxSize() - inUse.get();
    }
    
    public int getCreateCount()

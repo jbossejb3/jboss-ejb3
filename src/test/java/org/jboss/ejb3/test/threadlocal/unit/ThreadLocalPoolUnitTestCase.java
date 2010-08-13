@@ -78,7 +78,31 @@ public class ThreadLocalPoolUnitTestCase extends TestCase
       assertEquals(1, pool.getRemoveCount());
       assertEquals(1, MockBean.finalizers);
    }
-   
+
+   public void testInUse1()
+   {
+      ThreadlocalPool pool = new ThreadlocalPool();
+      Container container = new MockContainer();
+      int maxSize = -1;
+      int timeout = -1;
+      pool.initialize(container, maxSize, timeout);
+
+      assertEquals(0, pool.getAvailableCount());
+      
+      BeanContext ctx = pool.get();
+
+      assertEquals(0, pool.getAvailableCount());
+
+      pool.release(ctx);
+      ctx = null;
+
+      assertEquals(1, pool.getAvailableCount());
+
+      pool.destroy();
+
+      gc();
+   }
+
    public void testWithThreads() throws Exception
    {
       final ThreadlocalPool pool = new ThreadlocalPool();
