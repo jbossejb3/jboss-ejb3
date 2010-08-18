@@ -55,8 +55,6 @@ public class TimerEntity implements Serializable
    @NotNull
    protected String timedObjectId;
 
-   @Column(nullable = false)
-   @NotNull
    protected Date initialDate;
 
    protected long interval;

@@ -431,16 +431,6 @@ public class TimerServiceImpl implements TimerService
       }
       // parse the passed schedule and create the calendar based timeout 
       CalendarBasedTimeout calendarTimeout = new CalendarBasedTimeout(schedule);
-      // no schedules for this timer?
-      if (calendarTimeout.getFirstTimeout() == null)
-      {
-         // TODO: Think about this. It might be possible that a timer creation request
-         // was issued for a schedule which is in past (i.e. doesn't have any future timeouts)
-         // For ex: through the use of a @Schedule on a method. How should we handle such timers?
-         logger.warn("The schedule " + schedule + " doesn't have a timeout in future from now " + new Date());
-         throw new IllegalArgumentException("No timeout in future from now " + new Date() + " Invalid schedule expression: " + schedule);
-      }
-
       // generate a id for the timer
       UUID uuid = UUID.randomUUID();
       // create the timer

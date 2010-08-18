@@ -140,7 +140,7 @@ public class TimerImpl implements Timer
     * 
     * @param id The id of this timer
     * @param service The timer service through which this timer was created
-    * @param initialExpiry The first expiry of this timer
+    * @param initialExpiry The first expiry of this timer. Can be null
     * @param intervalDuration The duration (in milli sec) between timeouts
     * @param nextEpiry The next expiry of this timer
     * @param info The info that will be passed on through the {@link Timer} and will be available through the {@link Timer#getInfo()} method
