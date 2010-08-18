@@ -24,7 +24,6 @@ package org.jboss.ejb3.timerservice.mk2;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Calendar;
-import java.util.UUID;
 
 import javax.ejb.EJBException;
 import javax.ejb.NoSuchObjectLocalException;
@@ -74,7 +73,7 @@ public class CalendarTimer extends TimerImpl
     * @param timerService The timer service to which this timer belongs
     * @param calendarTimeout The {@link CalendarBasedTimeout} from which this {@link CalendarTimer} is being created
     */
-   public CalendarTimer(UUID id, TimerServiceImpl timerService, CalendarBasedTimeout calendarTimeout)
+   public CalendarTimer(String id, TimerServiceImpl timerService, CalendarBasedTimeout calendarTimeout)
    {
       this(id, timerService, calendarTimeout, null, true);
    }
@@ -88,7 +87,7 @@ public class CalendarTimer extends TimerImpl
     * @param info The serializable info which will be made available through {@link Timer#getInfo()}
     * @param persistent True if this timer is persistent. False otherwise
     */
-   public CalendarTimer(UUID id, TimerServiceImpl timerService, CalendarBasedTimeout calendarTimeout,
+   public CalendarTimer(String id, TimerServiceImpl timerService, CalendarBasedTimeout calendarTimeout,
          Serializable info, boolean persistent)
    {
       this(id, timerService, calendarTimeout, info, persistent, null);
@@ -108,7 +107,7 @@ public class CalendarTimer extends TimerImpl
     * @param timeoutMethodParams The timeout method params. Can be null. This param value will only be used if the
     *           <code>timeoutMethodName</code> is not null
     */
-   public CalendarTimer(UUID id, TimerServiceImpl timerService, CalendarBasedTimeout calendarTimeout,
+   public CalendarTimer(String id, TimerServiceImpl timerService, CalendarBasedTimeout calendarTimeout,
          Serializable info, boolean persistent, Method timeoutMethod)
    {
       super(id, timerService, calendarTimeout.getFirstTimeout().getTime(), 0, info, persistent);

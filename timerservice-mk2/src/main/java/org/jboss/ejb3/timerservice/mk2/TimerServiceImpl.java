@@ -392,7 +392,7 @@ public class TimerServiceImpl implements TimerService
       // create an id for the new timer instance
       UUID uuid = UUID.randomUUID();
       // create the timer
-      TimerImpl timer = new TimerImpl(uuid, this, initialExpiration, intervalDuration, info, persistent);
+      TimerImpl timer = new TimerImpl(uuid.toString(), this, initialExpiration, intervalDuration, info, persistent);
       // if it's persistent, then save it
       if (persistent)
       {
@@ -444,7 +444,7 @@ public class TimerServiceImpl implements TimerService
       // generate a id for the timer
       UUID uuid = UUID.randomUUID();
       // create the timer
-      TimerImpl timer = new CalendarTimer(uuid, this, calendarTimeout, info, persistent, timeoutMethod);
+      TimerImpl timer = new CalendarTimer(uuid.toString(), this, calendarTimeout, info, persistent, timeoutMethod);
 
       if (persistent)
       {
@@ -940,7 +940,7 @@ public class TimerServiceImpl implements TimerService
 
    private TimerImpl getPersistedTimer(TimerHandleImpl timerHandle)
    {
-      UUID id = timerHandle.getId();
+      String id = timerHandle.getId();
       String timedObjectId = timerHandle.getTimedObjectId();
       EntityManager em = this.emf.createEntityManager();
       Query query = em.createQuery("from TimerEntity t where t.id = :id and t.timedObjectId = :timedObjectId");

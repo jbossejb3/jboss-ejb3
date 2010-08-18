@@ -28,7 +28,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.UUID;
 
 import javax.ejb.EJBException;
 import javax.ejb.NoMoreTimeoutsException;
@@ -62,7 +61,7 @@ public class TimerImpl implements Timer
    /**
     * Unique id for this timer instance
     */
-   protected UUID id;
+   protected String id;
 
    /**
     * The timer state
@@ -130,7 +129,7 @@ public class TimerImpl implements Timer
     * @param info The info that will be passed on through the {@link Timer} and will be available through the {@link Timer#getInfo()} method
     * @param persistent True if this timer is persistent. False otherwise
     */
-   public TimerImpl(UUID id, TimerServiceImpl service, Date initialExpiry, long intervalDuration, Serializable info,
+   public TimerImpl(String id, TimerServiceImpl service, Date initialExpiry, long intervalDuration, Serializable info,
          boolean persistent)
    {
       this(id, service, initialExpiry, intervalDuration, initialExpiry, info, persistent);
@@ -147,7 +146,7 @@ public class TimerImpl implements Timer
     * @param info The info that will be passed on through the {@link Timer} and will be available through the {@link Timer#getInfo()} method
     * @param persistent True if this timer is persistent. False otherwise
     */
-   public TimerImpl(UUID id, TimerServiceImpl service, Date initialExpiry, long intervalDuration, Date nextEpiry,
+   public TimerImpl(String id, TimerServiceImpl service, Date initialExpiry, long intervalDuration, Date nextEpiry,
          Serializable info, boolean persistent)
    {
       assert service != null : "service is null";
@@ -190,7 +189,7 @@ public class TimerImpl implements Timer
     * Returns the id of this timer
     * @return
     */
-   public UUID getId()
+   public String getId()
    {
       return this.id;
    }

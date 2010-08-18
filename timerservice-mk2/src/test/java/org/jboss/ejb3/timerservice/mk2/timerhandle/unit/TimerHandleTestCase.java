@@ -62,7 +62,7 @@ public class TimerHandleTestCase
       when(mockTimerService.getInvoker()).thenReturn(mockInvoker);
       
       // now create the real timer
-      TimerImpl nonPersistentTimer = new TimerImpl(UUID.randomUUID(), mockTimerService, new Date(), 0, null, false);
+      TimerImpl nonPersistentTimer = new TimerImpl(UUID.randomUUID().toString(), mockTimerService, new Date(), 0, null, false);
       
       try
       {

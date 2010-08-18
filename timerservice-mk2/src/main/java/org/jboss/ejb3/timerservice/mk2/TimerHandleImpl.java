@@ -21,8 +21,6 @@
  */
 package org.jboss.ejb3.timerservice.mk2;
 
-import java.util.UUID;
-
 import javax.ejb.EJBException;
 import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.Timer;
@@ -47,7 +45,7 @@ public class TimerHandleImpl implements TimerHandle
     * Each {@link TimedObjectInvoker} can have multiple timer instances.
     * This id corresponds to one such <i>instance</i> 
     */
-   private UUID id;
+   private String id;
    
    /**
     * The {@link TimerServiceImpl} to which this timer handle belongs to  
@@ -70,7 +68,7 @@ public class TimerHandleImpl implements TimerHandle
     * @param service The timer service to which this timer handle belongs to
     * @throws IllegalArgumentException If either of the passed parameters is null
     */
-   public TimerHandleImpl(UUID id, String timedObjectId, TimerServiceImpl service) throws IllegalArgumentException
+   public TimerHandleImpl(String id, String timedObjectId, TimerServiceImpl service) throws IllegalArgumentException
    {
       if (id == null)
       {
@@ -114,7 +112,7 @@ public class TimerHandleImpl implements TimerHandle
       return timer;
    }
    
-   public UUID getId()
+   public String getId()
    {
       return this.id;
    }

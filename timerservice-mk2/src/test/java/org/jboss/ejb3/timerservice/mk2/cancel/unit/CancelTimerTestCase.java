@@ -57,7 +57,7 @@ public class CancelTimerTestCase
       when(mockTimerService.getInvoker()).thenReturn(mockInvoker);
       
       // now create the real timer
-      TimerImpl timer = new TimerImpl(UUID.randomUUID(), mockTimerService, new Date(), 0, null, false);
+      TimerImpl timer = new TimerImpl(UUID.randomUUID().toString(), mockTimerService, new Date(), 0, null, false);
       // cancel a timer without starting it (i.e. there are no scheduled tasks) 
       timer.cancel();
    }

@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -50,7 +49,7 @@ import org.jboss.ejb3.timerservice.mk2.TimerState;
 public class TimerEntity implements Serializable
 {
    @Id
-   protected UUID id;
+   protected String id;
 
    @Column(nullable = false)
    @NotNull
@@ -93,7 +92,7 @@ public class TimerEntity implements Serializable
 
    }
 
-   public UUID getId()
+   public String getId()
    {
       return id;
    }
