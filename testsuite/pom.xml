@@ -190,7 +190,7 @@
 			</plugin>
 
 			<!--
-				Install singleton packages in pre-integration-test phase
+				Install timerservice packages in pre-integration-test phase
 			-->
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
