@@ -57,6 +57,7 @@ public class TimerEntity implements Serializable
 
    protected Date initialDate;
 
+   @Column (name = "repeat_interval")
    protected long interval;
 
    protected Date nextDate;
