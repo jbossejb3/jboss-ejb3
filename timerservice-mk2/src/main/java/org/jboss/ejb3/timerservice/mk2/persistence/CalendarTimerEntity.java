@@ -43,7 +43,7 @@ import org.jboss.ejb3.timerservice.mk2.CalendarTimer;
  * @version $Revision: $
  */
 @Entity
-@Table(name = "Calendar_Timer")
+@Table(name = "calendar_timer")
 @Inheritance(strategy = InheritanceType.JOINED)
 public class CalendarTimerEntity extends TimerEntity
 {
@@ -54,25 +54,25 @@ public class CalendarTimerEntity extends TimerEntity
    @Transient
    private CalendarBasedTimeout calendarTimeout;
 
-   private String second;
+   private String scheduleExprSecond;
 
-   private String minute;
+   private String scheduleExprMinute;
 
-   private String hour;
+   private String scheduleExprHour;
 
-   private String dayOfWeek;
+   private String scheduleExprDayOfWeek;
 
-   private String dayOfMonth;
+   private String scheduleExprDayOfMonth;
 
-   private String month;
+   private String scheduleExprMonth;
 
-   private String year;
+   private String scheduleExprYear;
 
-   private Date startDate;
+   private Date scheduleExprStartDate;
 
-   private Date endDate;
+   private Date scheduleExprEndDate;
 
-   private String timezone;
+   private String scheduleExprTimezone;
 
    private boolean autoTimer;
 
@@ -101,16 +101,16 @@ public class CalendarTimerEntity extends TimerEntity
          this.timeoutMethod = new TimeoutMethod(method.getDeclaringClass().getName(), method.getName(), params);
       }
 
-      this.second = this.scheduleExpression.getSecond();
-      this.minute = this.scheduleExpression.getMinute();
-      this.hour = this.scheduleExpression.getHour();
-      this.dayOfMonth = this.scheduleExpression.getDayOfMonth();
-      this.month = this.scheduleExpression.getMonth();
-      this.dayOfWeek = this.scheduleExpression.getDayOfWeek();
-      this.year = this.scheduleExpression.getYear();
-      this.startDate = this.scheduleExpression.getStart();
-      this.endDate = this.scheduleExpression.getEnd();
-      this.timezone = this.scheduleExpression.getTimezone();
+      this.scheduleExprSecond = this.scheduleExpression.getSecond();
+      this.scheduleExprMinute = this.scheduleExpression.getMinute();
+      this.scheduleExprHour = this.scheduleExpression.getHour();
+      this.scheduleExprDayOfMonth = this.scheduleExpression.getDayOfMonth();
+      this.scheduleExprMonth = this.scheduleExpression.getMonth();
+      this.scheduleExprDayOfWeek = this.scheduleExpression.getDayOfWeek();
+      this.scheduleExprYear = this.scheduleExpression.getYear();
+      this.scheduleExprStartDate = this.scheduleExpression.getStart();
+      this.scheduleExprEndDate = this.scheduleExpression.getEnd();
+      this.scheduleExprTimezone = this.scheduleExpression.getTimezone();
 
    }
 
@@ -125,8 +125,8 @@ public class CalendarTimerEntity extends TimerEntity
       if (this.scheduleExpression == null)
       {
          this.scheduleExpression = new ScheduleExpression();
-         this.scheduleExpression.second(this.second).minute(this.minute).hour(this.hour).dayOfWeek(this.dayOfWeek)
-               .dayOfMonth(this.dayOfMonth).month(this.month).year(this.year).timezone(this.timezone);
+         this.scheduleExpression.second(this.scheduleExprSecond).minute(this.scheduleExprMinute).hour(this.scheduleExprHour).dayOfWeek(this.scheduleExprDayOfWeek)
+               .dayOfMonth(this.scheduleExprDayOfMonth).month(this.scheduleExprMonth).year(this.scheduleExprYear).timezone(this.scheduleExprTimezone);
 
       }
       return scheduleExpression;
@@ -143,57 +143,57 @@ public class CalendarTimerEntity extends TimerEntity
 
    public String getSecond()
    {
-      return second;
+      return scheduleExprSecond;
    }
 
    public String getMinute()
    {
-      return minute;
+      return scheduleExprMinute;
    }
 
    public String getHour()
    {
-      return hour;
+      return scheduleExprHour;
    }
 
    public String getDayOfWeek()
    {
-      return dayOfWeek;
+      return scheduleExprDayOfWeek;
    }
 
    public String getDayOfMonth()
    {
-      return dayOfMonth;
+      return scheduleExprDayOfMonth;
    }
 
    public String getMonth()
    {
-      return month;
+      return scheduleExprMonth;
    }
 
    public String getYear()
    {
-      return year;
+      return scheduleExprYear;
    }
 
    public Date getStartDate()
    {
-      return startDate;
+      return scheduleExprStartDate;
    }
 
    public void setStartDate(Date start)
    {
-      this.startDate = start;
+      this.scheduleExprStartDate = start;
    }
 
    public Date getEndDate()
    {
-      return endDate;
+      return scheduleExprEndDate;
    }
 
    public void setEndDate(Date end)
    {
-      this.endDate = end;
+      this.scheduleExprEndDate = end;
    }
 
    public TimeoutMethod getTimeoutMethod()
@@ -218,12 +218,12 @@ public class CalendarTimerEntity extends TimerEntity
 
    public String getTimezone()
    {
-      return timezone;
+      return scheduleExprTimezone;
    }
 
    public void setTimezone(String timezone)
    {
-      this.timezone = timezone;
+      this.scheduleExprTimezone = timezone;
    }
    
    @Override

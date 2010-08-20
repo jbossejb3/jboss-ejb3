@@ -32,6 +32,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -41,7 +42,7 @@ import javax.validation.constraints.NotNull;
  * @version $Revision: $
  */
 @Entity
-@Table (name = "Timeout_Method")
+@Table (name = "timeout_method")
 public class TimeoutMethod implements Serializable
 {
 
@@ -60,6 +61,7 @@ public class TimeoutMethod implements Serializable
    @ElementCollection
    private List<String> methodParams;
    
+   @Transient
    private String cachedToString;
 
    public TimeoutMethod()

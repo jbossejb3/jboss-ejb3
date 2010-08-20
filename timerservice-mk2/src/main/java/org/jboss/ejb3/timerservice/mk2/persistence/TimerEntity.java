@@ -57,8 +57,7 @@ public class TimerEntity implements Serializable
 
    protected Date initialDate;
 
-   @Column (name = "repeat_interval")
-   protected long interval;
+   protected long repeatInterval;
 
    protected Date nextDate;
 
@@ -79,7 +78,7 @@ public class TimerEntity implements Serializable
    {
       this.id = timer.getId();
       this.initialDate = timer.getInitialExpiration();
-      this.interval = timer.getInterval();
+      this.repeatInterval = timer.getInterval();
       this.nextDate = timer.getNextExpiration();
       this.previousRun = timer.getPreviousRun();
       this.timerState = timer.getState();
@@ -108,7 +107,7 @@ public class TimerEntity implements Serializable
 
    public long getInterval()
    {
-      return interval;
+      return repeatInterval;
    }
 
    public byte[] getInfo()
