@@ -35,7 +35,12 @@ import org.jboss.ejb3.pool.AbstractPool;
 public class InfinitePool extends AbstractPool
 {
    private List<BeanContext> active = new LinkedList<BeanContext>();
-   
+
+   /**
+    * Needs to be part of the sync block, because else other threads will miss it.
+    */
+   private int size;
+
    public void destroy()
    {
       for(BeanContext ctx : active)
@@ -44,6 +49,7 @@ public class InfinitePool extends AbstractPool
          super.remove(ctx);
       }
       active = null;
+      size = 0;
    }
 
    public BeanContext<?> get()
@@ -57,6 +63,7 @@ public class InfinitePool extends AbstractPool
       synchronized(active)
       {
          active.add(ctx);
+         size = active.size();
       }
       return ctx;
    }
@@ -68,7 +75,7 @@ public class InfinitePool extends AbstractPool
 
    public int getCurrentSize()
    {
-      return active.size();
+      return size;
    }
 
    public int getMaxSize()
@@ -86,6 +93,7 @@ public class InfinitePool extends AbstractPool
       synchronized(active)
       {
          active.remove(ctx);
+         size = active.size();
       }
       
       super.remove(ctx);

@@ -26,6 +26,8 @@ import org.jboss.ejb3.Container;
 import org.jboss.injection.Injector;
 import org.jboss.logging.Logger;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * The base of all pool implementations.
  *
@@ -40,8 +42,8 @@ public abstract class AbstractPool implements Pool
 
    protected Injector[] injectors;
    protected Container container;
-   protected int createCount = 0;
-   protected int removeCount = 0;
+   private AtomicInteger createCount = new AtomicInteger(0);
+   private AtomicInteger removeCount = new AtomicInteger(0);
 
    public AbstractPool()
    {
@@ -50,12 +52,12 @@ public abstract class AbstractPool implements Pool
 
    public int getCreateCount()
    {
-      return createCount;
+      return createCount.get();
    }
 
    public int getRemoveCount()
    {
-      return removeCount;
+      return removeCount.get();
    }
 
    public void initialize(Container container, int maxSize, long timeout)
@@ -91,7 +93,7 @@ public abstract class AbstractPool implements Pool
 
       // the init method only applies to stateful session beans
 
-      ++createCount;
+      createCount.incrementAndGet();
 
       return ctx;
    }
@@ -131,7 +133,7 @@ public abstract class AbstractPool implements Pool
       finally
       {
          ctx.remove();
-         ++removeCount;
+         removeCount.incrementAndGet();
       }
    }
 }
