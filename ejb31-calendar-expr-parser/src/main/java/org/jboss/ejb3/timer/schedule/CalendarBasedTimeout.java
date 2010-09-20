@@ -171,44 +171,6 @@ public class CalendarBasedTimeout
       this.setFirstTimeout();
    }
 
-//   public Calendar getNextTimeout(Calendar current)
-//   {
-//      Calendar next = new GregorianCalendar(this.timezone);
-//      Date start = this.scheduleExpression.getStart();
-//      if (start != null && current.getTime().before(start))
-//      {
-//         next.setTime(start);
-//      }
-//      else
-//      {
-//         next.setTime(current.getTime());
-//         // increment the current second by 1
-//         next.add(Calendar.SECOND, 1);
-//         
-//      }
-//      
-//      next.setFirstDayOfWeek(Calendar.SUNDAY);
-//
-//
-//      next = this.second.getNextSecond(next);
-//      next = this.minute.getNextMinute(next);
-//      next = this.hour.getNextHour(next);
-//      next = this.dayOfWeek.getNextDayOfWeek(next);
-//      next = this.dayOfMonth.getNextDayOfMonth(next);
-//      next = this.month.getNextMonth(next);
-//      if (next == null)
-//      {
-//         return null;
-//      }
-//      next = this.year.getNextYear(next);
-//      Date end = this.scheduleExpression.getEnd();
-//      if (next != null && end != null && next.after(end))
-//      {
-//         return null;
-//      }
-//      return next;
-//   }
-
    public Calendar getNextTimeout()
    {
       Calendar now = new GregorianCalendar(this.timezone);
@@ -226,38 +188,6 @@ public class CalendarBasedTimeout
       return this.firstTimeout;
    }
 
-//   private void setFirstTimeout()
-//   {
-//      this.firstTimeout = new GregorianCalendar(this.timezone);
-//      Date start = this.scheduleExpression.getStart();
-//      if (start != null)
-//      {
-//         this.firstTimeout.setTime(start);
-//      }
-//      else
-//      {
-//         this.firstTimeout.set(Calendar.SECOND, this.second.getFirst());
-//         this.firstTimeout.set(Calendar.MINUTE, this.minute.getFirst());
-//         this.firstTimeout.set(Calendar.HOUR_OF_DAY, this.hour.getFirst());
-//         //      this.firstTimeout.set(Calendar.DAY_OF_WEEK, this.dayOfWeek.getFirst());
-//         //      this.firstTimeout.set(Calendar.DAY_OF_MONTH, this.dayOfMonth.getFirst());
-//         //      this.firstTimeout.set(Calendar.MONTH, this.month.getFirst());
-//         //      this.firstTimeout.set(Calendar.YEAR, this.year.getFirst());
-//      }
-//      this.firstTimeout.setFirstDayOfWeek(Calendar.SUNDAY);
-//
-//      this.firstTimeout = this.second.getNextSecond(this.firstTimeout);
-//      this.firstTimeout = this.minute.getNextMinute(this.firstTimeout);
-//      this.firstTimeout = this.hour.getNextHour(this.firstTimeout);
-//      this.firstTimeout = this.dayOfWeek.getNextDayOfWeek(this.firstTimeout);
-//      this.firstTimeout = this.dayOfMonth.getNextDayOfMonth(this.firstTimeout);
-//      this.firstTimeout = this.month.getNextMonth(this.firstTimeout);
-//      if (this.firstTimeout != null)
-//      {
-//         this.firstTimeout = this.year.getNextYear(this.firstTimeout);
-//      }
-//
-//   }
    
    private void setFirstTimeout()
    {
@@ -294,25 +224,25 @@ public class CalendarBasedTimeout
          return;
       }
 
-      this.firstTimeout = this.computeNextDayOfWeek(this.firstTimeout);
-      if (this.firstTimeout == null)
-      {
-         return;
-      }
-
       this.firstTimeout = this.computeNextMonth(this.firstTimeout);
       if (this.firstTimeout == null)
       {
          return;
       }
 
-      this.firstTimeout = this.computeNextDayOfMonth(this.firstTimeout);
+      this.firstTimeout = this.computeNextDate(this.firstTimeout);
       if (this.firstTimeout == null)
       {
          return;
       }
 
       this.firstTimeout = this.computeNextYear(this.firstTimeout);
+      
+      // one final check
+      if (this.firstTimeout != null && this.noMoreTimeouts(this.firstTimeout))
+      {
+         this.firstTimeout = null;
+      }
 
    }
 
@@ -366,19 +296,13 @@ public class CalendarBasedTimeout
          return null;
       }
 
-      nextCal = this.computeNextDayOfWeek(nextCal);
-      if (nextCal == null)
-      {
-         return null;
-      }
-
       nextCal = this.computeNextMonth(nextCal);
       if (nextCal == null)
       {
          return null;
       }
 
-      nextCal = this.computeNextDayOfMonth(nextCal);
+      nextCal = this.computeNextDate(nextCal);
       if (nextCal == null)
       {
          return null;
@@ -707,6 +631,40 @@ public class CalendarBasedTimeout
 
       return null;
    }
+   
+   private Calendar computeNextDate(Calendar currentCal)
+   {
+      if (this.noMoreTimeouts(currentCal))
+      {
+         return null;
+      }
+      
+      if (this.isDayOfMonthWildcard())
+      {
+         return this.computeNextDayOfWeek(currentCal);
+      }
+      
+      if (this.isDayOfWeekWildcard())
+      {
+         return this.computeNextDayOfMonth(currentCal);
+      }
+      
+      // both day-of-month and day-of-week are *non-wildcards*
+      Calendar nextDayOfMonthCal = this.computeNextDayOfMonth(currentCal);
+      Calendar nextDayOfWeekCal = this.computeNextDayOfWeek(currentCal);
+      
+      if (nextDayOfMonthCal == null)
+      {
+         return nextDayOfWeekCal;
+      }
+      if (nextDayOfWeekCal == null)
+      {
+         return nextDayOfMonthCal;
+      }
+      
+      return nextDayOfWeekCal.getTime().before(nextDayOfMonthCal.getTime()) ? nextDayOfWeekCal : nextDayOfMonthCal; 
+      
+   }
 
    private Calendar computeNextDayOfMonth(Calendar currentCal)
    {
@@ -766,19 +724,7 @@ public class CalendarBasedTimeout
          nextCal = this.advanceTillMonthHasDate(nextCal, nextDayOfMonth);
       }
       
-      
-      Calendar tmpNextCal = nextCal;
-      nextCal = this.computeNextDayOfWeek(nextCal);
-      if (nextCal == null)
-      {
-         return null;
-      }
-      if (nextCal.getTime().equals(tmpNextCal.getTime()))
-      {
-         return nextCal;
-      }
-      // we moved to a different date, so redo the entire dayOfMonth computation again
-      return this.computeNextDayOfMonth(nextCal);
+      return nextCal;
    }
 
    
@@ -824,7 +770,7 @@ public class CalendarBasedTimeout
       nextCal.set(Calendar.MONTH, this.month.getFirstMatch());
       nextCal.set(Calendar.DAY_OF_MONTH, 1);
       
-      nextCal = this.computeNextDayOfMonth(nextCal);
+      nextCal = this.computeNextDate(nextCal);
       if (nextCal == null)
       {
          return null;
@@ -908,6 +854,16 @@ public class CalendarBasedTimeout
          return true;
       }
       return false;
+   }
+   
+   private boolean isDayOfWeekWildcard()
+   {
+      return this.scheduleExpression.getDayOfWeek().equals("*");
+   }
+   
+   private boolean isDayOfMonthWildcard()
+   {
+      return this.scheduleExpression.getDayOfMonth().equals("*");
    }
 
    private void nullCheckScheduleAttributes(ScheduleExpression schedule)
