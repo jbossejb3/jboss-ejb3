@@ -1,4 +1,6 @@
 # Ignore target folder generated through Maven
 
 target/
+/.idea
+*.iml
 
