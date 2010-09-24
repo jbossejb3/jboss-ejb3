@@ -9,3 +9,7 @@
 #Maven
 eclipse-target
 target
+
+#Idea
+/.idea
+*.iml
