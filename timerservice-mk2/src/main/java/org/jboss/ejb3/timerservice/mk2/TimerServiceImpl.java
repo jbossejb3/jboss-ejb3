@@ -30,12 +30,12 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -66,6 +66,8 @@ import org.jboss.ejb3.timerservice.mk2.task.TimerTask;
 import org.jboss.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.ejb3.timerservice.spi.TimerServiceInvocationContext;
 import org.jboss.logging.Logger;
+
+
 
 /**
  * MK2 implementation of EJB3.1 {@link TimerService}
@@ -105,16 +107,16 @@ public class TimerServiceImpl implements TimerService
     * All non-persistent timers which were created by this {@link TimerService} 
     * 
     */
-   private Map<TimerHandle, TimerImpl> nonPersistentTimers = new HashMap<TimerHandle, TimerImpl>();
+   private Map<TimerHandle, TimerImpl> nonPersistentTimers = new ConcurrentHashMap<TimerHandle, TimerImpl>();
 
-   private Map<TimerHandle, TimerImpl> persistentWaitingOnTxCompletionTimers = new HashMap<TimerHandle, TimerImpl>();
+   private Map<TimerHandle, TimerImpl> persistentWaitingOnTxCompletionTimers = new ConcurrentHashMap<TimerHandle, TimerImpl>();
 
    private ThreadLocal<EntityManager> transactionScopedEntityManager = new ThreadLocal<EntityManager>();
    
    /**
     * Holds the {@link Future} of each of the timer tasks that have been scheduled
     */
-   private Map<TimerHandle, Future<?>> scheduledTimerFutures = new HashMap<TimerHandle, Future<?>>();
+   private Map<TimerHandle, Future<?>> scheduledTimerFutures = new ConcurrentHashMap<TimerHandle, Future<?>>();
 
    /**
     * Creates a {@link TimerServiceImpl}
