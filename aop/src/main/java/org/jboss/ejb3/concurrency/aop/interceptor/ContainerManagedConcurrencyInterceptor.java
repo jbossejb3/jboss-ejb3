@@ -28,12 +28,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import javax.ejb.AccessTimeout;
+import javax.ejb.ConcurrentAccessException;
 import javax.ejb.ConcurrentAccessTimeoutException;
 import javax.ejb.LockType;
 
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.ejb3.concurrency.impl.EJBReadWriteLock;
+import org.jboss.logging.Logger;
 
 /**
  * Implementation of AOP based {@link Interceptor} which is responsible 
@@ -46,10 +48,31 @@ import org.jboss.ejb3.concurrency.impl.EJBReadWriteLock;
  */
 public class ContainerManagedConcurrencyInterceptor implements Interceptor
 {
+   
+   /**
+    * Logger
+    */
+   private static Logger logger = Logger.getLogger(ContainerManagedConcurrencyInterceptor.class);
+   
    /**
     * A spec compliant {@link EJBReadWriteLock}
     */
    private ReadWriteLock readWriteLock = new EJBReadWriteLock();
+   
+   /**
+    * Default maximum wait timeout for lock.
+    * 
+    */
+   // TODO: these should come from somewhere else
+   // Note that in violation of spec, we'll never wait indefinitely!
+   private static final long DEFAULT_MAX_TIMEOUT_VALUE = 5;
+   
+   /**
+    * Default maximum wait timeout unit
+    */
+   // TODO: these should come from somewhere else
+   // Note that in violation of spec, we'll never wait indefinitely!
+   private static final TimeUnit DEFAULT_MAX_TIMEOUT_UNIT = TimeUnit.MINUTES;
    
    /**
     * 
@@ -125,15 +148,28 @@ public class ContainerManagedConcurrencyInterceptor implements Interceptor
    public Object invoke(Invocation invocation) throws Throwable
    {
       Lock lock = getLock(invocation);
-      // TODO: these should come from somewhere else
-      // Note that in violation of spec, we'll never wait indefinitely!
-      long time = 5;
-      TimeUnit unit = TimeUnit.MINUTES;
+      long time = DEFAULT_MAX_TIMEOUT_VALUE;
+      TimeUnit unit = DEFAULT_MAX_TIMEOUT_UNIT;
       AccessTimeout timeout = getAccessTimeout(invocation);
       if(timeout != null)
       {
-         time = timeout.value();
-         unit = timeout.unit();
+         if (timeout.value() == 0)
+         {
+            throw new ConcurrentAccessException("EJB 3.1 Spec, Section 4.8.5.5.1 : Cannot access a method with access timeout = 0 " + invocation);
+         }
+         else if (timeout.value() > 0) 
+         {
+            time = timeout.value();
+            unit = timeout.unit();
+         }
+         else
+         {
+            // for any negative value of timeout, we just default to max timeout val and max timeout unit.
+            // violation of spec! But we don't want to wait indefinitely.
+            logger.info("Ignoring a negative @AccessTimeout value: " + timeout.value() + " and timeout unit: "
+                  + timeout.unit().name() + ". Will default to timeout value: " + DEFAULT_MAX_TIMEOUT_VALUE
+                  + " and timeout unit: " + DEFAULT_MAX_TIMEOUT_UNIT.name());
+         }
       }
       boolean success = lock.tryLock(time, unit);
       if(!success)

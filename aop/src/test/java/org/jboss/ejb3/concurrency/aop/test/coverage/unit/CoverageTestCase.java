@@ -31,6 +31,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import javax.ejb.AccessTimeout;
+import javax.ejb.ConcurrentAccessException;
 import javax.ejb.ConcurrentAccessTimeoutException;
 import javax.ejb.IllegalLoopbackException;
 
@@ -215,6 +217,30 @@ public class CoverageTestCase extends AbstractBootstrapTestCase
       catch(IllegalLoopbackException e)
       {
          // good
+      }
+   }
+   
+   /**
+    * Test that {@link ConcurrentAccessException} is thrown when {@link AccessTimeout} value is 0.
+    * This is mandated by EJB3.1 spec, section 4.8.5.5.1
+    * 
+    * @throws Throwable
+    */
+   @Test
+   public void testZeroAccessTimeout() throws Throwable
+   {
+      DirectContainer<SimpleBean> container = new DirectContainer<SimpleBean>("SimpleBean", "Singleton Container", SimpleBean.class);
+      
+      BeanContext<SimpleBean> bean = container.construct();
+      
+      try
+      {
+         container.invoke(bean, "zeroTimeout");
+         fail("Should have thrown " + ConcurrentAccessException.class.getName() + " exception");
+      }
+      catch(ConcurrentAccessException cae)
+      {
+         // expected
       }
    }
 }

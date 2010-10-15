@@ -116,4 +116,9 @@ public class SimpleBean
       return accessCount.incrementAndGet();
    }
    
+   @AccessTimeout(0)
+   public void zeroTimeout()
+   {
+      
+   }
 }
