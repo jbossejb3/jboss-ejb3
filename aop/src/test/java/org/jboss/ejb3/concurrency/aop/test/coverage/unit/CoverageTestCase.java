@@ -221,26 +221,59 @@ public class CoverageTestCase extends AbstractBootstrapTestCase
    }
    
    /**
-    * Test that {@link ConcurrentAccessException} is thrown when {@link AccessTimeout} value is 0.
+    * Test that {@link ConcurrentAccessException} is *not* thrown when a method with {@link AccessTimeout} =0 is invoked
+    * non-concurrently.
+    * 
+    * @throws Throwable
+    */
+   @Test
+   public void testNonConcurrentZeroAccessTimeout() throws Throwable
+   {
+      DirectContainer<SimpleBean> container = new DirectContainer<SimpleBean>("SimpleBean", "Singleton Container", SimpleBean.class);
+      
+      BeanContext<SimpleBean> bean = container.construct();
+      // since this is a single (non-concurrent) call, even if the @AccessTimeout is 0, the call should succeed
+      container.invoke(bean, "zeroTimeout");
+   }
+   
+   /**
+    * Test that {@link ConcurrentAccessException} is thrown when a method with {@link AccessTimeout} =0 is invoked
+    * concurrently.
+    * 
     * This is mandated by EJB3.1 spec, section 4.8.5.5.1
     * 
     * @throws Throwable
     */
    @Test
-   public void testZeroAccessTimeout() throws Throwable
+   public void testConcurrentZeroAccessTimeout() throws Throwable
    {
-      DirectContainer<SimpleBean> container = new DirectContainer<SimpleBean>("SimpleBean", "Singleton Container", SimpleBean.class);
       
-      BeanContext<SimpleBean> bean = container.construct();
+      ExecutorService service = Executors.newCachedThreadPool();
+      
+      final DirectContainer<SimpleBean> container = new DirectContainer<SimpleBean>("SimpleBean", "Singleton Container", SimpleBean.class);
+      
+      final BeanContext<SimpleBean> bean = container.construct();
+      
+      Callable<Integer> task = new ContainerInvocationTask<SimpleBean, Integer>(container, bean, "waitOnSemaphore");
+      Future<Integer> future = service.submit(task);
+      bean.getInstance().getBarrier().await(5, SECONDS);
       
       try
       {
+         // should fail, since there's already a concurrent invocation in progress
          container.invoke(bean, "zeroTimeout");
-         fail("Should have thrown " + ConcurrentAccessException.class.getName() + " exception");
+         fail("Should have thrown " + ConcurrentAccessException.class.getSimpleName()
+               + " for concurrently accessing a method marked with @AccessTimeout=0");
       }
       catch(ConcurrentAccessException cae)
       {
          // expected
       }
+      
+      bean.getInstance().getSemaphore().release();
+      
+      int accessCount = future.get(5, SECONDS);
+      assertEquals(1, accessCount);
+      
    }
 }

@@ -28,7 +28,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import javax.ejb.AccessTimeout;
-import javax.ejb.ConcurrentAccessException;
 import javax.ejb.ConcurrentAccessTimeoutException;
 import javax.ejb.LockType;
 
@@ -153,16 +152,7 @@ public class ContainerManagedConcurrencyInterceptor implements Interceptor
       AccessTimeout timeout = getAccessTimeout(invocation);
       if(timeout != null)
       {
-         if (timeout.value() == 0)
-         {
-            throw new ConcurrentAccessException("EJB 3.1 Spec, Section 4.8.5.5.1 : Cannot access a method with access timeout = 0 " + invocation);
-         }
-         else if (timeout.value() > 0) 
-         {
-            time = timeout.value();
-            unit = timeout.unit();
-         }
-         else
+         if (timeout.value() < 0) 
          {
             // for any negative value of timeout, we just default to max timeout val and max timeout unit.
             // violation of spec! But we don't want to wait indefinitely.
@@ -170,10 +160,18 @@ public class ContainerManagedConcurrencyInterceptor implements Interceptor
                   + timeout.unit().name() + ". Will default to timeout value: " + DEFAULT_MAX_TIMEOUT_VALUE
                   + " and timeout unit: " + DEFAULT_MAX_TIMEOUT_UNIT.name());
          }
+         else
+         {
+            time = timeout.value();
+            unit = timeout.unit();
+         }
       }
       boolean success = lock.tryLock(time, unit);
       if(!success)
-         throw new ConcurrentAccessTimeoutException("EJB 3.1 PFD2 4.8.5.5.1 concurrent access timeout on " + invocation);
+      {
+         throw new ConcurrentAccessTimeoutException("EJB 3.1 PFD2 4.8.5.5.1 concurrent access timeout on " + invocation
+               + " - could not obtain lock within " + time + unit.name());
+      }
       try
       {
          return invocation.invokeNext();
