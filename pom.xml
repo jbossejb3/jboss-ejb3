@@ -16,7 +16,7 @@
     <!-- Artifact Configuration -->
     <groupId>org.jboss.ejb3.concurrency</groupId>
     <artifactId>jboss-ejb3-concurrency</artifactId>
-	<version>1.0.0-alpha-3</version>
+	<version>1.0.0-alpha-4-SNAPSHOT</version>
 	<name>JBoss EJB 3.x Concurrency</name>
     <packaging>pom</packaging>
 	<description>
