@@ -21,15 +21,14 @@
  */
 package org.jboss.ejb3.pool;
 
-import java.util.LinkedList;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-
-import javax.ejb.EJBException;
-
 import org.jboss.ejb3.BeanContext;
 import org.jboss.ejb3.Container;
 import org.jboss.logging.Logger;
+
+import javax.ejb.EJBException;
+import java.util.LinkedList;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.org">Kabir Khan</a>
@@ -66,12 +65,42 @@ public class StrictMaxPool
 
    Logger log = Logger.getLogger(StrictMaxPool.class);
 
+   /**
+    * Acquire a permit and check the pool.
+    *
+    * @return a BeanContext from the pool or null if one needs to be created
+    */
+   private BeanContext acquire()
+   {
+      boolean trace = log.isTraceEnabled();
+      if (trace)
+         log.trace("Get instance " + this + "#" + pool.size() + "#" + container.getBeanClass());
 
-   // Static --------------------------------------------------------
+      // Block until an instance is available
+      try
+      {
+         boolean acquired = strictMaxSize.tryAcquire(strictTimeout, TimeUnit.MILLISECONDS);
+         if (trace)
+            log.trace("Acquired(" + acquired + ") strictMaxSize semaphore, remaining=" + strictMaxSize.availablePermits());
+         if (acquired == false)
+            throw new EJBException("Failed to acquire the pool semaphore, strictTimeout=" + strictTimeout);
+      }
+      catch (InterruptedException e)
+      {
+         throw new EJBException("Pool strictMaxSize semaphore was interrupted");
+      }
 
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
+      synchronized (pool)
+      {
+         if (!pool.isEmpty())
+         {
+            BeanContext bean = (BeanContext) pool.removeFirst();
+            ++inUse;
+            return bean;
+         }
+      }
+      return null;
+   }
 
    /**
     * super.initialize() must have been called in advance
@@ -113,73 +142,48 @@ public class StrictMaxPool
     */
    public BeanContext get()
    {
-      boolean trace = log.isTraceEnabled();
-      if (trace)
-         log.trace("Get instance " + this + "#" + pool.size() + "#" + container.getBeanClass());
+      BeanContext bean = acquire();
+      if(bean != null)
+         return bean;
 
-      // Block until an instance is available
       try
       {
-         boolean acquired = strictMaxSize.tryAcquire(strictTimeout, TimeUnit.MILLISECONDS);
-         if (trace)
-            log.trace("Acquired(" + acquired + ") strictMaxSize semaphore, remaining=" + strictMaxSize.availablePermits());
-         if (acquired == false)
-            throw new EJBException("Failed to acquire the pool semaphore, strictTimeout=" + strictTimeout);
+         // Pool is empty, create an instance
+         ++inUse;
+         bean = create();
       }
-      catch (InterruptedException e)
+      finally
       {
-         throw new EJBException("Pool strictMaxSize semaphore was interrupted");
-      }
-
-      synchronized (pool)
-      {
-         if (!pool.isEmpty())
+         if(bean == null)
          {
-            BeanContext bean = (BeanContext) pool.removeFirst();
-            ++inUse;
-            return bean;
+            --inUse;
+            strictMaxSize.release();
          }
       }
-
-      // Pool is empty, create an instance
-      ++inUse;
-      return create();
-
+      return bean;
    }
 
    public BeanContext get(Class[] initTypes, Object[] initValues)
    {
-      boolean trace = log.isTraceEnabled();
-      if (trace)
-         log.trace("Get instance " + this + "#" + pool.size() + "#" + container.getBeanClass());
-
-      // Block until an instance is available
+      BeanContext bean = acquire();
+      if(bean != null)
+         return bean;
+      
       try
       {
-         boolean acquired = strictMaxSize.tryAcquire(strictTimeout, TimeUnit.MILLISECONDS);
-         if (trace)
-            log.trace("Acquired(" + acquired + ") strictMaxSize semaphore, remaining=" + strictMaxSize.availablePermits());
-         if (acquired == false)
-            throw new EJBException("Failed to acquire the pool semaphore, strictTimeout=" + strictTimeout);
+         // Pool is empty, create an instance
+         ++inUse;
+         bean = create(initTypes, initValues);
       }
-      catch (InterruptedException e)
+      finally
       {
-         throw new EJBException("Pool strictMaxSize semaphore was interrupted");
-      }
-
-      synchronized (pool)
-      {
-         if (!pool.isEmpty())
+         if(bean == null)
          {
-            BeanContext bean = (BeanContext) pool.removeFirst();
-            ++inUse;
-            return bean;
+            --inUse;
+            strictMaxSize.release();
          }
       }
-
-      // Pool is empty, create an instance
-      ++inUse;
-      return create(initTypes, initValues);
+      return bean;
    }
 
    /**
