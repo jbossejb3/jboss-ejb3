@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <parent>
+      <artifactId>jboss-ejb3-effigy</artifactId>
+      <groupId>org.jboss.ejb3.effigy</groupId>
+      <version>0.1.0-SNAPSHOT</version>
+   </parent>
+   <modelVersion>4.0.0</modelVersion>
+
+   <artifactId>jboss-ejb3-effigy-api</artifactId>
+
+   <name>JBoss EJB 3 Effigy API</name>
+
+   <!-- Only API dependencies allowed -->
+   <dependencies>
+      <dependency>
+         <groupId>junit</groupId>
+         <artifactId>junit</artifactId>
+      </dependency>
+
+      <!--
+      <dependency>
+         <groupId>${javax.ejb.groupId}</groupId>
+         <artifactId>${javax.ejb.artifactId}</artifactId>
+         <version>${javax.ejb.version}</version>
+         <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+         <groupId>${javax.interceptor.groupId}</groupId>
+         <artifactId>${javax.interceptor.artifactId}</artifactId>
+         <version>${javax.interceptor.version}</version>
+         <scope>provided</scope>
+      </dependency>
+      -->
+   </dependencies>
+</project>
