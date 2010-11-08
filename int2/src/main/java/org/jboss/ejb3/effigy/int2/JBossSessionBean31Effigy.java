@@ -69,6 +69,8 @@ public class JBossSessionBean31Effigy extends JBossSessionBeanEffigy
       if(namedMethod == null)
          return null;
 
-      return ClassHelper.findMethod(getEjbClass(), namedMethod.getMethodName());
+      Method method = ClassHelper.findMethod(getEjbClass(), namedMethod.getMethodName());
+      method.setAccessible(true);
+      return method;
    }
 }
