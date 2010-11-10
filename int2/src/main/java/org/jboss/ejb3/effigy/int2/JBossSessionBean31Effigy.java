@@ -21,8 +21,10 @@
  */
 package org.jboss.ejb3.effigy.int2;
 
+import org.jboss.ejb3.effigy.ApplicationExceptionEffigy;
 import org.jboss.ejb3.effigy.common.JBossSessionBeanEffigy;
 import org.jboss.metadata.ejb.jboss.JBossSessionBean31MetaData;
+import org.jboss.metadata.ejb.spec.ApplicationExceptionMetaData;
 import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 
 import java.lang.reflect.Method;
@@ -44,6 +46,13 @@ public class JBossSessionBean31Effigy extends JBossSessionBeanEffigy
       this.afterBeginMethod = method(beanMetaData.getAfterBeginMethod());
       this.afterCompletionMethod = method(beanMetaData.getAfterCompletionMethod());
       this.beforeCompletionMethod = method(beanMetaData.getBeforeCompletionMethod());
+   }
+
+   @Override
+   protected ApplicationExceptionEffigy createApplicationExceptionEffigy(ClassLoader classLoader, ApplicationExceptionMetaData metaData)
+           throws ClassNotFoundException
+   {
+      return new JBossApplicationException31Effigy(classLoader, metaData);
    }
 
    @Override

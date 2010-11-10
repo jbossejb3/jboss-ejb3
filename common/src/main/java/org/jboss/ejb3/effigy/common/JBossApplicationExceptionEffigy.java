@@ -1,7 +1,7 @@
 /*
  * JBoss, Home of Professional Open Source
  * Copyright (c) 2010, Red Hat Middleware LLC, and individual contributors
- * as indicated by the @authors tag. See the copyright.txt in the
+ * as indicated by the @authors tag. See the copyright.txt in the 
  * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
@@ -19,26 +19,51 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.effigy;
+package org.jboss.ejb3.effigy.common;
+
+import org.jboss.ejb3.effigy.ApplicationExceptionEffigy;
+import org.jboss.metadata.ejb.spec.ApplicationExceptionMetaData;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public interface EnterpriseBeanEffigy
+public class JBossApplicationExceptionEffigy implements ApplicationExceptionEffigy
 {
-   /**
-    * Returns the applicable ApplicationExceptionEffigy for the given
-    * exception.
-    *
-    * @param exceptionClass the exception class
-    * @return the application exception effigy or null if not an application exception
-    */
-   ApplicationExceptionEffigy getApplicationException(Class<?> exceptionClass);
-   
-   Class<?> getEjbClass();
+   private Class<?> exceptionClass;
+   private ApplicationExceptionMetaData metaData;
 
    /**
-    * @return the ejb-name
+    * DO NOT USE!
+    *
+    * Null marker in the cache.
     */
-   String getName();      
+   JBossApplicationExceptionEffigy()
+   {
+
+   }
+
+   protected JBossApplicationExceptionEffigy(ClassLoader classLoader, ApplicationExceptionMetaData metaData)
+           throws ClassNotFoundException
+   {
+      this.exceptionClass = classLoader.loadClass(metaData.getExceptionClass());
+      this.metaData = metaData;
+   }
+
+   @Override
+   public Class<?> getExceptionClass()
+   {
+      return exceptionClass;
+   }
+
+   @Override
+   public boolean isInherited()
+   {
+      return true;
+   }
+
+   @Override
+   public boolean isRollback()
+   {
+      return metaData.isRollback();
+   }
 }

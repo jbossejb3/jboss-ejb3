@@ -1,7 +1,7 @@
 /*
  * JBoss, Home of Professional Open Source
  * Copyright (c) 2010, Red Hat Middleware LLC, and individual contributors
- * as indicated by the @authors tag. See the copyright.txt in the
+ * as indicated by the @authors tag. See the copyright.txt in the 
  * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
@@ -19,26 +19,32 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.effigy;
+package org.jboss.ejb3.effigy.int2;
+
+import org.jboss.ejb3.effigy.ApplicationExceptionEffigy;
+import org.jboss.ejb3.effigy.common.JBossApplicationExceptionEffigy;
+import org.jboss.metadata.ejb.spec.ApplicationExceptionMetaData;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public interface EnterpriseBeanEffigy
+public class JBossApplicationException31Effigy extends JBossApplicationExceptionEffigy
+        implements ApplicationExceptionEffigy
 {
-   /**
-    * Returns the applicable ApplicationExceptionEffigy for the given
-    * exception.
-    *
-    * @param exceptionClass the exception class
-    * @return the application exception effigy or null if not an application exception
-    */
-   ApplicationExceptionEffigy getApplicationException(Class<?> exceptionClass);
-   
-   Class<?> getEjbClass();
+   private boolean inherited;
 
-   /**
-    * @return the ejb-name
-    */
-   String getName();      
+   protected JBossApplicationException31Effigy(ClassLoader classLoader, ApplicationExceptionMetaData metaData)
+           throws ClassNotFoundException
+   {
+      super(classLoader, metaData);
+
+      Boolean i = metaData.isInherited();
+      this.inherited = (i == null ? true : i.booleanValue());
+   }
+
+   @Override
+   public boolean isInherited()
+   {
+      return inherited;
+   }
 }

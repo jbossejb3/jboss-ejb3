@@ -22,23 +22,40 @@
 package org.jboss.ejb3.effigy;
 
 /**
+ * The ApplicationExceptionEffigy declares an application
+ * exception.
+ *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public interface EnterpriseBeanEffigy
+public interface ApplicationExceptionEffigy
 {
    /**
-    * Returns the applicable ApplicationExceptionEffigy for the given
-    * exception.
-    *
-    * @param exceptionClass the exception class
-    * @return the application exception effigy or null if not an application exception
+    * The exception class. When the container receives
+    * an exception of this type, it is required to
+    * forward this exception as an application exception
+    * to the client regardless of whether it is a checked
+    * or unchecked exception.
     */
-   ApplicationExceptionEffigy getApplicationException(Class<?> exceptionClass);
-   
-   Class<?> getEjbClass();
+   Class<?> getExceptionClass();
 
    /**
-    * @return the ejb-name
+    * An optional inherited element. If this element is
+    * set to true, subclasses of the exception class type
+    * are also automatically considered application
+    * exceptions (unless overriden at a lower level).
+    * If set to false, only the exception class type is
+    * considered an application-exception, not its
+    * exception subclasses. If not specified, this
+    * value defaults to true.
+    * @since 3.1
     */
-   String getName();      
+   boolean isInherited();
+
+   /**
+    * An optional rollback element. If this element is
+    * set to true, the container must rollback the current
+    * transaction before forwarding the exception to the
+    * client.  If not specified, it defaults to false.
+    */
+   boolean isRollback();
 }
