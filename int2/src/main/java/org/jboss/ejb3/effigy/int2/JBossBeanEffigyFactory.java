@@ -27,7 +27,6 @@ import org.jboss.ejb3.effigy.common.JBossEnterpriseBeanEffigy;
 import org.jboss.ejb3.effigy.common.JBossSessionBeanEffigy;
 import org.jboss.ejb3.effigy.spi.BeanEffigyFactory;
 import org.jboss.metadata.ejb.jboss.JBossEnterpriseBeanMetaData;
-import org.jboss.metadata.ejb.jboss.JBossMessageDrivenBeanMetaData;
 import org.jboss.metadata.ejb.jboss.JBossSessionBean31MetaData;
 import org.jboss.metadata.ejb.jboss.JBossSessionBeanMetaData;
 import org.jboss.metadata.ejb.jboss.jndipolicy.plugins.JBossSessionPolicyDecorator;
@@ -46,10 +45,12 @@ public class JBossBeanEffigyFactory implements BeanEffigyFactory<JBossBeanEffigy
       if(beanMetaData instanceof JBossSessionPolicyDecorator)
          beanMetaData = ((JBossSessionPolicyDecorator<JBossSessionBeanMetaData>) beanMetaData).getDelegate();
       // TODO: a lot
-      if(beanMetaData instanceof JBossMessageDrivenBeanMetaData)
-         return (T) new JBossEnterpriseBeanEffigy(info.getClassLoader(), beanMetaData);
+      // must come before JBossSessionBeanMetaData
       if(beanMetaData instanceof JBossSessionBean31MetaData)
          return (T) new JBossSessionBean31Effigy(info.getClassLoader(), (JBossSessionBean31MetaData) beanMetaData);
-      return (T) new JBossSessionBeanEffigy(info.getClassLoader(), (JBossSessionBeanMetaData) beanMetaData);
+      if(beanMetaData instanceof JBossSessionBeanMetaData)
+         return (T) new JBossSessionBeanEffigy(info.getClassLoader(), (JBossSessionBeanMetaData) beanMetaData);
+      // generic fallback
+      return expectedType.cast(new JBossEnterpriseBeanEffigy(info.getClassLoader(), beanMetaData));
    }
 }
