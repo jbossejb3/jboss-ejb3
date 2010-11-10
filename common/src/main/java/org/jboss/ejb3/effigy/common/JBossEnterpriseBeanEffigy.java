@@ -36,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public abstract class JBossEnterpriseBeanEffigy implements EnterpriseBeanEffigy
+public class JBossEnterpriseBeanEffigy implements EnterpriseBeanEffigy
 {
    private static final ApplicationExceptionEffigy NULL = new JBossApplicationExceptionEffigy();
    
@@ -45,7 +45,7 @@ public abstract class JBossEnterpriseBeanEffigy implements EnterpriseBeanEffigy
    private Collection<ApplicationExceptionEffigy> applicationExceptionEffigies;
    private Map<Class<?>, ApplicationExceptionEffigy> applicationExceptionEffigyMap = new ConcurrentHashMap<Class<?>, ApplicationExceptionEffigy>();
 
-   protected JBossEnterpriseBeanEffigy(ClassLoader classLoader, JBossEnterpriseBeanMetaData beanMetaData)
+   public JBossEnterpriseBeanEffigy(ClassLoader classLoader, JBossEnterpriseBeanMetaData beanMetaData)
            throws ClassNotFoundException
    {
       this.beanMetaData = beanMetaData;

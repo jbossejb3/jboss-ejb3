@@ -23,9 +23,11 @@ package org.jboss.ejb3.effigy.int1;
 
 import org.jboss.ejb3.effigy.EnterpriseBeanEffigy;
 import org.jboss.ejb3.effigy.common.JBossBeanEffigyInfo;
+import org.jboss.ejb3.effigy.common.JBossEnterpriseBeanEffigy;
 import org.jboss.ejb3.effigy.common.JBossSessionBeanEffigy;
 import org.jboss.ejb3.effigy.spi.BeanEffigyFactory;
 import org.jboss.metadata.ejb.jboss.JBossEnterpriseBeanMetaData;
+import org.jboss.metadata.ejb.jboss.JBossMessageDrivenBeanMetaData;
 import org.jboss.metadata.ejb.jboss.JBossSessionBeanMetaData;
 import org.jboss.metadata.ejb.jboss.jndipolicy.plugins.JBossSessionPolicyDecorator;
 
@@ -43,6 +45,8 @@ public class JBossBeanEffigyFactory implements BeanEffigyFactory<JBossBeanEffigy
       if(beanMetaData instanceof JBossSessionPolicyDecorator)
          beanMetaData = ((JBossSessionPolicyDecorator<JBossSessionBeanMetaData>) beanMetaData).getDelegate();
       // TODO: a lot
+      if(beanMetaData instanceof JBossMessageDrivenBeanMetaData)
+         return (T) new JBossEnterpriseBeanEffigy(info.getClassLoader(), beanMetaData);
       return (T) new JBossSessionBeanEffigy(info.getClassLoader(), (JBossSessionBeanMetaData) beanMetaData);
    }
 }
