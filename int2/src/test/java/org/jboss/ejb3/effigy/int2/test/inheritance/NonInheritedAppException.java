@@ -19,28 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.effigy;
+package org.jboss.ejb3.effigy.int2.test.inheritance;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public interface EnterpriseBeanEffigy
+public class NonInheritedAppException extends Exception
 {
-   /**
-    * Returns the applicable ApplicationExceptionEffigy for the given
-    * exception. Note that this still not means that the exceptionClass
-    * is an actual application exception in case the ApplicationExceptionEffigy
-    * returned signifies a non-inherited super-class.
-    *
-    * @param exceptionClass the exception class
-    * @return the application exception effigy or null if not an application exception
-    */
-   ApplicationExceptionEffigy getApplicationException(Class<?> exceptionClass);
-   
-   Class<?> getEjbClass();
-
-   /**
-    * @return the ejb-name
-    */
-   String getName();      
 }

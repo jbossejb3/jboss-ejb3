@@ -78,6 +78,23 @@ public class JBossEnterpriseBeanEffigy implements EnterpriseBeanEffigy
       return new JBossApplicationExceptionEffigy(classLoader, metaData);
    }
    
+   /**
+    * slow
+    */
+   private ApplicationExceptionEffigy findApplicationException(Class<?> exceptionClass)
+   {
+      for(ApplicationExceptionEffigy applicationExceptionEffigy : applicationExceptionEffigies)
+      {
+         if(applicationExceptionEffigy.getExceptionClass().equals(exceptionClass))
+            return applicationExceptionEffigy;
+      }
+
+      Class<?> superclass = exceptionClass.getSuperclass();
+      if(superclass == null)
+         return null;
+      return findApplicationException(exceptionClass.getSuperclass());
+   }
+
    @Override
    public ApplicationExceptionEffigy getApplicationException(Class<?> exceptionClass)
    {
@@ -89,28 +106,12 @@ public class JBossEnterpriseBeanEffigy implements EnterpriseBeanEffigy
          return null;
       if(applicationExceptionEffigy != null)
          return applicationExceptionEffigy;
-      applicationExceptionEffigy = getApplicationException(exceptionClass, false);
+      applicationExceptionEffigy = findApplicationException(exceptionClass);
       if(applicationExceptionEffigy == null)
          applicationExceptionEffigyMap.put(exceptionClass, NULL);
       else
          applicationExceptionEffigyMap.put(exceptionClass, applicationExceptionEffigy);
       return applicationExceptionEffigy;
-   }
-
-   /**
-    * slow
-    */
-   private ApplicationExceptionEffigy getApplicationException(Class<?> exceptionClass, boolean onlyInherited)
-   {
-      for(ApplicationExceptionEffigy applicationExceptionEffigy : applicationExceptionEffigies)
-      {
-         boolean isInherited = applicationExceptionEffigy.isInherited();
-         if((isInherited && onlyInherited) || !onlyInherited)
-            if(applicationExceptionEffigy.getExceptionClass().equals(exceptionClass))
-               return applicationExceptionEffigy;
-      }
-
-      return getApplicationException(exceptionClass.getSuperclass(), true);
    }
 
    @Override
