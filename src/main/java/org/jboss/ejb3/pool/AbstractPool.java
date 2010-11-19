@@ -79,15 +79,6 @@ public abstract class AbstractPool implements Pool
    {
       BeanContext ctx;
       ctx = createBeanContext();
-      container.pushContext(ctx);
-      try
-      {
-         container.injectBeanContext(ctx);
-      }
-      finally
-      {
-         container.popContext();
-      }
 
       container.invokePostConstruct(ctx, initValues);
 
