@@ -129,7 +129,7 @@ public abstract class BaseInvocationContext implements InvocationContext
       return getEJBContext().getTarget();
    }
 
-   public Timer getTimer()
+   public Object getTimer()
    {
       return timer;
    }

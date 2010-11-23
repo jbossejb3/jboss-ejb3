@@ -41,7 +41,7 @@ public interface InvocationContext extends javax.interceptor.InvocationContext, 
    /**
     * @since 1.1
     */
-   Timer getTimer();
+   Object getTimer();
    
    void setCallerPrincipal(Principal callerPrincipal);
 
