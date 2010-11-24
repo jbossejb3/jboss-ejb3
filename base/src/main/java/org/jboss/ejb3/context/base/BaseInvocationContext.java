@@ -177,10 +177,44 @@ public abstract class BaseInvocationContext implements InvocationContext
       this.instanceContext = instanceContext;
    }
 
+   /**
+    * Transform an invocation context from lifecycle to business method and vica versa.
+    *
+    * Whether this is wise remains to be seen, best not used.
+    * 
+    * @param method
+    */
+   protected void setMethod(Method method)
+   {
+      this.method = method;
+   }
+   
    public void setParameters(Object[] params) throws IllegalArgumentException, IllegalStateException
    {
       if(method == null)
          throw new IllegalStateException("Setting parameters is not allowed on lifecycle callbacks (EJB 3.0 FR 12)");
+      Class<?> parameterTypes[] = method.getParameterTypes();
+      if(params != null)
+      {
+         if(parameterTypes.length != params.length)
+            throw new IllegalArgumentException("Got wrong number of arguments, expected " + parameterTypes.length + ", got " + params.length + " on " + method);
+         for(int i = 0; i < parameterTypes.length; i++)
+         {
+            Class<?> expectedType = Primitives.normalize(parameterTypes[i]);
+            Object param = params[i];
+            if(param != null)
+            {
+               Class<?> actualType = param.getClass();
+               if(!expectedType.isAssignableFrom(actualType))
+                  throw new IllegalArgumentException("Parameter " + i + " has the wrong type, expected " + expectedType + ", got " + actualType + " on " + method);
+            }
+         }
+      }
+      else
+      {
+         if(parameterTypes.length != 0)
+            throw new IllegalArgumentException("Got wrong number of arguments, expected " + parameterTypes.length + ", got none on " + method);
+      }
       this.parameters = params;
    }
 
