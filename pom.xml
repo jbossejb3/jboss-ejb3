@@ -97,7 +97,7 @@
 
    <properties>
       <!-- per default maven.repo.local is null, so set up a sensible default -->
-      <maven.repo.local>${user.home}/.m2/repository</maven.repo.local>
+      <maven.repo.local>${settings.localRepository}</maven.repo.local>
    </properties>
 
    <reporting>
