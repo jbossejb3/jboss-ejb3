@@ -19,47 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.effigy.common;
+package org.jboss.ejb3.effigy.aop;
 
-import org.jboss.ejb3.effigy.AccessTimeoutEffigy;
-import org.jboss.ejb3.effigy.SessionBeanEffigy;
-import org.jboss.metadata.ejb.jboss.JBossSessionBeanMetaData;
-
-import java.lang.reflect.Method;
+import org.jboss.ejb3.effigy.EnterpriseBeanEffigy;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class JBossSessionBeanEffigy extends JBossEnterpriseBeanEffigy
-   implements SessionBeanEffigy
+public interface EJBInvocation
 {
-   public JBossSessionBeanEffigy(ClassLoader classLoader, JBossSessionBeanMetaData beanMetaData)
-           throws ClassNotFoundException
-   {
-      super(classLoader, beanMetaData);
-   }
-
-   @Override
-   public AccessTimeoutEffigy getAccessTimeout(Method method)
-   {
-      return null;
-   }
-
-   @Override
-   public Method getAfterBeginMethod()
-   {
-      return null;
-   }
-
-   @Override
-   public Method getAfterCompletionMethod()
-   {
-      return null;
-   }
-
-   @Override
-   public Method getBeforeCompletionMethod()
-   {
-      return null;
-   }
+   /**
+    * @return the effigy that belongs to the bean manager executing this invocation
+    */
+   EnterpriseBeanEffigy getEffigy();
 }

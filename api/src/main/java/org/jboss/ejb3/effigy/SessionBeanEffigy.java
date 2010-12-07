@@ -28,6 +28,14 @@ import java.lang.reflect.Method;
  */
 public interface SessionBeanEffigy extends EnterpriseBeanEffigy
 {
+   /**
+    * Return the access timeout for the given method or null if not applicable.
+    *
+    * @param method the business method invoked
+    * @return the access timeout or null
+    */
+   AccessTimeoutEffigy getAccessTimeout(Method method);
+   
    Method getAfterBeginMethod();
 
    Method getAfterCompletionMethod();

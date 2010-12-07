@@ -114,6 +114,11 @@ public class JBossEnterpriseBeanEffigy implements EnterpriseBeanEffigy
       return applicationExceptionEffigy;
    }
 
+   protected JBossEnterpriseBeanMetaData getBeanMetaData()
+   {
+      return beanMetaData;
+   }
+
    @Override
    public Class<?> getEjbClass()
    {

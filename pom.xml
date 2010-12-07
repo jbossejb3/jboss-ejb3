@@ -10,7 +10,7 @@
 
    <groupId>org.jboss.ejb3.effigy</groupId>
    <artifactId>jboss-ejb3-effigy</artifactId>
-   <version>0.1.1-SNAPSHOT</version>
+   <version>0.2.0-SNAPSHOT</version>
 
    <packaging>pom</packaging>
 
@@ -71,6 +71,7 @@
    </issueManagement>
 
    <modules>
+      <module>aop-int</module>
       <module>api</module>
       <module>common</module>
       <module>int1</module>

@@ -21,10 +21,14 @@
  */
 package org.jboss.ejb3.effigy.int2;
 
+import org.jboss.ejb3.effigy.AccessTimeoutEffigy;
 import org.jboss.ejb3.effigy.ApplicationExceptionEffigy;
 import org.jboss.ejb3.effigy.common.JBossSessionBeanEffigy;
 import org.jboss.metadata.ejb.jboss.JBossSessionBean31MetaData;
+import org.jboss.metadata.ejb.spec.AccessTimeoutMetaData;
 import org.jboss.metadata.ejb.spec.ApplicationExceptionMetaData;
+import org.jboss.metadata.ejb.spec.ConcurrentMethodMetaData;
+import org.jboss.metadata.ejb.spec.ConcurrentMethodsMetaData;
 import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 
 import java.lang.reflect.Method;
@@ -48,11 +52,36 @@ public class JBossSessionBean31Effigy extends JBossSessionBeanEffigy
       this.beforeCompletionMethod = method(beanMetaData.getBeforeCompletionMethod());
    }
 
+   private static AccessTimeoutEffigy accessTimeout(AccessTimeoutMetaData accessTimeout)
+   {
+      if(accessTimeout == null)
+         return null;
+      return new JBossAccessTimeoutEffigy(accessTimeout.getTimeout(), accessTimeout.getUnit());
+   }
+
    @Override
    protected ApplicationExceptionEffigy createApplicationExceptionEffigy(ClassLoader classLoader, ApplicationExceptionMetaData metaData)
            throws ClassNotFoundException
    {
       return new JBossApplicationException31Effigy(classLoader, metaData);
+   }
+
+   @Override
+   public AccessTimeoutEffigy getAccessTimeout(Method method)
+   {
+      // TODO: speed up using a cache
+
+      // best match
+      JBossSessionBean31MetaData beanMetaData = getBeanMetaData();
+      String params[] = params(method);
+      ConcurrentMethodsMetaData concurrentMethods = beanMetaData.getConcurrentMethods();
+      if(concurrentMethods != null)
+      {
+         ConcurrentMethodMetaData concurrentMethodMetaData = concurrentMethods.bestMatch(method.getName(), params);
+         if(concurrentMethodMetaData != null)
+            return accessTimeout(concurrentMethodMetaData.getAccessTimeout());
+      }
+      return accessTimeout(beanMetaData.getAccessTimeout());
    }
 
    @Override
@@ -65,6 +94,12 @@ public class JBossSessionBean31Effigy extends JBossSessionBeanEffigy
    public Method getAfterCompletionMethod()
    {
       return afterCompletionMethod;
+   }
+
+   @Override
+   protected JBossSessionBean31MetaData getBeanMetaData()
+   {
+      return (JBossSessionBean31MetaData) super.getBeanMetaData();
    }
 
    @Override
@@ -81,5 +116,14 @@ public class JBossSessionBean31Effigy extends JBossSessionBeanEffigy
       Method method = ClassHelper.findMethod(getEjbClass(), namedMethod.getMethodName());
       method.setAccessible(true);
       return method;
+   }
+
+   private static String[] params(Method method)
+   {
+      Class<?> parameterTypes[] = method.getParameterTypes();
+      String params[] = new String[parameterTypes.length];
+      for(int i = 0; i < params.length; i++)
+         params[i] = parameterTypes[i].getName();
+      return params;
    }
 }

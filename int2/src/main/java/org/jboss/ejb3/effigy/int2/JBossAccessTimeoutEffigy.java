@@ -19,47 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.effigy.common;
+package org.jboss.ejb3.effigy.int2;
 
 import org.jboss.ejb3.effigy.AccessTimeoutEffigy;
-import org.jboss.ejb3.effigy.SessionBeanEffigy;
-import org.jboss.metadata.ejb.jboss.JBossSessionBeanMetaData;
 
-import java.lang.reflect.Method;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class JBossSessionBeanEffigy extends JBossEnterpriseBeanEffigy
-   implements SessionBeanEffigy
+public class JBossAccessTimeoutEffigy implements AccessTimeoutEffigy
 {
-   public JBossSessionBeanEffigy(ClassLoader classLoader, JBossSessionBeanMetaData beanMetaData)
-           throws ClassNotFoundException
+   private long timeout;
+   private TimeUnit unit;
+
+   protected JBossAccessTimeoutEffigy(long timeout, TimeUnit unit)
    {
-      super(classLoader, beanMetaData);
+      this.timeout = timeout;
+      this.unit = unit;
    }
 
    @Override
-   public AccessTimeoutEffigy getAccessTimeout(Method method)
+   public long getTimeout()
    {
-      return null;
+      return timeout;
    }
 
    @Override
-   public Method getAfterBeginMethod()
+   public TimeUnit getUnit()
    {
-      return null;
-   }
-
-   @Override
-   public Method getAfterCompletionMethod()
-   {
-      return null;
-   }
-
-   @Override
-   public Method getBeforeCompletionMethod()
-   {
-      return null;
+      return unit;
    }
 }
