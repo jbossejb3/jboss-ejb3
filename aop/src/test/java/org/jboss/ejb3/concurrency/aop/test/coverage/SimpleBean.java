@@ -21,25 +21,27 @@
  */
 package org.jboss.ejb3.concurrency.aop.test.coverage;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static javax.ejb.LockType.READ;
+import org.jboss.ejb3.interceptors.container.BeanContext;
+import org.jboss.ejb3.interceptors.direct.DirectContainer;
 
+import javax.ejb.AccessTimeout;
+import javax.ejb.Lock;
+import javax.ejb.Singleton;
+import javax.ejb.Stateful;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.ejb.AccessTimeout;
-import javax.ejb.Lock;
-
-import org.jboss.ejb3.interceptors.container.BeanContext;
-import org.jboss.ejb3.interceptors.direct.DirectContainer;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static javax.ejb.LockType.READ;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @version $Revision: $
  */
+@Singleton
 @AccessTimeout(5000)
 public class SimpleBean
 {

@@ -21,26 +21,26 @@
  */
 package org.jboss.ejb3.concurrency.aop.test.coverage.unit;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import org.jboss.ejb3.concurrency.aop.test.common.AbstractBootstrapTestCase;
+import org.jboss.ejb3.concurrency.aop.test.common.DummyContainer;
+import org.jboss.ejb3.concurrency.aop.test.coverage.SimpleBean;
+import org.jboss.ejb3.interceptors.container.BeanContext;
+import org.jboss.ejb3.interceptors.direct.DirectContainer;
+import org.junit.Test;
 
+import javax.ejb.AccessTimeout;
+import javax.ejb.ConcurrentAccessException;
+import javax.ejb.ConcurrentAccessTimeoutException;
+import javax.ejb.IllegalLoopbackException;
 import java.util.Date;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import javax.ejb.AccessTimeout;
-import javax.ejb.ConcurrentAccessException;
-import javax.ejb.ConcurrentAccessTimeoutException;
-import javax.ejb.IllegalLoopbackException;
-
-import org.jboss.ejb3.concurrency.aop.test.common.AbstractBootstrapTestCase;
-import org.jboss.ejb3.concurrency.aop.test.coverage.SimpleBean;
-import org.jboss.ejb3.interceptors.container.BeanContext;
-import org.jboss.ejb3.interceptors.direct.DirectContainer;
-import org.junit.Test;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * Try to touch as much code as possible. Don't check spec, if it's tested it exists.
@@ -98,7 +98,7 @@ public class CoverageTestCase extends AbstractBootstrapTestCase
    {
       ExecutorService service = Executors.newCachedThreadPool();
       
-      final DirectContainer<SimpleBean> container = new DirectContainer<SimpleBean>("SimpleBean", "Singleton Container", SimpleBean.class);
+      final DummyContainer<SimpleBean> container = new DummyContainer<SimpleBean>("SimpleBean", "Singleton Container", SimpleBean.class);
       
       final BeanContext<SimpleBean> bean = container.construct();
       
@@ -127,7 +127,7 @@ public class CoverageTestCase extends AbstractBootstrapTestCase
    {
       ExecutorService service = Executors.newCachedThreadPool();
       
-      final DirectContainer<SimpleBean> container = new DirectContainer<SimpleBean>("SimpleBean", "Singleton Container", SimpleBean.class);
+      final DummyContainer<SimpleBean> container = new DummyContainer<SimpleBean>("SimpleBean", "Singleton Container", SimpleBean.class);
       
       final BeanContext<SimpleBean> bean = container.construct();
       
@@ -150,7 +150,7 @@ public class CoverageTestCase extends AbstractBootstrapTestCase
    @Test
    public void testSanity() throws Throwable
    {
-      DirectContainer<SimpleBean> container = new DirectContainer<SimpleBean>("SimpleBean", "Singleton Container", SimpleBean.class);
+      DummyContainer<SimpleBean> container = new DummyContainer<SimpleBean>("SimpleBean", "Singleton Container", SimpleBean.class);
       
       BeanContext<SimpleBean> bean = container.construct();
       
@@ -165,7 +165,7 @@ public class CoverageTestCase extends AbstractBootstrapTestCase
    {
       ExecutorService executor = Executors.newCachedThreadPool();
       
-      final DirectContainer<SimpleBean> container = new DirectContainer<SimpleBean>("SimpleBean", "Singleton Container", SimpleBean.class);
+      final DummyContainer<SimpleBean> container = new DummyContainer<SimpleBean>("SimpleBean", "Singleton Container", SimpleBean.class);
       
       final BeanContext<SimpleBean> bean = container.construct();
       
@@ -194,7 +194,7 @@ public class CoverageTestCase extends AbstractBootstrapTestCase
    @Test
    public void testReadIntoRead() throws Throwable
    {
-      DirectContainer<SimpleBean> container = new DirectContainer<SimpleBean>("SimpleBean", "Singleton Container", SimpleBean.class);
+      DummyContainer<SimpleBean> container = new DummyContainer<SimpleBean>("SimpleBean", "Singleton Container", SimpleBean.class);
       
       BeanContext<SimpleBean> bean = container.construct();
       
@@ -205,7 +205,7 @@ public class CoverageTestCase extends AbstractBootstrapTestCase
    @Test
    public void testReadIntoWrite() throws Throwable
    {
-      DirectContainer<SimpleBean> container = new DirectContainer<SimpleBean>("SimpleBean", "Singleton Container", SimpleBean.class);
+      DummyContainer<SimpleBean> container = new DummyContainer<SimpleBean>("SimpleBean", "Singleton Container", SimpleBean.class);
       
       BeanContext<SimpleBean> bean = container.construct();
       
@@ -229,7 +229,7 @@ public class CoverageTestCase extends AbstractBootstrapTestCase
    @Test
    public void testNonConcurrentZeroAccessTimeout() throws Throwable
    {
-      DirectContainer<SimpleBean> container = new DirectContainer<SimpleBean>("SimpleBean", "Singleton Container", SimpleBean.class);
+      DummyContainer<SimpleBean> container = new DummyContainer<SimpleBean>("SimpleBean", "Singleton Container", SimpleBean.class);
       
       BeanContext<SimpleBean> bean = container.construct();
       // since this is a single (non-concurrent) call, even if the @AccessTimeout is 0, the call should succeed
@@ -250,7 +250,7 @@ public class CoverageTestCase extends AbstractBootstrapTestCase
       
       ExecutorService service = Executors.newCachedThreadPool();
       
-      final DirectContainer<SimpleBean> container = new DirectContainer<SimpleBean>("SimpleBean", "Singleton Container", SimpleBean.class);
+      final DummyContainer<SimpleBean> container = new DummyContainer<SimpleBean>("SimpleBean", "Singleton Container", SimpleBean.class);
       
       final BeanContext<SimpleBean> bean = container.construct();
       

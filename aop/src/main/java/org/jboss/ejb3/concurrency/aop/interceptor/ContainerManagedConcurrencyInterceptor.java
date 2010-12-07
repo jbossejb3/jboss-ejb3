@@ -21,20 +21,22 @@
  */
 package org.jboss.ejb3.concurrency.aop.interceptor;
 
+import org.jboss.aop.advice.Interceptor;
+import org.jboss.aop.joinpoint.Invocation;
+import org.jboss.aop.joinpoint.MethodInvocation;
+import org.jboss.ejb3.concurrency.impl.EJBReadWriteLock;
+import org.jboss.ejb3.effigy.AccessTimeoutEffigy;
+import org.jboss.ejb3.effigy.SessionBeanEffigy;
+import org.jboss.ejb3.effigy.aop.EJBInvocation;
+import org.jboss.logging.Logger;
+
+import javax.ejb.ConcurrentAccessTimeoutException;
+import javax.ejb.LockType;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-
-import javax.ejb.AccessTimeout;
-import javax.ejb.ConcurrentAccessTimeoutException;
-import javax.ejb.LockType;
-
-import org.jboss.aop.advice.Interceptor;
-import org.jboss.aop.joinpoint.Invocation;
-import org.jboss.ejb3.concurrency.impl.EJBReadWriteLock;
-import org.jboss.logging.Logger;
 
 /**
  * Implementation of AOP based {@link Interceptor} which is responsible 
@@ -79,12 +81,14 @@ public class ContainerManagedConcurrencyInterceptor implements Interceptor
     * @return Returns the access timeout value for the <code>invocation</code>. 
     *       Returns null if no access timeout is specified
     */
-   private AccessTimeout getAccessTimeout(Invocation invocation)
+   private AccessTimeoutEffigy getAccessTimeout(MethodInvocation invocation)
    {
-      AccessTimeout timeout = (AccessTimeout) invocation.resolveAnnotation(AccessTimeout.class);
-      if(timeout == null)
-         timeout = (AccessTimeout) invocation.resolveClassAnnotation(AccessTimeout.class);
-      return timeout;
+      return getEffigy((EJBInvocation) invocation).getAccessTimeout(invocation.getMethod());
+   }
+   
+   private SessionBeanEffigy getEffigy(EJBInvocation invocation)
+   {
+      return (SessionBeanEffigy) invocation.getEffigy();
    }
    
    /**
@@ -149,21 +153,21 @@ public class ContainerManagedConcurrencyInterceptor implements Interceptor
       Lock lock = getLock(invocation);
       long time = DEFAULT_MAX_TIMEOUT_VALUE;
       TimeUnit unit = DEFAULT_MAX_TIMEOUT_UNIT;
-      AccessTimeout timeout = getAccessTimeout(invocation);
+      AccessTimeoutEffigy timeout = getAccessTimeout((MethodInvocation) invocation);
       if(timeout != null)
       {
-         if (timeout.value() < 0) 
+         if (timeout.getTimeout() < 0)
          {
             // for any negative value of timeout, we just default to max timeout val and max timeout unit.
             // violation of spec! But we don't want to wait indefinitely.
-            logger.info("Ignoring a negative @AccessTimeout value: " + timeout.value() + " and timeout unit: "
-                  + timeout.unit().name() + ". Will default to timeout value: " + DEFAULT_MAX_TIMEOUT_VALUE
+            logger.info("Ignoring a negative @AccessTimeout value: " + timeout.getTimeout() + " and timeout unit: "
+                  + timeout.getUnit().name() + ". Will default to timeout value: " + DEFAULT_MAX_TIMEOUT_VALUE
                   + " and timeout unit: " + DEFAULT_MAX_TIMEOUT_UNIT.name());
          }
          else
          {
-            time = timeout.value();
-            unit = timeout.unit();
+            time = timeout.getTimeout();
+            unit = timeout.getUnit();
          }
       }
       boolean success = lock.tryLock(time, unit);

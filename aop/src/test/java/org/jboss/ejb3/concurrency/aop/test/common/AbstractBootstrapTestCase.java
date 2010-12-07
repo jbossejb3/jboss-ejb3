@@ -21,12 +21,6 @@
  */
 package org.jboss.ejb3.concurrency.aop.test.common;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.util.List;
-import java.util.Properties;
-
 import org.jboss.bootstrap.microcontainer.ServerImpl;
 import org.jboss.bootstrap.spi.ServerConfig;
 import org.jboss.bootstrap.spi.microcontainer.MCServer;
@@ -40,6 +34,12 @@ import org.jboss.virtual.VFS;
 import org.jboss.virtual.VirtualFile;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
