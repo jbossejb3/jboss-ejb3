@@ -34,6 +34,8 @@ import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 import org.jboss.metadata.ejb.spec.StatefulTimeoutMetaData;
 
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -44,6 +46,7 @@ public class JBossSessionBean31Effigy extends JBossSessionBeanEffigy
    private Method afterCompletionMethod;
    private Method beforeCompletionMethod;
    private StatefulTimeoutEffigy statefulTimeout;
+   private Map<Method, AccessTimeoutEffigy> accessTimeoutCache = new ConcurrentHashMap<Method, AccessTimeoutEffigy>();
 
    protected JBossSessionBean31Effigy(ClassLoader classLoader, JBossSessionBean31MetaData beanMetaData)
            throws ClassNotFoundException
@@ -70,11 +73,8 @@ public class JBossSessionBean31Effigy extends JBossSessionBeanEffigy
       return new JBossApplicationException31Effigy(classLoader, metaData);
    }
 
-   @Override
-   public AccessTimeoutEffigy getAccessTimeout(Method method)
+   private AccessTimeoutEffigy findAccessTimeout(Method method)
    {
-      // TODO: speed up using a cache
-
       // best match
       JBossSessionBean31MetaData beanMetaData = getBeanMetaData();
       String params[] = params(method);
@@ -86,6 +86,22 @@ public class JBossSessionBean31Effigy extends JBossSessionBeanEffigy
             return accessTimeout(concurrentMethodMetaData.getAccessTimeout());
       }
       return accessTimeout(beanMetaData.getAccessTimeout());
+   }
+
+   @Override
+   public AccessTimeoutEffigy getAccessTimeout(Method method)
+   {
+      AccessTimeoutEffigy timeout = accessTimeoutCache.get(method);
+      if(timeout == null)
+      {
+         timeout = findAccessTimeout(method);
+         if(timeout == null)
+            timeout = JBossAccessTimeoutEffigy.NULL;
+         accessTimeoutCache.put(method, timeout);
+      }
+      if(timeout == JBossAccessTimeoutEffigy.NULL)
+         return null;
+      return timeout;
    }
 
    @Override

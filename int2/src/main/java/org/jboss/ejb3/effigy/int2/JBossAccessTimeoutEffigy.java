@@ -31,6 +31,8 @@ import java.util.concurrent.TimeUnit;
 public class JBossAccessTimeoutEffigy extends AbstractTimeoutEffigy
    implements AccessTimeoutEffigy
 {
+   protected static JBossAccessTimeoutEffigy NULL = new JBossAccessTimeoutEffigy(0, null);
+
    protected JBossAccessTimeoutEffigy(long timeout, TimeUnit unit)
    {
       super(timeout, unit);
