@@ -160,7 +160,7 @@ public class ContainerManagedConcurrencyInterceptor implements Interceptor
          {
             // for any negative value of timeout, we just default to max timeout val and max timeout unit.
             // violation of spec! But we don't want to wait indefinitely.
-            logger.info("Ignoring a negative @AccessTimeout value: " + timeout.getTimeout() + " and timeout unit: "
+            logger.debug("Ignoring a negative @AccessTimeout value: " + timeout.getTimeout() + " and timeout unit: "
                   + timeout.getUnit().name() + ". Will default to timeout value: " + DEFAULT_MAX_TIMEOUT_VALUE
                   + " and timeout unit: " + DEFAULT_MAX_TIMEOUT_UNIT.name());
          }
