@@ -21,17 +21,6 @@
  */
 package org.jboss.ejb3.cache.simple;
 
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Map.Entry;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import javax.ejb.EJBException;
-import javax.ejb.NoSuchEJBException;
-
 import org.jboss.aop.Advisor;
 import org.jboss.ejb3.EJBContainer;
 import org.jboss.ejb3.annotation.CacheConfig;
@@ -39,9 +28,21 @@ import org.jboss.ejb3.annotation.PersistenceManager;
 import org.jboss.ejb3.cache.StatefulCache;
 import org.jboss.ejb3.cache.persistence.PersistenceManagerFactory;
 import org.jboss.ejb3.cache.persistence.PersistenceManagerFactoryRegistry;
+import org.jboss.ejb3.effigy.SessionBeanEffigy;
+import org.jboss.ejb3.effigy.StatefulTimeoutEffigy;
 import org.jboss.ejb3.stateful.StatefulBeanContext;
 import org.jboss.ejb3.stateful.StatefulContainer;
 import org.jboss.logging.Logger;
+
+import javax.ejb.EJBException;
+import javax.ejb.NoSuchEJBException;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Comment
@@ -83,7 +84,7 @@ public class SimpleStatefulCache implements StatefulCache
       }
 
       @Override
-      public boolean removeEldestEntry(Entry<Object, StatefulBeanContext> entry)
+      public boolean removeEldestEntry(Map.Entry<Object, StatefulBeanContext> entry)
       {
          boolean removeIt = size() > maxSize;
          if (removeIt)
@@ -123,7 +124,7 @@ public class SimpleStatefulCache implements StatefulCache
       
       protected void block() throws InterruptedException
       {
-         Thread.sleep(removalTimeout * 1000);
+         Thread.sleep(removalTimeout);
       }
       
       protected void preRemoval()
@@ -165,7 +166,7 @@ public class SimpleStatefulCache implements StatefulCache
                   {
                      Entry<Object, StatefulBeanContext> entry = it.next();
                      StatefulBeanContext centry = entry.getValue();
-                     if (now - centry.lastUsed >= removalTimeout * 1000)
+                     if (now - centry.lastUsed >= removalTimeout)
                      {
                         synchronized (centry)
                         {                                                                    
@@ -180,7 +181,7 @@ public class SimpleStatefulCache implements StatefulCache
                while (it.hasNext())
                {       
                   StatefulBeanContext centry = it.next();
-                  if (now - centry.lastUsed >= removalTimeout * 1000)
+                  if (now - centry.lastUsed >= removalTimeout)
                   {
                      get(centry.getId(), false);
                      remove(centry.getId());
@@ -328,7 +329,21 @@ public class SimpleStatefulCache implements StatefulCache
       CacheConfig config = (CacheConfig) advisor.resolveAnnotation(CacheConfig.class);
       maxSize = config.maxSize();
       sessionTimeout = config.idleTimeoutSeconds();
-      removalTimeout = config.removalTimeoutSeconds();
+      removalTimeout = config.removalTimeoutSeconds() * 1000;
+      SessionBeanEffigy effigy = this.container.getEffigy();
+      if(effigy != null)
+      {
+         StatefulTimeoutEffigy statefulTimeout = effigy.getStatefulTimeout();
+         if(statefulTimeout != null)
+         {
+            removalTimeout = statefulTimeout.getUnit().toMillis(statefulTimeout.getTimeout());
+            // the legacy meaning of 0 means no removal
+            // EJB 3.1 FR 4.3.12 states however that the instance becomes immediately eligible for removal
+            // so we have this work-around to simulate this.
+            if(removalTimeout == 0)
+               removalTimeout = 1;
+         }
+      }
       log = Logger.getLogger(getClass().getName() + "." + container.getEjbName());
       log.debug("Initializing SimpleStatefulCache with maxSize: " +maxSize + " timeout: " +sessionTimeout +
               " for " +container.getObjectName().getCanonicalName() );
