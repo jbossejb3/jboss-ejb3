@@ -38,11 +38,11 @@
 
 
 	<!-- SCM -->
-    <scm>
-        <connection>scm:svn:http://anonsvn.jboss.org/repos/jbossas/projects/ejb3/components/concurrency</connection>
-        <developerConnection>scm:svn:https://svn.jboss.org/repos/jbossas/projects/ejb3/components/concurrency</developerConnection>
-        <url>http://anonsvn.jboss.org/repos/jbossas/projects/ejb3/components/concurrency</url>
-    </scm>
+	<scm>
+		<connection>scm:git:git://github.com:jbossejb3/jboss-ejb3-concurrency.git</connection>
+		<developerConnection>scm:git:git@github.com:jbossejb3/jboss-ejb3-concurrency.git</developerConnection>
+		<url>http://github.com/jbossejb3/jboss-ejb3-concurrency</url>
+	</scm>
 
     <!-- Issues -->
     <issueManagement>
