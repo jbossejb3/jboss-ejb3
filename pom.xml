@@ -10,7 +10,7 @@
 
    <groupId>org.jboss.ejb3.effigy</groupId>
    <artifactId>jboss-ejb3-effigy</artifactId>
-   <version>0.2.0</version>
+   <version>0.2.1-SNAPSHOT</version>
 
    <packaging>pom</packaging>
 
