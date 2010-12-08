@@ -75,6 +75,7 @@ public class JBossSessionBean31Effigy extends JBossSessionBeanEffigy
 
    private AccessTimeoutEffigy findAccessTimeout(Method method)
    {
+      AccessTimeoutMetaData accessTimeout = null;
       // best match
       JBossSessionBean31MetaData beanMetaData = getBeanMetaData();
       String params[] = params(method);
@@ -83,9 +84,14 @@ public class JBossSessionBean31Effigy extends JBossSessionBeanEffigy
       {
          ConcurrentMethodMetaData concurrentMethodMetaData = concurrentMethods.bestMatch(method.getName(), params);
          if(concurrentMethodMetaData != null)
-            return accessTimeout(concurrentMethodMetaData.getAccessTimeout());
+         {
+            // the concurrent-method might only contain a lock element, not an access-timeout
+            accessTimeout = concurrentMethodMetaData.getAccessTimeout();
+         }
       }
-      return accessTimeout(beanMetaData.getAccessTimeout());
+      if(accessTimeout == null)
+         accessTimeout = beanMetaData.getAccessTimeout();
+      return accessTimeout(accessTimeout);
    }
 
    @Override
