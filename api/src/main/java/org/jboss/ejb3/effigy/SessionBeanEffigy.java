@@ -41,4 +41,6 @@ public interface SessionBeanEffigy extends EnterpriseBeanEffigy
    Method getAfterCompletionMethod();
 
    Method getBeforeCompletionMethod();
+
+   StatefulTimeoutEffigy getStatefulTimeout();
 }

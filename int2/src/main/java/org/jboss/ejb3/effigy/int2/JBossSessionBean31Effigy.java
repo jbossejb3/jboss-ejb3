@@ -23,6 +23,7 @@ package org.jboss.ejb3.effigy.int2;
 
 import org.jboss.ejb3.effigy.AccessTimeoutEffigy;
 import org.jboss.ejb3.effigy.ApplicationExceptionEffigy;
+import org.jboss.ejb3.effigy.StatefulTimeoutEffigy;
 import org.jboss.ejb3.effigy.common.JBossSessionBeanEffigy;
 import org.jboss.metadata.ejb.jboss.JBossSessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.AccessTimeoutMetaData;
@@ -30,6 +31,7 @@ import org.jboss.metadata.ejb.spec.ApplicationExceptionMetaData;
 import org.jboss.metadata.ejb.spec.ConcurrentMethodMetaData;
 import org.jboss.metadata.ejb.spec.ConcurrentMethodsMetaData;
 import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
+import org.jboss.metadata.ejb.spec.StatefulTimeoutMetaData;
 
 import java.lang.reflect.Method;
 
@@ -41,7 +43,8 @@ public class JBossSessionBean31Effigy extends JBossSessionBeanEffigy
    private Method afterBeginMethod;
    private Method afterCompletionMethod;
    private Method beforeCompletionMethod;
-   
+   private StatefulTimeoutEffigy statefulTimeout;
+
    protected JBossSessionBean31Effigy(ClassLoader classLoader, JBossSessionBean31MetaData beanMetaData)
            throws ClassNotFoundException
    {
@@ -50,6 +53,7 @@ public class JBossSessionBean31Effigy extends JBossSessionBeanEffigy
       this.afterBeginMethod = method(beanMetaData.getAfterBeginMethod());
       this.afterCompletionMethod = method(beanMetaData.getAfterCompletionMethod());
       this.beforeCompletionMethod = method(beanMetaData.getBeforeCompletionMethod());
+      this.statefulTimeout = statefulTimeout(beanMetaData.getStatefulTimeout());
    }
 
    private static AccessTimeoutEffigy accessTimeout(AccessTimeoutMetaData accessTimeout)
@@ -108,6 +112,12 @@ public class JBossSessionBean31Effigy extends JBossSessionBeanEffigy
       return beforeCompletionMethod;
    }
 
+   @Override
+   public StatefulTimeoutEffigy getStatefulTimeout()
+   {
+      return statefulTimeout;
+   }
+
    private Method method(NamedMethodMetaData namedMethod)
    {
       if(namedMethod == null)
@@ -125,5 +135,12 @@ public class JBossSessionBean31Effigy extends JBossSessionBeanEffigy
       for(int i = 0; i < params.length; i++)
          params[i] = parameterTypes[i].getName();
       return params;
+   }
+
+   private static StatefulTimeoutEffigy statefulTimeout(StatefulTimeoutMetaData metaData)
+   {
+      if(metaData == null)
+         return null;
+      return new JBossStatefulTimeoutEffigy(metaData.getTimeout(), metaData.getUnit());
    }
 }

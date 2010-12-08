@@ -21,18 +21,29 @@
  */
 package org.jboss.ejb3.effigy.int2;
 
-import org.jboss.ejb3.effigy.AccessTimeoutEffigy;
-
 import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class JBossAccessTimeoutEffigy extends AbstractTimeoutEffigy
-   implements AccessTimeoutEffigy
+public abstract class AbstractTimeoutEffigy
 {
-   protected JBossAccessTimeoutEffigy(long timeout, TimeUnit unit)
+   private long timeout;
+   private TimeUnit unit;
+
+   protected AbstractTimeoutEffigy(long timeout, TimeUnit unit)
    {
-      super(timeout, unit);
+      this.timeout = timeout;
+      this.unit = unit;
+   }
+
+   public long getTimeout()
+   {
+      return timeout;
+   }
+
+   public TimeUnit getUnit()
+   {
+      return unit;
    }
 }

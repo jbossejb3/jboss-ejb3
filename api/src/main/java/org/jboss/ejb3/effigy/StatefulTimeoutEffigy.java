@@ -19,20 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.effigy.int2;
-
-import org.jboss.ejb3.effigy.AccessTimeoutEffigy;
+package org.jboss.ejb3.effigy;
 
 import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class JBossAccessTimeoutEffigy extends AbstractTimeoutEffigy
-   implements AccessTimeoutEffigy
+public interface StatefulTimeoutEffigy
 {
-   protected JBossAccessTimeoutEffigy(long timeout, TimeUnit unit)
-   {
-      super(timeout, unit);
-   }
+   long getTimeout();
+
+   TimeUnit getUnit();   
 }

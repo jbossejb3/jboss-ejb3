@@ -23,6 +23,7 @@ package org.jboss.ejb3.effigy.common;
 
 import org.jboss.ejb3.effigy.AccessTimeoutEffigy;
 import org.jboss.ejb3.effigy.SessionBeanEffigy;
+import org.jboss.ejb3.effigy.StatefulTimeoutEffigy;
 import org.jboss.metadata.ejb.jboss.JBossSessionBeanMetaData;
 
 import java.lang.reflect.Method;
@@ -59,6 +60,12 @@ public class JBossSessionBeanEffigy extends JBossEnterpriseBeanEffigy
 
    @Override
    public Method getBeforeCompletionMethod()
+   {
+      return null;
+   }
+
+   @Override
+   public StatefulTimeoutEffigy getStatefulTimeout()
    {
       return null;
    }
