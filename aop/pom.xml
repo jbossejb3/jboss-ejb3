@@ -25,7 +25,7 @@
 	<!-- Properties -->
     <properties>
 
-      <version.org.jboss.ejb3.effigy>0.2.0-SNAPSHOT</version.org.jboss.ejb3.effigy>
+      <version.org.jboss.ejb3.effigy>0.2.0</version.org.jboss.ejb3.effigy>
       
         <!-- Versioning -->
         <version.jboss.ejb3.interceptors>1.0.6</version.jboss.ejb3.interceptors>
@@ -106,7 +106,7 @@
       <dependency>
          <groupId>org.jboss.metadata</groupId>
          <artifactId>jboss-metadata-ejb</artifactId>
-         <version>2.0.0-alpha-26-SNAPSHOT</version>
+         <version>2.0.0-alpha-26</version>
          <scope>test</scope>
       </dependency>
            
