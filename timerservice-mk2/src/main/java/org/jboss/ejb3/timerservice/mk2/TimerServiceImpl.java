@@ -205,7 +205,16 @@ public class TimerServiceImpl implements TimerService
    public Timer createIntervalTimer(long initialDuration, long intervalDuration, TimerConfig timerConfig)
          throws IllegalArgumentException, IllegalStateException, EJBException
    {
-      return this.createIntervalTimer(new Date(initialDuration), intervalDuration, timerConfig);
+      if (initialDuration < 0)
+      {
+         throw new IllegalArgumentException("initialDuration cannot be negative while creating interval timer");
+      }
+      if (intervalDuration < 0)
+      {
+         throw new IllegalArgumentException("intervalDuration cannot be negative while creating interval timer");
+      }
+      
+      return this.createIntervalTimer(new Date(System.currentTimeMillis() + initialDuration), intervalDuration, timerConfig);
    }
 
    /**

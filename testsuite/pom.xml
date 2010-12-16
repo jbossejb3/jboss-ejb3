@@ -270,6 +270,7 @@
 						<configuration>
 							<serverConfigName>${jboss.server.config}</serverConfigName>
 							<jvmArgs>
+                                <jvmArg>-Djava.endorsed.dirs=${JBOSS_HOME}/lib/endorsed</jvmArg>
 								<jvmArg>-Xms128m</jvmArg>
 								<jvmArg>-Xmx1024m</jvmArg>
 								<jvmArg>-XX:MaxPermSize=256m</jvmArg>
