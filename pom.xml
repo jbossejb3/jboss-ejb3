@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>4</version>
+        <version>5</version>
     </parent>
 
     <!-- Model Information -->
@@ -127,6 +127,16 @@
                   </archive>
                 </configuration>
           </plugin>
+
+            <!-- Maven Release Plugin Configuration -->
+            <plugin>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.0</version>
+                <configuration>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                </configuration>
+            </plugin>
+          
             
         </plugins>
 
@@ -221,5 +231,11 @@
 
         </plugins>
     </reporting>
+
+   <scm>
+      <connection>scm:git:git://github.com:jbossejb3/jboss-ejb3-timerservice.git</connection>
+      <developerConnection>scm:git:git@github.com:jbossejb3/jboss-ejb3-timerservice.git</developerConnection>
+      <url>http://github.com/jbossejb3/jboss-ejb3-timerservice</url>
+   </scm>
 
 </project>
