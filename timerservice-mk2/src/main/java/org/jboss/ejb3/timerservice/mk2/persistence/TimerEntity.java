@@ -32,7 +32,6 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
-import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
@@ -63,7 +62,6 @@ public class TimerEntity implements Serializable
 
    protected Date previousRun;
 
-   @Lob
    protected byte[] info;
 
 
