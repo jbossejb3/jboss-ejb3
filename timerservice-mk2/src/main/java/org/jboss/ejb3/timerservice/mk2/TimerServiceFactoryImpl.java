@@ -77,6 +77,19 @@ public class TimerServiceFactoryImpl implements TimerServiceFactory
 
       // create the timer service
       TimerServiceImpl timerService = new TimerServiceImpl(invoker, emf, transactionManager, executor);
+      
+      String timedObjectId = invoker.getTimedObjectId();
+      // EJBTHREE-2209 I'm not too happy with this "fix". Ideally, 
+      // the TimerService should be registered irrespective of whether the deployment successfully undeploys
+      // or fails during deployment. But unfortunately, the EJBContainer along with MC doesn't seem to be
+      // doing it right. Fixing that is the ultimate solution, but due to lack of time for testing, let's
+      // just unregister an already registered timerservice and log a WARN message, instead of failing with
+      // "already registered error".
+      if (TimerServiceRegistry.isRegistered(timedObjectId))
+      {
+         TimerServiceRegistry.unregisterTimerService(timedObjectId);
+         logger.warn("Unregistered an already registered Timerservice with id " + timedObjectId + " and a new instance will be registered");
+      }
       // register this new created timer service in our registry
       TimerServiceRegistry.registerTimerService(timerService);
       return timerService;
