@@ -5,16 +5,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
    <parent>
-      <groupId>org.jboss</groupId>
-      <artifactId>jboss-parent</artifactId>
-      <version>5</version>
+      <groupId>org.jboss.ejb3</groupId>
+      <artifactId>jboss-ejb3-aggregator</artifactId>
+      <version>2.0.0-SNAPSHOT</version>
    </parent>
 
    <modelVersion>4.0.0</modelVersion>
 
    <groupId>org.jboss.ejb3.tx2</groupId>
    <artifactId>jboss-ejb3-tx2</artifactId>
-   <version>0.0.2-SNAPSHOT</version>
 
    <packaging>pom</packaging>
 
@@ -25,19 +24,20 @@
 
    <url>http://www.jboss.org/ejb3</url>
 
-   <build>
-      <plugins>
-         <plugin>
-            <artifactId>maven-release-plugin</artifactId>
-            <configuration>
-               <autoVersionSubmodules>true</autoVersionSubmodules>
-            </configuration>
-         </plugin>
-      </plugins>
-   </build>
-
    <dependencyManagement>
       <dependencies>
+         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jboss-ejb3-tx2-impl</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+
+         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jboss-ejb3-tx2-spi</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+
          <dependency>
             <groupId>${javax.ejb.groupId}</groupId>
             <artifactId>${javax.ejb.artifactId}</artifactId>
@@ -73,12 +73,6 @@
          </dependency>
 
          <dependency>
-            <groupId>org.jboss.ejb3.context</groupId>
-            <artifactId>jboss-ejb3-context-base</artifactId>
-            <version>0.1.1</version>
-         </dependency>
-
-         <dependency>
             <groupId>org.jboss.integration</groupId>
             <artifactId>jboss-transaction-spi</artifactId>
             <version>5.1.0.SP1</version>
@@ -93,11 +87,6 @@
          </dependency>
       </dependencies>
    </dependencyManagement>
-
-   <issueManagement>
-      <system>jira</system>
-      <url>https://jira.jboss.org/jira/browse/EJBTHREE</url>
-   </issueManagement>
 
    <modules>
       <module>aop</module>
@@ -127,10 +116,4 @@
       <javax.transaction.artifactId>jboss-transaction-api</javax.transaction.artifactId>
       <javax.transaction.version>1.0.1.GA</javax.transaction.version>
    </properties>
-
-   <scm>
-      <connection>scm:git:git://github.com/wolfc/jboss-ejb3-tx2.git</connection>
-      <developerConnection>scm:git:git@github.com:wolfc/jboss-ejb3-tx2.git</developerConnection>
-      <url>http://github.com/wolfc/jboss-ejb3-tx2</url>
-   </scm>
 </project>
