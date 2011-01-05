@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <parent>
+      <groupId>org.jboss</groupId>
+      <artifactId>jboss-parent</artifactId>
+      <version>5</version>
+   </parent>
+
+   <modelVersion>4.0.0</modelVersion>
+
+   <groupId>org.jboss.ejb3.context</groupId>
+   <artifactId>jboss-ejb3-context</artifactId>
+   <version>0.3.1-SNAPSHOT</version>
+
+   <packaging>pom</packaging>
+
+   <name>JBoss EJB 3 Context Requirements</name>
+
+   <url>http://www.jboss.org/ejb3</url>
+
+   <build>
+      <!-- make it easier to copy it around -->
+      <finalName>${artifactId}</finalName>
+
+      <plugins>
+         <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+               <source>1.5</source>
+               <target>1.5</target>
+            </configuration>
+         </plugin>
+         <plugin>
+            <artifactId>maven-release-plugin</artifactId>
+            <version>2.0</version>
+            <configuration>
+               <autoVersionSubmodules>true</autoVersionSubmodules>
+            </configuration>
+         </plugin>
+      </plugins>
+   </build>
+
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.4</version>
+            <scope>test</scope>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
+
+   <issueManagement>
+      <system>jira</system>
+      <url>https://jira.jboss.org/jira/browse/EJBTHREE</url>
+   </issueManagement>
+
+   <modules>
+      <module>base</module>
+      <module>naming</module>
+      <module>spi</module>
+   </modules>
+
+   <profiles>
+      <profile>
+         <id>ejb3.0</id>
+         <activation>
+            <activeByDefault>true</activeByDefault>
+            <property><name>!dummy</name></property>
+         </activation>
+         <properties>
+            <javax.ejb.groupId>org.jboss.javaee</javax.ejb.groupId>
+            <javax.ejb.artifactId>jboss-ejb-api</javax.ejb.artifactId>
+            <javax.ejb.version>3.0.0.GA</javax.ejb.version>
+            <javax.interceptor.groupId>org.jboss.interceptor</javax.interceptor.groupId>
+            <javax.interceptor.artifactId>jboss-interceptor-api</javax.interceptor.artifactId>
+            <javax.interceptor.version>1.0</javax.interceptor.version>
+         </properties>
+      </profile>
+      <profile>
+         <id>ejb3.1</id>
+         <activation>
+            <activeByDefault>false</activeByDefault>
+            <property><name>ejb3.1</name></property>
+         </activation>
+         <properties>
+            <javax.ejb.groupId>org.jboss.javaee</javax.ejb.groupId>
+            <javax.ejb.artifactId>jboss-ejb-api_3.1</javax.ejb.artifactId>
+            <javax.ejb.version>1.0-alpha-1</javax.ejb.version>
+            <javax.interceptor.groupId>org.jboss.interceptor</javax.interceptor.groupId>
+            <javax.interceptor.artifactId>jboss-interceptor-api</javax.interceptor.artifactId>
+            <javax.interceptor.version>1.1</javax.interceptor.version>
+         </properties>
+      </profile>
+   </profiles>
+
+   <properties>
+      <!-- per default maven.repo.local is null, so set up a sensible default -->
+      <maven.repo.local>${settings.localRepository}</maven.repo.local>
+   </properties>
+
+   <reporting>
+      <plugins>
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>cobertura-maven-plugin</artifactId>
+         </plugin>
+      </plugins>
+   </reporting>
+
+   <scm>
+      <connection>scm:git:git://github.com/jbossejb3/jboss-ejb3-context.git</connection>
+      <developerConnection>scm:git:git@github.com:jbossejb3/jboss-ejb3-context.git</developerConnection>
+      <url>http://github.com/jbossejb3/jboss-ejb3-context</url>
+   </scm>
+</project>
