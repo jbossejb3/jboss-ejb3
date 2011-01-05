@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   vi:ts=3:sw=3:expandtab:
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <parent>
+      <groupId>org.jboss.ejb3.tx2</groupId>
+      <artifactId>jboss-ejb3-tx2</artifactId>
+      <version>0.0.2-SNAPSHOT</version>
+   </parent>
+
+   <modelVersion>4.0.0</modelVersion>
+
+   <artifactId>jboss-ejb3-tx2-impl</artifactId>
+
+   <name>JBoss EJB 3 TX2 Implementation</name>
+
+   <dependencies>
+      <dependency>
+         <groupId>${javax.ejb.groupId}</groupId>
+         <artifactId>${javax.ejb.artifactId}</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>${javax.interceptor.groupId}</groupId>
+         <artifactId>${javax.interceptor.artifactId}</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>${javax.transaction.groupId}</groupId>
+         <artifactId>${javax.transaction.artifactId}</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jboss</groupId>
+         <artifactId>jboss-common-core</artifactId>
+      </dependency>
+      
+      <dependency>
+         <groupId>org.jboss.integration</groupId>
+         <artifactId>jboss-transaction-spi</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jboss.logging</groupId>
+         <artifactId>jboss-logging-spi</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>jboss-ejb3-tx2-spi</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+   </dependencies>
+</project>

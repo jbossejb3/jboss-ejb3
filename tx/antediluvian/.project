@@ -1,0 +1,19 @@
+<projectDescription>
+  <name>jboss-ejb3-transactions</name>
+  <comment>The JBoss EJB 3 Transactions component implements all functionality
+    specified in Chapter 13 (Support for Transactions) of the EJB 3.0
+    specification.</comment>
+  <projects/>
+  <buildSpec>
+    <buildCommand>
+      <name>org.eclipse.jdt.core.javabuilder</name>
+    </buildCommand>
+    <buildCommand>
+      <name>org.maven.ide.eclipse.maven2Builder</name>
+    </buildCommand>
+  </buildSpec>
+  <natures>
+    <nature>org.eclipse.jdt.core.javanature</nature>
+    <nature>org.maven.ide.eclipse.maven2Nature</nature>
+  </natures>
+</projectDescription>
