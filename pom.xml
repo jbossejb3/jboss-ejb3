@@ -106,6 +106,7 @@
       <module>context</module>
       <module>effigy</module>
       <module>endpoint</module>
+      <module>interceptors</module>
       <module>tx</module>
    </modules>
 
