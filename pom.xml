@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <parent>
+      <groupId>org.jboss</groupId>
+      <artifactId>jboss-parent</artifactId>
+      <version>5</version>
+   </parent>
+
+   <modelVersion>4.0.0</modelVersion>
+
+   <groupId>org.jboss.ejb3</groupId>
+   <artifactId>jboss-ejb3-aggregator</artifactId>
+   <version>2.0.0-SNAPSHOT</version>
+
+   <packaging>pom</packaging>
+
+   <name>JBoss EJB 3</name>
+
+   <url>http://www.jboss.org/ejb3</url>
+
+   <build>
+      <!-- make it easier to copy it around -->
+      <finalName>${artifactId}</finalName>
+
+      <plugins>
+         <plugin>
+            <artifactId>maven-release-plugin</artifactId>
+            <version>2.0</version>
+            <configuration>
+               <autoVersionSubmodules>true</autoVersionSubmodules>
+            </configuration>
+         </plugin>
+      </plugins>
+   </build>
+
+   <developers>
+      <developer>
+         <name>Carlo de Wolf</name>
+         <email>cdewolf@redhat.com</email>
+         <organization>JBoss, a division of Red Hat, Inc.</organization>
+         <organizationUrl>http://www.jboss.com</organizationUrl>
+         <roles>
+            <role>Project Lead</role>
+         </roles>
+         <timezone>+1</timezone>
+      </developer>
+      <developer>
+         <name>Andrew Lee Rubinger</name>
+         <email>andrew.rubinger@redhat.com</email>
+         <organization>JBoss, a division of Red Hat, Inc.</organization>
+         <organizationUrl>http://www.jboss.com</organizationUrl>
+         <roles>
+            <role>Developer</role>
+         </roles>
+         <timezone>-5</timezone>
+      </developer>
+      <developer>
+         <name>Jaikiran Pai</name>
+         <email>jpai@redhat.com</email>
+         <organization>JBoss, a division of Red Hat, Inc.</organization>
+         <organizationUrl>http://www.jboss.com</organizationUrl>
+         <roles>
+            <role>Developer</role>
+         </roles>
+         <timezone>+5:30</timezone>
+      </developer>
+   </developers>
+
+   <issueManagement>
+      <system>jira</system>
+      <url>https://issues.jboss.org/browse/EJBTHREE</url>
+   </issueManagement>
+
+   <modules>
+      <!-- here be modules -->
+   </modules>
+
+   <scm>
+      <connection>scm:git:git://github.com/jbossejb3/jboss-ejb3.git</connection>
+      <developerConnection>scm:git:git@github.com/jbossejb3/jboss-ejb3.git</developerConnection>
+      <url>http://github.com/jbossejb3/jboss-ejb3</url>
+   </scm>
+</project>
