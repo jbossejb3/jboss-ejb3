@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
    <parent>
-      <groupId>org.jboss</groupId>
-      <artifactId>jboss-parent</artifactId>
-      <version>5</version>
+      <groupId>org.jboss.ejb3</groupId>
+      <artifactId>jboss-ejb3-aggregator</artifactId>
+      <version>2.0.0-SNAPSHOT</version>
    </parent>
 
    <modelVersion>4.0.0</modelVersion>
 
    <groupId>org.jboss.ejb3.context</groupId>
    <artifactId>jboss-ejb3-context</artifactId>
-   <version>0.3.1-SNAPSHOT</version>
 
    <packaging>pom</packaging>
 
@@ -19,9 +18,7 @@
    <url>http://www.jboss.org/ejb3</url>
 
    <build>
-      <!-- make it easier to copy it around -->
-      <finalName>${artifactId}</finalName>
-
+      <!--
       <plugins>
          <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
@@ -30,14 +27,8 @@
                <target>1.5</target>
             </configuration>
          </plugin>
-         <plugin>
-            <artifactId>maven-release-plugin</artifactId>
-            <version>2.0</version>
-            <configuration>
-               <autoVersionSubmodules>true</autoVersionSubmodules>
-            </configuration>
-         </plugin>
       </plugins>
+      -->
    </build>
 
    <dependencyManagement>
@@ -50,11 +41,6 @@
          </dependency>
       </dependencies>
    </dependencyManagement>
-
-   <issueManagement>
-      <system>jira</system>
-      <url>https://jira.jboss.org/jira/browse/EJBTHREE</url>
-   </issueManagement>
 
    <modules>
       <module>base</module>
@@ -95,11 +81,6 @@
       </profile>
    </profiles>
 
-   <properties>
-      <!-- per default maven.repo.local is null, so set up a sensible default -->
-      <maven.repo.local>${settings.localRepository}</maven.repo.local>
-   </properties>
-
    <reporting>
       <plugins>
          <plugin>
@@ -108,10 +89,4 @@
          </plugin>
       </plugins>
    </reporting>
-
-   <scm>
-      <connection>scm:git:git://github.com/jbossejb3/jboss-ejb3-context.git</connection>
-      <developerConnection>scm:git:git@github.com:jbossejb3/jboss-ejb3-context.git</developerConnection>
-      <url>http://github.com/jbossejb3/jboss-ejb3-context</url>
-   </scm>
 </project>

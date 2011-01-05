@@ -73,6 +73,7 @@
 
    <modules>
       <!-- here be modules -->
+      <module>context</module>
    </modules>
 
    <scm>
