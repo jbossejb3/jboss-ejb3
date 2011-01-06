@@ -34,7 +34,27 @@
    </build>
 
    <dependencyManagement>
+      <!-- list only dependencies which are allowed by all modules -->
       <dependencies>
+         <dependency>
+            <groupId>${javax.ejb.groupId}</groupId>
+            <artifactId>${javax.ejb.artifactId}</artifactId>
+            <version>${javax.ejb.version}</version>
+         </dependency>
+         
+         <dependency>
+            <groupId>${javax.interceptor.groupId}</groupId>
+            <artifactId>${javax.interceptor.artifactId}</artifactId>
+            <version>${javax.interceptor.version}</version>
+         </dependency>
+         
+         <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.8.2</version>
+            <scope>test</scope>
+         </dependency>
+
          <dependency>
             <groupId>org.jboss.ejb3.context</groupId>
             <artifactId>jboss-ejb3-context-base</artifactId>
@@ -84,8 +104,19 @@
    <modules>
       <!-- here be modules -->
       <module>context</module>
+      <module>effigy</module>
       <module>tx</module>
    </modules>
+
+   <properties>
+      <javax.ejb.groupId>org.jboss.spec.javax.ejb</javax.ejb.groupId>
+      <javax.ejb.artifactId>jboss-ejb-api_3.1_spec</javax.ejb.artifactId>
+      <javax.ejb.version>1.0.0.Final</javax.ejb.version>
+
+      <javax.interceptor.groupId>org.jboss.spec.javax.interceptor</javax.interceptor.groupId>
+      <javax.interceptor.artifactId>jboss-interceptors-api_1.1_spec</javax.interceptor.artifactId>
+      <javax.interceptor.version>1.0.0.Final</javax.interceptor.version>
+   </properties>
 
    <scm>
       <connection>scm:git:git://github.com/jbossejb3/jboss-ejb3.git</connection>
