@@ -24,8 +24,6 @@ package org.jboss.ejb3.interceptors.container;
 import org.jboss.interceptor.proxy.InterceptorInvocation;
 import org.jboss.interceptor.proxy.SimpleInterceptionChain;
 import org.jboss.interceptor.reader.InterceptorMetadataUtils;
-import org.jboss.interceptor.reader.cache.DefaultMetadataCachingReader;
-import org.jboss.interceptor.reader.cache.MetadataCachingReader;
 import org.jboss.interceptor.spi.context.InvocationContextFactory;
 import org.jboss.interceptor.spi.instance.InterceptorInstantiator;
 import org.jboss.interceptor.spi.metadata.ClassMetadata;
@@ -51,8 +49,6 @@ import java.util.Map;
  */
 public class AbstractContainer
 {
-   private MetadataCachingReader metadataCachingReader = new DefaultMetadataCachingReader();
-
    private ClassMetadata<?> targetClassMetadata;
    private InterceptorInstantiator<?, ?> interceptorInstantiator;
    private InvocationContextFactory invocationContextFactory;
