@@ -60,6 +60,18 @@
             <artifactId>jboss-ejb3-context-base</artifactId>
             <version>${project.version}</version>
          </dependency>
+
+         <dependency>
+            <groupId>org.jboss.ejb3.effigy</groupId>
+            <artifactId>jboss-ejb3-effigy-api</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+
+         <dependency>
+            <groupId>org.jboss.ejb3.effigy</groupId>
+            <artifactId>jboss-ejb3-effigy-dsl</artifactId>
+            <version>${project.version}</version>
+         </dependency>
       </dependencies>
    </dependencyManagement>
 

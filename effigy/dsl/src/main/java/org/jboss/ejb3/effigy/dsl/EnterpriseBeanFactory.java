@@ -19,27 +19,48 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.interceptors.container;
+package org.jboss.ejb3.effigy.dsl;
 
-import javax.interceptor.InvocationContext;
+import org.jboss.ejb3.effigy.EnterpriseBeanEffigy;
+import org.jboss.ejb3.effigy.InterceptorEffigy;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class SimpleInterceptor
+public class EnterpriseBeanFactory<T extends EnterpriseBeanEffigy>
 {
-   public static int postConstructs;
+   private T enterpriseBeanEffigy;
 
-   //@AroundInvoke
-   public Object aroundInvoke(InvocationContext ctx) throws Exception
+   protected EnterpriseBeanFactory(T enterpriseBeanEffigy)
    {
-      return "Intercepted " + ctx.proceed();
+      this.enterpriseBeanEffigy = enterpriseBeanEffigy;
    }
 
-   //@PostConstruct
-   public void postConstruct(InvocationContext ctx) throws Exception
+   public <E extends EnterpriseBeanEffigy> E as(Class<E> type)
    {
-      postConstructs++;
-      ctx.proceed();
+      return type.cast(enterpriseBeanEffigy);
+   }
+
+   public EnterpriseBeanFactory<T> beanClass(Class<?> beanClass)
+   {
+      as(EnterpriseBeanEffigyImpl.class).setEjbClass(beanClass);
+      return this;
+   }
+
+   public T effigy()
+   {
+      return enterpriseBeanEffigy;
+   }
+
+   public EnterpriseBeanFactory<T> interceptAllWith(InterceptorEffigy interceptor)
+   {
+      as(EnterpriseBeanEffigyImpl.class).addInterceptor(interceptor);
+      return this;
+   }
+
+   public EnterpriseBeanFactory<T> name(String ejbName)
+   {
+      as(EnterpriseBeanEffigyImpl.class).setName(ejbName);
+      return this;
    }
 }

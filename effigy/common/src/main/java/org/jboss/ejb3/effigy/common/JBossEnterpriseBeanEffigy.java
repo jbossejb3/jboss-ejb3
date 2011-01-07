@@ -23,11 +23,13 @@ package org.jboss.ejb3.effigy.common;
 
 import org.jboss.ejb3.effigy.ApplicationExceptionEffigy;
 import org.jboss.ejb3.effigy.EnterpriseBeanEffigy;
+import org.jboss.ejb3.effigy.InterceptorEffigy;
 import org.jboss.metadata.ejb.jboss.JBossAssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.jboss.JBossEnterpriseBeanMetaData;
 import org.jboss.metadata.ejb.spec.ApplicationExceptionMetaData;
 import org.jboss.metadata.ejb.spec.ApplicationExceptionsMetaData;
 
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
@@ -96,6 +98,12 @@ public class JBossEnterpriseBeanEffigy implements EnterpriseBeanEffigy
    }
 
    @Override
+   public Iterable<InterceptorEffigy> getAllInterceptors()
+   {
+      throw new RuntimeException("NYI: org.jboss.ejb3.effigy.common.JBossEnterpriseBeanEffigy.getAllInterceptors");
+   }
+
+   @Override
    public ApplicationExceptionEffigy getApplicationException(Class<?> exceptionClass)
    {
       if(applicationExceptionEffigies == null)
@@ -114,6 +122,12 @@ public class JBossEnterpriseBeanEffigy implements EnterpriseBeanEffigy
       return applicationExceptionEffigy;
    }
 
+   @Override
+   public Iterable<Method> getAroundInvokes()
+   {
+      throw new RuntimeException("NYI: org.jboss.ejb3.effigy.common.JBossEnterpriseBeanEffigy.getAroundInvokes");
+   }
+
    protected JBossEnterpriseBeanMetaData getBeanMetaData()
    {
       return beanMetaData;
@@ -126,8 +140,26 @@ public class JBossEnterpriseBeanEffigy implements EnterpriseBeanEffigy
    }
 
    @Override
+   public Iterable<InterceptorEffigy> getInterceptors(Method method)
+   {
+      throw new RuntimeException("NYI: org.jboss.ejb3.effigy.common.JBossEnterpriseBeanEffigy.getInterceptors");
+   }
+
+   @Override
    public String getName()
    {
       return beanMetaData.getEjbName();
+   }
+
+   @Override
+   public Iterable<Method> getPostConstructs()
+   {
+      throw new RuntimeException("NYI: org.jboss.ejb3.effigy.common.JBossEnterpriseBeanEffigy.getPostConstructs");
+   }
+
+   @Override
+   public Iterable<Method> getPreDestroys()
+   {
+      throw new RuntimeException("NYI: org.jboss.ejb3.effigy.common.JBossEnterpriseBeanEffigy.getPreDestroys");
    }
 }

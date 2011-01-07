@@ -19,27 +19,41 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.interceptors.container;
+package org.jboss.ejb3.interceptors.dsl;
 
-import javax.interceptor.InvocationContext;
+import org.jboss.interceptor.spi.metadata.MethodMetadata;
+import org.jboss.interceptor.spi.model.InterceptionType;
+
+import java.lang.reflect.Method;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class SimpleInterceptor
+class SimpleMethodMetadata implements MethodMetadata
 {
-   public static int postConstructs;
+   private Method method;
 
-   //@AroundInvoke
-   public Object aroundInvoke(InvocationContext ctx) throws Exception
+   SimpleMethodMetadata(Method method)
    {
-      return "Intercepted " + ctx.proceed();
+      this.method = method;
    }
 
-   //@PostConstruct
-   public void postConstruct(InvocationContext ctx) throws Exception
+   @Override
+   public Method getJavaMethod()
    {
-      postConstructs++;
-      ctx.proceed();
+      return method;
+   }
+
+   @Override
+   public Set<InterceptionType> getSupportedInterceptionTypes()
+   {
+      throw new RuntimeException("NYI: org.jboss.ejb3.interceptors.dsl.SimpleMethodMetadata.getSupportedInterceptionTypes");
+   }
+
+   @Override
+   public Class<?> getReturnType()
+   {
+      return method.getReturnType();
    }
 }

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar xmlns="http://java.sun.com/xml/ns/javaee"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+          http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
+      version="3.1">
+   <!-- This file describes the test data used. It is not actually used in the real test. -->
+   <enterprise-beans>
+      <session>
+         <ejb-name>SimpleBean</ejb-name>
+         <ejb-class>org.jboss.ejb3.interceptors.container.SimpleBean</ejb-class>
+      </session>
+   </enterprise-beans>
+   
+   <interceptors>
+      <interceptor>
+         <interceptor-class>org.jboss.ejb3.interceptors.container.SimpleInterceptor</interceptor-class>
+         <around-invoke>
+            <method-name>aroundInvoke</method-name>
+         </around-invoke>
+         <post-construct>
+            <lifecycle-callback-method>postConstruct</lifecycle-callback-method>
+         </post-construct>
+      </interceptor>
+   </interceptors>
+
+   <assembly-descriptor>
+      <interceptor-binding>
+         <ejb-name>SimpleBean</ejb-name>
+         <interceptor-class>org.jboss.ejb3.interceptors.container.SimpleInterceptor</interceptor-class>
+      </interceptor-binding>
+   </assembly-descriptor>
+</ejb-jar>

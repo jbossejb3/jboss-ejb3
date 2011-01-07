@@ -19,27 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.interceptors.container;
+package org.jboss.ejb3.interceptors.dsl;
 
-import javax.interceptor.InvocationContext;
+import org.jboss.interceptor.reader.ClassMetadataInterceptorReference;
+import org.jboss.interceptor.spi.metadata.ClassMetadata;
+import org.jboss.interceptor.spi.metadata.InterceptorReference;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class SimpleInterceptor
+public class InterceptorReferenceFactory
 {
-   public static int postConstructs;
-
-   //@AroundInvoke
-   public Object aroundInvoke(InvocationContext ctx) throws Exception
+   public static InterceptorReference<ClassMetadata<?>> interceptorReference(ClassMetadata<?> classMetadata)
    {
-      return "Intercepted " + ctx.proceed();
-   }
-
-   //@PostConstruct
-   public void postConstruct(InvocationContext ctx) throws Exception
-   {
-      postConstructs++;
-      ctx.proceed();
+      return ClassMetadataInterceptorReference.of(classMetadata);
    }
 }

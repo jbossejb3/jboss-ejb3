@@ -19,27 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.interceptors.container;
+package org.jboss.ejb3.effigy.dsl;
 
-import javax.interceptor.InvocationContext;
+import org.jboss.ejb3.effigy.InterceptorEffigy;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class SimpleInterceptor
+public class InterceptorEffigyImpl extends AbstractInterceptedImpl implements InterceptorEffigy
 {
-   public static int postConstructs;
-
-   //@AroundInvoke
-   public Object aroundInvoke(InvocationContext ctx) throws Exception
+   @Override
+   public Class<?> getInterceptorClass()
    {
-      return "Intercepted " + ctx.proceed();
+      return getInterceptedClass();
    }
 
-   //@PostConstruct
-   public void postConstruct(InvocationContext ctx) throws Exception
+   public void setInterceptorClass(Class<?> cls)
    {
-      postConstructs++;
-      ctx.proceed();
+      super.setInterceptedClass(cls);
    }
 }

@@ -19,27 +19,43 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.interceptors.container;
+package org.jboss.ejb3.interceptors.dsl;
 
-import javax.interceptor.InvocationContext;
+import org.jboss.interceptor.spi.metadata.MethodMetadata;
+
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class SimpleInterceptor
+public class MethodMetadataFactory
 {
-   public static int postConstructs;
-
-   //@AroundInvoke
-   public Object aroundInvoke(InvocationContext ctx) throws Exception
+   public static MethodMetadata method(Method method)
    {
-      return "Intercepted " + ctx.proceed();
+      return new SimpleMethodMetadata(method);
    }
 
-   //@PostConstruct
-   public void postConstruct(InvocationContext ctx) throws Exception
+   public static List<MethodMetadata> methods(MethodMetadata... methods)
    {
-      postConstructs++;
-      ctx.proceed();
+      return Arrays.asList(methods);
+   }
+
+   public static List<MethodMetadata> methods(Iterable<Method> methods)
+   {
+      List<MethodMetadata> list = new ArrayList<MethodMetadata>();
+      for(Method m : methods)
+         list.add(method(m));
+      return list;
+   }
+
+   public static List<MethodMetadata> methods(Method... methods)
+   {
+      List<MethodMetadata> list = new ArrayList<MethodMetadata>();
+      for(Method m : methods)
+         list.add(method(m));
+      return list;
    }
 }

@@ -19,27 +19,43 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.interceptors.container;
+package org.jboss.ejb3.interceptors.effigy;
 
-import javax.interceptor.InvocationContext;
+import org.jboss.ejb3.effigy.EnterpriseBeanEffigy;
+import org.jboss.interceptor.spi.metadata.ClassMetadata;
+import org.jboss.interceptor.spi.metadata.MethodMetadata;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class SimpleInterceptor
+class EffigyClassMetaData<T> implements ClassMetadata<T>
 {
-   public static int postConstructs;
+   private static final long serialVersionUID = 1L;
 
-   //@AroundInvoke
-   public Object aroundInvoke(InvocationContext ctx) throws Exception
+   private EnterpriseBeanEffigy beanEffigy;
+
+   EffigyClassMetaData(EnterpriseBeanEffigy beanEffigy)
    {
-      return "Intercepted " + ctx.proceed();
+      this.beanEffigy = beanEffigy;
    }
 
-   //@PostConstruct
-   public void postConstruct(InvocationContext ctx) throws Exception
+   public Iterable<MethodMetadata> getDeclaredMethods()
    {
-      postConstructs++;
-      ctx.proceed();
+      throw new RuntimeException("NYI: org.jboss.ejb3.interceptors.effigy.EffigyClassMetaData.getDeclaredMethods");
+   }
+
+   public Class<T> getJavaClass()
+   {
+      return (Class<T>) beanEffigy.getEjbClass();
+   }
+
+   public String getClassName()
+   {
+      return beanEffigy.getEjbClass().getName();
+   }
+
+   public ClassMetadata<?> getSuperclass()
+   {
+      throw new RuntimeException("NYI: org.jboss.ejb3.interceptors.effigy.EffigyClassMetaData.getSuperclass");
    }
 }

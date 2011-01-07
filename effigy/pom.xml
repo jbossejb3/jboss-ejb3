@@ -42,6 +42,7 @@
       <module>common</module>
       <module>int1</module>
       <module>int2</module>
+      <module>dsl</module>
    </modules>
 
    <reporting>

@@ -19,27 +19,37 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.interceptors.container;
+package org.jboss.ejb3.effigy.dsl;
 
-import javax.interceptor.InvocationContext;
+import org.jboss.ejb3.effigy.SessionBeanEffigy;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class SimpleInterceptor
+public class SessionBeanFactory extends EnterpriseBeanFactory<SessionBeanEffigy>
 {
-   public static int postConstructs;
-
-   //@AroundInvoke
-   public Object aroundInvoke(InvocationContext ctx) throws Exception
+   protected SessionBeanFactory(SessionBeanEffigyImpl enterpriseBeanEffigy)
    {
-      return "Intercepted " + ctx.proceed();
+      super(enterpriseBeanEffigy);
    }
 
-   //@PostConstruct
-   public void postConstruct(InvocationContext ctx) throws Exception
+   public SessionBeanEffigy effigy()
    {
-      postConstructs++;
-      ctx.proceed();
+      return super.effigy();
+   }
+
+   public static SessionBeanFactory session(Class<?> beanClass)
+   {
+      SessionBeanFactory factory = new SessionBeanFactory(new SessionBeanEffigyImpl());
+      factory.beanClass(beanClass);
+      factory.name(beanClass.getSimpleName());
+      return factory;
+   }
+
+   public static SessionBeanFactory session(String ejbName)
+   {
+      SessionBeanFactory factory = new SessionBeanFactory(new SessionBeanEffigyImpl());
+      factory.name(ejbName);
+      return factory;
    }
 }

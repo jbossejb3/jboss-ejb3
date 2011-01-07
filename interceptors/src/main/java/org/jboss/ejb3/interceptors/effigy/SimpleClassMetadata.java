@@ -19,27 +19,46 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.interceptors.container;
+package org.jboss.ejb3.interceptors.effigy;
 
-import javax.interceptor.InvocationContext;
+import org.jboss.interceptor.spi.metadata.ClassMetadata;
+import org.jboss.interceptor.spi.metadata.MethodMetadata;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class SimpleInterceptor
+class SimpleClassMetadata<T> implements ClassMetadata<T>
 {
-   public static int postConstructs;
+   private static final long serialVersionUID = -1L;
+   
+   private Class<T> javaClass;
 
-   //@AroundInvoke
-   public Object aroundInvoke(InvocationContext ctx) throws Exception
+   SimpleClassMetadata(Class<T> javaClass)
    {
-      return "Intercepted " + ctx.proceed();
+      this.javaClass = javaClass;
    }
 
-   //@PostConstruct
-   public void postConstruct(InvocationContext ctx) throws Exception
+   @Override
+   public Iterable<MethodMetadata> getDeclaredMethods()
    {
-      postConstructs++;
-      ctx.proceed();
+      throw new RuntimeException("NYI: org.jboss.ejb3.interceptors.effigy.SimpleClassMetadata.getDeclaredMethods");
+   }
+
+   @Override
+   public Class<T> getJavaClass()
+   {
+      return javaClass;
+   }
+
+   @Override
+   public String getClassName()
+   {
+      throw new RuntimeException("NYI: org.jboss.ejb3.interceptors.effigy.SimpleClassMetadata.getClassName");
+   }
+
+   @Override
+   public ClassMetadata<?> getSuperclass()
+   {
+      throw new RuntimeException("NYI: org.jboss.ejb3.interceptors.effigy.SimpleClassMetadata.getSuperclass");
    }
 }

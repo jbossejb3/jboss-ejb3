@@ -24,17 +24,26 @@ package org.jboss.ejb3.interceptors.container;
 import org.jboss.interceptor.builder.InterceptionModelBuilder;
 import org.jboss.interceptor.proxy.DefaultInvocationContextFactory;
 import org.jboss.interceptor.proxy.DirectClassInterceptorInstantiator;
+import org.jboss.interceptor.reader.InterceptorMetadataUtils;
 import org.jboss.interceptor.reader.cache.DefaultMetadataCachingReader;
 import org.jboss.interceptor.reader.cache.MetadataCachingReader;
 import org.jboss.interceptor.spi.context.InvocationContextFactory;
 import org.jboss.interceptor.spi.instance.InterceptorInstantiator;
 import org.jboss.interceptor.spi.metadata.ClassMetadata;
+import org.jboss.interceptor.spi.metadata.InterceptorMetadata;
 import org.jboss.interceptor.spi.model.InterceptionModel;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.interceptor.InvocationContext;
 import java.lang.reflect.Method;
 
+import static org.jboss.ejb3.interceptors.dsl.InterceptorMetadataFactory.aroundInvokes;
+import static org.jboss.ejb3.interceptors.dsl.InterceptorMetadataFactory.interceptor;
+import static org.jboss.ejb3.interceptors.dsl.InterceptorMetadataFactory.map;
+import static org.jboss.ejb3.interceptors.dsl.InterceptorMetadataFactory.postConstructs;
+import static org.jboss.ejb3.interceptors.dsl.InterceptorReferenceFactory.interceptorReference;
+import static org.jboss.ejb3.interceptors.dsl.MethodMetadataFactory.methods;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -60,11 +69,20 @@ public class AbstractContainerTestCase
       InvocationContextFactory invocationContextFactory = new DefaultInvocationContextFactory();
 
       ClassMetadata<?> targetClassMetadata =  metadataCachingReader.getClassMetadata(targetClass);
+      // TODO: wrong, should really create the metadata myself, not generate reflective metadata
+      InterceptorMetadata<ClassMetadata<?>> targetClassInterceptorMetadata = InterceptorMetadataUtils.readMetadataForTargetClass(targetClassMetadata);
       InterceptionModelBuilder<ClassMetadata<?>,?> builder = InterceptionModelBuilder.<ClassMetadata<?>>newBuilderFor(targetClassMetadata);
-      builder.interceptAll().with( metadataCachingReader.getInterceptorMetadata(SimpleInterceptor.class));
+      InterceptorMetadata<?> interceptor = interceptor(
+         interceptorReference(metadataCachingReader.getClassMetadata(SimpleInterceptor.class)),
+         map(
+            aroundInvokes(methods(SimpleInterceptor.class.getMethod("aroundInvoke", InvocationContext.class))),
+            postConstructs(methods(SimpleInterceptor.class.getMethod("postConstruct", InvocationContext.class)))
+         )
+      );
+      builder.interceptAll().with(interceptor);
       InterceptionModel<ClassMetadata<?>,?> interceptionModel = builder.build();
 
-      AbstractContainer container = new AbstractContainer(targetClassMetadata, interceptorInstantiator, invocationContextFactory, interceptionModel);
+      AbstractContainer container = new AbstractContainer(targetClassInterceptorMetadata, interceptionModel, interceptorInstantiator, invocationContextFactory);
 
       BeanContext instance = container.construct();
 
@@ -74,5 +92,17 @@ public class AbstractContainerTestCase
       Object result = container.invoke(instance, method, "test");
 
       assertEquals("Intercepted Hi test", result);
+   }
+
+   public static void testContainer(AbstractContainer container) throws Exception
+   {
+      BeanContext instance = container.construct();
+
+      assertEquals(1, SimpleInterceptor.postConstructs);
+
+      Method method = SimpleBean.class.getMethod("sayHi", String.class);
+      Object result = container.invoke(instance, method, "test");
+
+      assertEquals("Intercepted Hi test", result);      
    }
 }

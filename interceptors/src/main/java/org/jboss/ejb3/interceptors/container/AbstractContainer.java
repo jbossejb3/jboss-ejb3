@@ -23,7 +23,6 @@ package org.jboss.ejb3.interceptors.container;
 
 import org.jboss.interceptor.proxy.InterceptorInvocation;
 import org.jboss.interceptor.proxy.SimpleInterceptionChain;
-import org.jboss.interceptor.reader.InterceptorMetadataUtils;
 import org.jboss.interceptor.spi.context.InvocationContextFactory;
 import org.jboss.interceptor.spi.instance.InterceptorInstantiator;
 import org.jboss.interceptor.spi.metadata.ClassMetadata;
@@ -49,28 +48,25 @@ import java.util.Map;
  */
 public class AbstractContainer
 {
-   private ClassMetadata<?> targetClassMetadata;
    private InterceptorInstantiator<?, ?> interceptorInstantiator;
    private InvocationContextFactory invocationContextFactory;
    private InterceptionModel<ClassMetadata<?>, ?> interceptionModel;
    private InterceptorMetadata<ClassMetadata<?>> targetClassInterceptorMetadata;
 
    /**
-    * @param targetClassMetadata
+    * @param targetClassInterceptorMetadata
     * @param interceptorInstantiator
     * @param invocationContextFactory
     * @param interceptionModel
     * @deprecated exposing the usage of jboss-interceptors is a bad thing.
     */
    @Deprecated
-   public AbstractContainer(ClassMetadata<?> targetClassMetadata, InterceptorInstantiator<?,?> interceptorInstantiator, InvocationContextFactory invocationContextFactory, InterceptionModel<ClassMetadata<?>, ?> interceptionModel)
+   public AbstractContainer(InterceptorMetadata<ClassMetadata<?>> targetClassInterceptorMetadata, InterceptionModel<ClassMetadata<?>, ?> interceptionModel, InterceptorInstantiator<?,?> interceptorInstantiator, InvocationContextFactory invocationContextFactory)
    {
-      this.targetClassMetadata = targetClassMetadata;
+      this.targetClassInterceptorMetadata = targetClassInterceptorMetadata;
+      this.interceptionModel = interceptionModel;
       this.interceptorInstantiator = interceptorInstantiator;
       this.invocationContextFactory = invocationContextFactory;
-      this.interceptionModel = interceptionModel;
-      // TODO: targetClassInterceptorMetadata should come from the outside
-      this.targetClassInterceptorMetadata = InterceptorMetadataUtils.readMetadataForTargetClass(targetClassMetadata);
    }
 
    /**
@@ -90,7 +86,7 @@ public class AbstractContainer
       try
       {
          // 1. newInstance
-         Object instance = targetClassMetadata.getJavaClass().newInstance();
+         Object instance = targetClassInterceptorMetadata.getInterceptorClass().getJavaClass().newInstance();
          Map<Class<?>, Object> interceptorHandlerInstances = new HashMap<Class<?>, Object>();
          for (InterceptorMetadata interceptorMetadata : this.interceptionModel.getAllInterceptors())
          {
@@ -125,6 +121,9 @@ public class AbstractContainer
       executeInterception(bean, null, null, InterceptionType.PRE_DESTROY);
    }
 
+   /**
+    * @see org.jboss.interceptor.proxy.InterceptorMethodHandler#executeInterception(Object, java.lang.reflect.Method, java.lang.reflect.Method, Object[], org.jboss.interceptor.spi.model.InterceptionType)
+    */
    private Object executeInterception(BeanContext bean, Method method, Object[] args, InterceptionType interceptionType) throws Exception
    {
       Object targetInstance = bean.getInstance();
