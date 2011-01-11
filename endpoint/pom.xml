@@ -5,8 +5,8 @@
 
   <parent>
     <groupId>org.jboss.ejb3</groupId>
-    <artifactId>jboss-ejb3-build</artifactId>
-    <version>1.0.2</version>
+    <artifactId>jboss-ejb3-aggregator</artifactId>
+    <version>2.0.0-SNAPSHOT</version>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
@@ -14,10 +14,9 @@
   <!-- Artifact Configuration -->
   <groupId>org.jboss.ejb3</groupId>
   <artifactId>jboss-ejb3-endpoint</artifactId>
-  <version>0.1.1-SNAPSHOT</version>
+
   <name>JBoss EJB 3.x Endpoint SPI</name>
   <description>JBoss EJB 3.x Endpoint SPI</description>
-  <url>http://www.jboss.org/jbossejb3</url>
 
   <dependencies>
     <dependency>
@@ -36,12 +35,18 @@
     <dependency>
       <groupId>org.jboss.logging</groupId>
       <artifactId>jboss-logging-spi</artifactId>
+      <version>${version.org.jboss.logging}</version>
     </dependency>
 
     <dependency>
       <groupId>org.jboss.logging</groupId>
       <artifactId>jboss-logging-log4j</artifactId>
+      <version>${version.org.jboss.logging}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <properties>
+    <version.org.jboss.logging>2.1.0.GA</version.org.jboss.logging>
+  </properties>
 </project>
