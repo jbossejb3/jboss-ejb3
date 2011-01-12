@@ -65,7 +65,7 @@ public interface Endpoint
     * @throws Throwable the exception to throw from the method
     *   invocation on the EJB instance.
     */
-   Object invoke(Serializable session, Class<?> invokedBusinessInterface, Method method, Object args[]) throws Throwable;
+   Object invoke(Serializable session, Class<?> invokedBusinessInterface, Method method, Object... args) throws Throwable;
    
    /**
     * @return true if this Endpoint is session aware

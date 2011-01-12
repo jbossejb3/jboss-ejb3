@@ -50,6 +50,9 @@ class EnterpriseBeanInterceptionModel implements InterceptionModel<ClassMetadata
 
    private static Set<InterceptorMetadata<ClassMetadata<?>>> buildAllInterceptors(Iterable<InterceptorEffigy> interceptors)
    {
+      if(interceptors == null)
+         return null;
+      
       Set<InterceptorMetadata<ClassMetadata<?>>> result = new HashSet<InterceptorMetadata<ClassMetadata<?>>>();
       for(InterceptorEffigy interceptor : interceptors)
       {
@@ -62,6 +65,8 @@ class EnterpriseBeanInterceptionModel implements InterceptionModel<ClassMetadata
    public List<InterceptorMetadata<ClassMetadata<?>>> getInterceptors(InterceptionType interceptionType, Method method)
    {
       // must be fast!
+      if(allInterceptors == null)
+         return null;
       // TODO: do not blindly return allInterceptors
       return new LinkedList(allInterceptors);
    }

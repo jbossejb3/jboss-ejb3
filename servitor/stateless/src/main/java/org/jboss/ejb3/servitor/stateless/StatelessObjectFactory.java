@@ -19,18 +19,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.interceptors.dsl;
-
-import org.jboss.interceptor.spi.metadata.ClassMetadata;
-import org.jboss.interceptor.spi.metadata.InterceptorReference;
+package org.jboss.ejb3.servitor.stateless;
 
 /**
+ * Creates and destroys stateless objects.
+ *
+ * The object returned by create has dependencies injected. The PostConstruct
+ * callback, if defined, has been called.
+ *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class InterceptorReferenceFactory
+public interface StatelessObjectFactory<T>
 {
-   public static <T> InterceptorReference<ClassMetadata<T>> interceptorReference(ClassMetadata<T> classMetadata)
-   {
-      return new ClassMetadataInterceptorReference(classMetadata);
-   }
+   /**
+    * Creates a new stateless object by calling it's empty constructor,
+    * do injection and calling post-construct.
+    *
+    * @return
+    */
+   T create();
+
+   /**
+    * Perform any cleanup actions on the object, such as
+    * calling the pre-destroy callback.
+    *
+    * @param obj    the object
+    */
+   void destroy(T obj);
 }

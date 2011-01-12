@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <parent>
+      <artifactId>jboss-ejb3-servitor</artifactId>
+      <groupId>org.jboss.ejb3.servitor</groupId>
+      <version>2.0.0-SNAPSHOT</version>
+   </parent>
+   <modelVersion>4.0.0</modelVersion>
+
+   <artifactId>jboss-ejb3-servitor-stateless</artifactId>
+
+   <name>JBoss EJB 3 Servitor Stateless</name>
+
+   <dependencies>
+      <dependency>
+         <groupId>${javax.ejb.groupId}</groupId>
+         <artifactId>${javax.ejb.artifactId}</artifactId>
+         <version>${javax.ejb.version}</version>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jboss.ejb3</groupId>
+         <artifactId>jboss-ejb3-endpoint</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jboss.ejb3</groupId>
+         <artifactId>jboss-ejb3-interceptors</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jboss.ejb3.context</groupId>
+         <artifactId>jboss-ejb3-context-base</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jboss.ejb3.context</groupId>
+         <artifactId>jboss-ejb3-context-spi</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jboss.ejb3.effigy</groupId>
+         <artifactId>jboss-ejb3-effigy-api</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jboss.ejb3.effigy</groupId>
+         <artifactId>jboss-ejb3-effigy-dsl</artifactId>
+         <scope>test</scope>
+      </dependency>
+
+      <dependency>
+         <groupId>junit</groupId>
+         <artifactId>junit</artifactId>
+      </dependency>
+   </dependencies>
+</project>

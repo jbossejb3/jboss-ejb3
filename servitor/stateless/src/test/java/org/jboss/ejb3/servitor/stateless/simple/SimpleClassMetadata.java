@@ -19,18 +19,46 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.interceptors.dsl;
+package org.jboss.ejb3.servitor.stateless.simple;
 
 import org.jboss.interceptor.spi.metadata.ClassMetadata;
-import org.jboss.interceptor.spi.metadata.InterceptorReference;
+import org.jboss.interceptor.spi.metadata.MethodMetadata;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class InterceptorReferenceFactory
+class SimpleClassMetadata<T> implements ClassMetadata<T>
 {
-   public static <T> InterceptorReference<ClassMetadata<T>> interceptorReference(ClassMetadata<T> classMetadata)
+   private static final long serialVersionUID = -1L;
+   
+   private Class<T> javaClass;
+
+   SimpleClassMetadata(Class<T> javaClass)
    {
-      return new ClassMetadataInterceptorReference(classMetadata);
+      this.javaClass = javaClass;
+   }
+
+   @Override
+   public Iterable<MethodMetadata> getDeclaredMethods()
+   {
+      throw new RuntimeException("NYI");
+   }
+
+   @Override
+   public Class<T> getJavaClass()
+   {
+      return javaClass;
+   }
+
+   @Override
+   public String getClassName()
+   {
+      throw new RuntimeException("NYI");
+   }
+
+   @Override
+   public ClassMetadata<?> getSuperclass()
+   {
+      throw new RuntimeException("NYI");
    }
 }

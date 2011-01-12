@@ -45,9 +45,9 @@ public class InterceptorMetadataFactory
       return interceptorMethodMap(AROUND_INVOKE, methods);
    }
 
-   public static InterceptorMetadata<?> interceptor(InterceptorReference<ClassMetadata<?>> interceptorReference, Map<InterceptionType, List<MethodMetadata>> interceptorMethodMap)
+   public static <T> InterceptorMetadata<ClassMetadata<T>> interceptor(InterceptorReference<ClassMetadata<T>> interceptorReference, Map<InterceptionType, List<MethodMetadata>> interceptorMethodMap)
    {
-      return new SimpleInterceptorMetadata<ClassMetadata<?>>(interceptorReference, false, interceptorMethodMap);
+      return new SimpleInterceptorMetadata<ClassMetadata<T>>(interceptorReference, false, interceptorMethodMap);
    }
 
    public static Map<InterceptionType, List<MethodMetadata>> interceptorMethodMap(InterceptionType type, List<MethodMetadata> methods)

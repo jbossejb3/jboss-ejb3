@@ -27,10 +27,53 @@ import org.jboss.interceptor.spi.metadata.InterceptorReference;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class InterceptorReferenceFactory
+public class ClassMetadataInterceptorReference<T> implements InterceptorReference<ClassMetadata<T>>
 {
-   public static <T> InterceptorReference<ClassMetadata<T>> interceptorReference(ClassMetadata<T> classMetadata)
+   private static final long serialVersionUID = 1L;
+   
+   private ClassMetadata<T> classMetadata;
+
+   protected ClassMetadataInterceptorReference(ClassMetadata<T> classMetadata)
    {
-      return new ClassMetadataInterceptorReference(classMetadata);
+      this.classMetadata = classMetadata;
+   }
+
+   public ClassMetadata<T> getClassMetadata()
+   {
+      return classMetadata;
+   }
+
+   public ClassMetadata<T> getInterceptor()
+   {
+      // here the interceptor type is the class itself, so this duplicates getClassMetadata()
+      return getClassMetadata();
+   }
+
+   @Override
+   public boolean equals(Object o)
+   {
+      if (this == o)
+      {
+         return true;
+      }
+      if (o == null || getClass() != o.getClass())
+      {
+         return false;
+      }
+
+      ClassMetadataInterceptorReference that = (ClassMetadataInterceptorReference) o;
+
+      if (classMetadata != null ? !classMetadata.equals(that.classMetadata) : that.classMetadata != null)
+      {
+         return false;
+      }
+
+      return true;
+   }
+
+   @Override
+   public int hashCode()
+   {
+      return classMetadata != null ? classMetadata.hashCode() : 0;
    }
 }

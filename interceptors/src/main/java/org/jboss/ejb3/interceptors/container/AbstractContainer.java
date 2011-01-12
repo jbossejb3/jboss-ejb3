@@ -126,13 +126,19 @@ public class AbstractContainer
     */
    private Object executeInterception(BeanContext bean, Method method, Object[] args, InterceptionType interceptionType) throws Exception
    {
+      if(bean == null)
+         throw new NullPointerException("bean instance is null");
+      
       Object targetInstance = bean.getInstance();
       List<? extends InterceptorMetadata<?>> interceptorList = interceptionModel.getInterceptors(interceptionType, method);
       Collection<InterceptorInvocation<?>> interceptorInvocations = new ArrayList<InterceptorInvocation<?>>();
-      for (InterceptorMetadata interceptorReference : interceptorList)
+      if(interceptorList != null)
       {
-         // TODO: maybe store the interceptor instances on a different key
-         interceptorInvocations.add(new InterceptorInvocation(bean.getInterceptor(interceptorReference.getInterceptorClass().getJavaClass()), interceptorReference, interceptionType));
+         for (InterceptorMetadata interceptorReference : interceptorList)
+         {
+            // TODO: maybe store the interceptor instances on a different key
+            interceptorInvocations.add(new InterceptorInvocation(bean.getInterceptor(interceptorReference.getInterceptorClass().getJavaClass()), interceptorReference, interceptionType));
+         }
       }
       if (targetClassInterceptorMetadata != null && targetClassInterceptorMetadata.getInterceptorMethods(interceptionType) != null && !targetClassInterceptorMetadata.getInterceptorMethods(interceptionType).isEmpty())
       {
@@ -164,7 +170,7 @@ public class AbstractContainer
     * @return           return value of the method
     * @throws Exception if anything goes wrong
     */
-   protected Object invoke(BeanContext target, Method method, Object... arguments) throws Exception
+   public Object invoke(BeanContext target, Method method, Object... arguments) throws Exception
    {
       return executeInterception(target, method, arguments, InterceptionType.AROUND_INVOKE);
    }

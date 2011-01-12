@@ -45,6 +45,9 @@ public class MethodMetadataFactory
 
    public static List<MethodMetadata> methods(Iterable<Method> methods)
    {
+      if(methods == null)
+         return null;
+      
       List<MethodMetadata> list = new ArrayList<MethodMetadata>();
       for(Method m : methods)
          list.add(method(m));

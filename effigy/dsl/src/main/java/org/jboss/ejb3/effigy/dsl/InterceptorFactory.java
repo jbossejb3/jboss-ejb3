@@ -38,6 +38,48 @@ public class InterceptorFactory
       this.interceptorEffigy = new InterceptorEffigyImpl();
    }
 
+   private static String argumentTypesToString(Class<?>... argTypes)
+   {
+      StringBuilder buf = new StringBuilder();
+      buf.append("(");
+      if (argTypes != null)
+      {
+         for (int i = 0; i < argTypes.length; i++)
+         {
+            if (i > 0)
+            {
+               buf.append(", ");
+            }
+            Class c = argTypes[i];
+            buf.append((c == null) ? "null" : c.getName());
+         }
+      }
+      buf.append(")");
+      return buf.toString();
+   }
+
+   private static boolean arrayContentsAssignable(Class[] a1, Class[] a2) {
+       if (a1 == null) {
+           return a2 == null || a2.length == 0;
+       }
+
+       if (a2 == null) {
+           return a1.length == 0;
+       }
+
+       if (a1.length != a2.length) {
+           return false;
+       }
+
+       for (int i = 0; i < a1.length; i++) {
+           if (!a1[i].isAssignableFrom(a2[i])) {
+               return false;
+           }
+       }
+
+       return true;
+   }
+
    public InterceptorFactory aroundInvoke(String methodName) throws NoSuchMethodException
    {
       interceptorEffigy.addAroundInvoke(method(methodName));
@@ -72,8 +114,17 @@ public class InterceptorFactory
       }
       catch(NoSuchMethodException e)
       {
-         method = interceptorClass.getDeclaredMethod(methodName, InvocationContext.class);
-         method.setAccessible(true);
+         try
+         {
+            method = interceptorClass.getDeclaredMethod(methodName, InvocationContext.class);
+            method.setAccessible(true);
+         }
+         catch(NoSuchMethodException e2)
+         {
+            method = searchMethods(interceptorClass.getDeclaredMethods(), methodName, InvocationContext.class);
+            if(method == null)
+               throw new NoSuchMethodException(interceptorClass.getName() + "." + methodName + argumentTypesToString(InvocationContext.class));
+         }
       }
       return method;
    }
@@ -82,5 +133,22 @@ public class InterceptorFactory
    {
       interceptorEffigy.addPostConstruct(method(methodName));
       return this;
+   }
+
+   private static Method searchMethods(Method[] methods, String name, Class<?>... parameterTypes)
+   {
+      Method res = null;
+      String internedName = name.intern();
+      for (int i = 0; i < methods.length; i++)
+      {
+         Method m = methods[i];
+         if (m.getName() == internedName
+                 && arrayContentsAssignable(parameterTypes, m.getParameterTypes())
+                 && (res == null
+                 || res.getReturnType().isAssignableFrom(m.getReturnType())))
+            res = m;
+      }
+
+      return res;
    }
 }

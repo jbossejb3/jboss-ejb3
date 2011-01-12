@@ -36,6 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.jboss.ejb3.interceptors.dsl.MethodMetadataFactory.methods;
 import static org.jboss.interceptor.spi.model.InterceptionType.AROUND_INVOKE;
 import static org.jboss.interceptor.spi.model.InterceptionType.POST_CONSTRUCT;
+import static org.jboss.interceptor.spi.model.InterceptionType.PRE_DESTROY;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -52,8 +53,9 @@ class InterceptorInterceptorMetadata implements InterceptorMetadata<ClassMetadat
    {
       this.classMetadata = new SimpleClassMetadata(interceptor.getInterceptorClass());
       this.interceptorReference = InterceptorReferenceFactory.interceptorReference(classMetadata);
-      interceptorMethods.put(AROUND_INVOKE, methods(interceptor.getAroundInvokes()));
-      interceptorMethods.put(POST_CONSTRUCT, methods(interceptor.getPostConstructs()));
+      putInIfExists(interceptorMethods, AROUND_INVOKE, methods(interceptor.getAroundInvokes()));
+      putInIfExists(interceptorMethods, POST_CONSTRUCT, methods(interceptor.getPostConstructs()));
+      putInIfExists(interceptorMethods, PRE_DESTROY, methods(interceptor.getPreDestroys()));
    }
 
    @Override
@@ -85,5 +87,13 @@ class InterceptorInterceptorMetadata implements InterceptorMetadata<ClassMetadat
    public boolean isTargetClass()
    {
       throw new RuntimeException("NYI: org.jboss.ejb3.interceptors.effigy.InterceptorInterceptorMetadata.isTargetClass");
+   }
+
+   private static <K, V> void putInIfExists(Map<K, V> map, K key, V value)
+   {
+      if(value == null)
+         return;
+
+      map.put(key, value);
    }
 }

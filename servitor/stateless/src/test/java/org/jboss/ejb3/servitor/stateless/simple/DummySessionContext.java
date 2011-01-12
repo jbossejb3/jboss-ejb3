@@ -19,18 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.interceptors.dsl;
+package org.jboss.ejb3.servitor.stateless.simple;
 
-import org.jboss.interceptor.spi.metadata.ClassMetadata;
-import org.jboss.interceptor.spi.metadata.InterceptorReference;
+import org.jboss.ejb3.context.base.BaseSessionContext;
+import org.jboss.ejb3.context.spi.SessionBeanManager;
+import org.jboss.ejb3.context.spi.SessionContext;
+import org.jboss.ejb3.interceptors.container.BeanContext;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class InterceptorReferenceFactory
+public class DummySessionContext extends BaseSessionContext
+        implements SessionContext, BeanContext
 {
-   public static <T> InterceptorReference<ClassMetadata<T>> interceptorReference(ClassMetadata<T> classMetadata)
+   private static final long serialVersionUID = 1L;
+
+   public DummySessionContext(SessionBeanManager manager, Object instance)
    {
-      return new ClassMetadataInterceptorReference(classMetadata);
+      super(manager, instance);
+   }
+
+   @Override
+   public Object getInstance()
+   {
+      return super.getTarget();
+   }
+
+   @Override
+   public Object getInterceptor(Class<?> interceptorClass) throws IllegalArgumentException
+   {
+      throw new RuntimeException("NYI: org.jboss.ejb3.servitor.stateless.simple.DummySessionContext.getInterceptor");
    }
 }

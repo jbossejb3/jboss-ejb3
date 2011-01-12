@@ -19,18 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.interceptors.dsl;
-
-import org.jboss.interceptor.spi.metadata.ClassMetadata;
-import org.jboss.interceptor.spi.metadata.InterceptorReference;
+package org.jboss.ejb3.servitor.stateless.simple;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class InterceptorReferenceFactory
+//@Stateless
+public class SimpleStatelessBean
 {
-   public static <T> InterceptorReference<ClassMetadata<T>> interceptorReference(ClassMetadata<T> classMetadata)
+   public String sayHi(String name)
    {
-      return new ClassMetadataInterceptorReference(classMetadata);
+      return "Hi " + name;
    }
 }

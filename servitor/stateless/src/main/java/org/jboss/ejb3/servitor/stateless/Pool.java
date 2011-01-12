@@ -19,18 +19,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.interceptors.dsl;
-
-import org.jboss.interceptor.spi.metadata.ClassMetadata;
-import org.jboss.interceptor.spi.metadata.InterceptorReference;
+package org.jboss.ejb3.servitor.stateless;
 
 /**
+ * A pool of stateless objects.
+ *
+ * A pool is linked to an object factory. How this link is established
+ * is left beyond scope.
+ *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class InterceptorReferenceFactory
+public interface Pool<T>
 {
-   public static <T> InterceptorReference<ClassMetadata<T>> interceptorReference(ClassMetadata<T> classMetadata)
-   {
-      return new ClassMetadataInterceptorReference(classMetadata);
-   }
+   /**
+    * Discard an object. This will be called
+    * in case of a system exception.
+    *
+    * @param obj    the object
+    */
+   void discard(T obj);
+
+   /**
+    * Get the an object from the pool. This will mark
+    * the object as being in use.
+    *
+    * @return       the object
+    */
+   T get();
+
+   /**
+    * Release the object from use.
+    *
+    * @param obj    the object
+    */
+   void release(T obj);
 }

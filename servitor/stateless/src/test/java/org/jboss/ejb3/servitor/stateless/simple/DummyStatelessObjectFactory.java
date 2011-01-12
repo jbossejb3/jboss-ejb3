@@ -19,18 +19,46 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.interceptors.dsl;
+package org.jboss.ejb3.servitor.stateless.simple;
 
-import org.jboss.interceptor.spi.metadata.ClassMetadata;
-import org.jboss.interceptor.spi.metadata.InterceptorReference;
+import org.jboss.ejb3.servitor.stateless.StatelessObjectFactory;
+import org.jboss.ejb3.servitor.stateless.StatelessServitor;
+
+import javax.ejb.EJBException;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class InterceptorReferenceFactory
+public class DummyStatelessObjectFactory implements StatelessObjectFactory<DummySessionContext>
 {
-   public static <T> InterceptorReference<ClassMetadata<T>> interceptorReference(ClassMetadata<T> classMetadata)
+   private StatelessServitor servitor;
+
+   public DummyStatelessObjectFactory(StatelessServitor servitor)
    {
-      return new ClassMetadataInterceptorReference(classMetadata);
+      this.servitor = servitor;
+   }
+
+   @Override
+   public DummySessionContext create()
+   {
+      try
+      {
+         Object instance = servitor.getComponentClass().newInstance();
+         return new DummySessionContext(servitor, instance);
+      }
+      catch(InstantiationException e)
+      {
+         throw new EJBException(e);
+      }
+      catch (IllegalAccessException e)
+      {
+         throw new EJBException(e);
+      }
+   }
+
+   @Override
+   public void destroy(DummySessionContext obj)
+   {
+      // do nothing
    }
 }

@@ -19,18 +19,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.interceptors.dsl;
+package org.jboss.ejb3.servitor.stateless.simple;
 
-import org.jboss.interceptor.spi.metadata.ClassMetadata;
-import org.jboss.interceptor.spi.metadata.InterceptorReference;
+import org.jboss.ejb3.servitor.stateless.Pool;
+import org.jboss.ejb3.servitor.stateless.StatelessObjectFactory;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class InterceptorReferenceFactory
+public class DummyPool<T> implements Pool<T>
 {
-   public static <T> InterceptorReference<ClassMetadata<T>> interceptorReference(ClassMetadata<T> classMetadata)
+   private StatelessObjectFactory<T> factory;
+
+   public DummyPool(StatelessObjectFactory<T> factory)
    {
-      return new ClassMetadataInterceptorReference(classMetadata);
+      this.factory = factory;
+   }
+
+   @Override
+   public void discard(T obj)
+   {
+      // do nothing
+   }
+
+   @Override
+   public T get()
+   {
+      return factory.create();
+   }
+
+   @Override
+   public void release(T obj)
+   {
+      factory.destroy(obj);
    }
 }

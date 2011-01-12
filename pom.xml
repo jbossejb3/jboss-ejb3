@@ -56,8 +56,26 @@
          </dependency>
 
          <dependency>
+            <groupId>org.jboss.ejb3</groupId>
+            <artifactId>jboss-ejb3-endpoint</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+
+         <dependency>
+            <groupId>org.jboss.ejb3</groupId>
+            <artifactId>jboss-ejb3-interceptors</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+
+         <dependency>
             <groupId>org.jboss.ejb3.context</groupId>
             <artifactId>jboss-ejb3-context-base</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+
+         <dependency>
+            <groupId>org.jboss.ejb3.context</groupId>
+            <artifactId>jboss-ejb3-context-spi</artifactId>
             <version>${project.version}</version>
          </dependency>
 
@@ -119,6 +137,7 @@
       <module>effigy</module>
       <module>endpoint</module>
       <module>interceptors</module>
+      <module>servitor</module>
       <module>tx</module>
    </modules>
 

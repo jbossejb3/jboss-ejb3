@@ -32,6 +32,7 @@ abstract class AbstractInterceptedImpl
    private LinkedList<Method> aroundInvokes;
    private Class<?> interceptedClass;
    private LinkedList<Method> postConstructs;
+   private LinkedList<Method> preDestroys;
 
    public boolean addAroundInvoke(Method method)
    {
@@ -45,6 +46,13 @@ abstract class AbstractInterceptedImpl
       if(postConstructs == null)
          postConstructs = new LinkedList<Method>();
       return postConstructs.add(method);
+   }
+
+   public boolean addPreDestroy(Method method)
+   {
+      if(preDestroys == null)
+         preDestroys = new LinkedList<Method>();
+      return preDestroys.add(method);
    }
 
    protected Class<?> getInterceptedClass()
@@ -64,7 +72,7 @@ abstract class AbstractInterceptedImpl
 
    public Iterable<Method> getPreDestroys()
    {
-      throw new RuntimeException("NYI: org.jboss.ejb3.effigy.dsl.AbstractInterceptedImpl.getPreDestroys");
+      return preDestroys;
    }
 
    protected void setInterceptedClass(Class<?> cls)
