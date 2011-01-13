@@ -90,6 +90,12 @@
             <artifactId>jboss-ejb3-effigy-dsl</artifactId>
             <version>${project.version}</version>
          </dependency>
+
+         <dependency>
+            <groupId>org.jboss.ejb3.servitor</groupId>
+            <artifactId>jboss-ejb3-servitor-common</artifactId>
+            <version>${project.version}</version>
+         </dependency>
       </dependencies>
    </dependencyManagement>
 

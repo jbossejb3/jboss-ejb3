@@ -7,34 +7,18 @@
    </parent>
    <modelVersion>4.0.0</modelVersion>
 
-   <artifactId>jboss-ejb3-servitor-stateless</artifactId>
+   <artifactId>jboss-ejb3-servitor-common</artifactId>
 
-   <name>JBoss EJB 3 Servitor Stateless</name>
+   <name>JBoss EJB 3 Servitor Common</name>
+
+   <description>
+      Define the common functionality between all servitor types.
+   </description>
 
    <dependencies>
       <dependency>
          <groupId>${javax.ejb.groupId}</groupId>
          <artifactId>${javax.ejb.artifactId}</artifactId>
-      </dependency>
-
-      <dependency>
-         <groupId>${project.groupId}</groupId>
-         <artifactId>jboss-ejb3-servitor-common</artifactId>
-      </dependency>
-
-      <dependency>
-         <groupId>org.jboss.ejb3</groupId>
-         <artifactId>jboss-ejb3-endpoint</artifactId>
-      </dependency>
-
-      <dependency>
-         <groupId>org.jboss.ejb3</groupId>
-         <artifactId>jboss-ejb3-interceptors</artifactId>
-      </dependency>
-
-      <dependency>
-         <groupId>org.jboss.ejb3.context</groupId>
-         <artifactId>jboss-ejb3-context-base</artifactId>
       </dependency>
 
       <dependency>
@@ -45,12 +29,6 @@
       <dependency>
          <groupId>org.jboss.ejb3.effigy</groupId>
          <artifactId>jboss-ejb3-effigy-api</artifactId>
-      </dependency>
-
-      <dependency>
-         <groupId>org.jboss.ejb3.effigy</groupId>
-         <artifactId>jboss-ejb3-effigy-dsl</artifactId>
-         <scope>test</scope>
       </dependency>
 
       <dependency>

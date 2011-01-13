@@ -30,19 +30,15 @@ import org.jboss.ejb3.endpoint.SessionFactory;
 import org.jboss.ejb3.interceptors.container.AbstractContainer;
 import org.jboss.ejb3.interceptors.container.BeanContext;
 import org.jboss.ejb3.interceptors.effigy.Transformer;
+import org.jboss.ejb3.servitor.common.EnterpriseBeanServitor;
 import org.jboss.interceptor.proxy.DefaultInvocationContextFactory;
 import org.jboss.interceptor.spi.context.InvocationContextFactory;
 import org.jboss.interceptor.spi.instance.InterceptorInstantiator;
 
-import javax.ejb.EJBHome;
-import javax.ejb.EJBLocalHome;
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
-import javax.ejb.TimerService;
-import javax.transaction.UserTransaction;
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.security.Principal;
 
 /**
  * StatelessServitor services stateless session beans via an endpoint.
@@ -52,7 +48,8 @@ import java.security.Principal;
  * 
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class StatelessServitor implements Endpoint, SessionBeanManager
+public class StatelessServitor extends EnterpriseBeanServitor
+        implements Endpoint, SessionBeanManager
 {
    private SessionBeanEffigy sessionBeanEffigy;
 
@@ -89,34 +86,9 @@ public class StatelessServitor implements Endpoint, SessionBeanManager
       throw new RuntimeException("NYI: org.jboss.ejb3.servitor.stateless.StatelessServitor.getEJBObject");
    }
 
-   public EJBHome getEJBHome() throws IllegalStateException
-   {
-      throw new RuntimeException("NYI: org.jboss.ejb3.servitor.stateless.StatelessServitor.getEJBHome");
-   }
-
-   public EJBLocalHome getEJBLocalHome() throws IllegalStateException
-   {
-      throw new RuntimeException("NYI: org.jboss.ejb3.servitor.stateless.StatelessServitor.getEJBLocalHome");
-   }
-
    protected Pool<? extends EJBContext> getPool()
    {
       return pool;
-   }
-
-   public boolean getRollbackOnly() throws IllegalStateException
-   {
-      throw new RuntimeException("NYI: org.jboss.ejb3.servitor.stateless.StatelessServitor.getRollbackOnly");
-   }
-
-   public TimerService getTimerService() throws IllegalStateException
-   {
-      throw new RuntimeException("NYI: org.jboss.ejb3.servitor.stateless.StatelessServitor.getTimerService");
-   }
-
-   public UserTransaction getUserTransaction() throws IllegalStateException
-   {
-      throw new RuntimeException("NYI: org.jboss.ejb3.servitor.stateless.StatelessServitor.getUserTransaction");
    }
 
    public SessionFactory getSessionFactory() throws IllegalStateException
@@ -136,28 +108,13 @@ public class StatelessServitor implements Endpoint, SessionBeanManager
       return false;
    }
 
-   public boolean isCallerInRole(Principal callerPrincipal, String roleName) throws IllegalStateException
-   {
-      throw new RuntimeException("NYI: org.jboss.ejb3.servitor.stateless.StatelessServitor.isCallerInRole");
-   }
-
    public boolean isSessionAware()
    {
       return false;
    }
 
-   public Object lookup(String name) throws IllegalArgumentException
-   {
-      throw new RuntimeException("NYI: org.jboss.ejb3.servitor.stateless.StatelessServitor.lookup");
-   }
-
    public void setPool(Pool<? extends EJBContext> pool)
    {
       this.pool = pool;
-   }
-
-   public void setRollbackOnly() throws IllegalStateException
-   {
-      throw new RuntimeException("NYI: org.jboss.ejb3.servitor.stateless.StatelessServitor.setRollbackOnly");
    }
 }

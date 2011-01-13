@@ -26,6 +26,7 @@
    </description>
 
    <modules>
+      <module>common</module>
       <module>stateless</module>
    </modules>
 </project>
