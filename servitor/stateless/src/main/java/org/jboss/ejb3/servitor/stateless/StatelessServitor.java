@@ -60,10 +60,7 @@ public class StatelessServitor extends EnterpriseBeanServitor
    {
       this.sessionBeanEffigy = sessionBeanEffigy;
 
-      Transformer transformer = new Transformer(sessionBeanEffigy);
-      InterceptorInstantiator<?,?> interceptorInstantiator = null;
-      InvocationContextFactory invocationContextFactory = new DefaultInvocationContextFactory();
-      this.interceptorContainer = new AbstractContainer(transformer.getBeanClassInterceptorMetadata(), transformer.getInterceptionModel(), interceptorInstantiator, invocationContextFactory);
+      this.interceptorContainer = new AbstractContainer(sessionBeanEffigy);
    }
 
    public <T> T getBusinessObject(SessionContext ctx, Class<T> businessInterface) throws IllegalStateException

@@ -21,6 +21,10 @@
  */
 package org.jboss.ejb3.interceptors.container;
 
+import org.jboss.ejb3.effigy.EnterpriseBeanEffigy;
+import org.jboss.ejb3.interceptors.effigy.Transformer;
+import org.jboss.interceptor.proxy.DefaultInvocationContextFactory;
+import org.jboss.interceptor.proxy.DirectClassInterceptorInstantiator;
 import org.jboss.interceptor.proxy.InterceptorInvocation;
 import org.jboss.interceptor.proxy.SimpleInterceptionChain;
 import org.jboss.interceptor.spi.context.InvocationContextFactory;
@@ -69,6 +73,16 @@ public class AbstractContainer
       this.invocationContextFactory = invocationContextFactory;
    }
 
+   public AbstractContainer(EnterpriseBeanEffigy enterpriseBean)
+   {
+      Transformer transformer = new Transformer(enterpriseBean);
+      this.targetClassInterceptorMetadata = transformer.getBeanClassInterceptorMetadata();
+      this.interceptionModel = transformer.getInterceptionModel();
+
+      this.interceptorInstantiator = new DirectClassInterceptorInstantiator();
+      this.invocationContextFactory = new DefaultInvocationContextFactory();
+   }
+
    /**
     * Create a new bean instance according to the state diagrams from the specification.
     * 
@@ -88,9 +102,12 @@ public class AbstractContainer
          // 1. newInstance
          Object instance = targetClassInterceptorMetadata.getInterceptorClass().getJavaClass().newInstance();
          Map<Class<?>, Object> interceptorHandlerInstances = new HashMap<Class<?>, Object>();
-         for (InterceptorMetadata interceptorMetadata : this.interceptionModel.getAllInterceptors())
+         if (this.interceptionModel.getAllInterceptors() != null)
          {
-            interceptorHandlerInstances.put(interceptorMetadata.getInterceptorClass().getJavaClass(), interceptorInstantiator.createFor(interceptorMetadata.getInterceptorReference()));
+            for (InterceptorMetadata interceptorMetadata : this.interceptionModel.getAllInterceptors())
+            {
+               interceptorHandlerInstances.put(interceptorMetadata.getInterceptorClass().getJavaClass(), interceptorInstantiator.createFor(interceptorMetadata.getInterceptorReference()));
+            }
          }
          // 2. dependency injection
          // TODO: dependency injection which is handled by BeanInstantiator or BeanContextFactory
