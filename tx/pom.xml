@@ -89,7 +89,6 @@
    </dependencyManagement>
 
    <modules>
-      <module>aop</module>
       <module>impl</module>
       <module>spi</module>
    </modules>
