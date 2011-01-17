@@ -37,10 +37,8 @@
    </dependencyManagement>
 
    <modules>
-      <module>aop-int</module>
       <module>api</module>
       <module>common</module>
-      <module>int1</module>
       <module>int2</module>
       <module>dsl</module>
    </modules>
