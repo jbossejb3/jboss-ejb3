@@ -21,12 +21,14 @@
  */
 package org.jboss.ejb3.endpoint.reflect;
 
+import org.jboss.ejb3.endpoint.Endpoint;
+
 import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-
-import org.jboss.ejb3.endpoint.Endpoint;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * An InvocationHandler adapter for an Endpoint.
@@ -140,7 +142,9 @@ public class EndpointInvocationHandler implements InvocationHandler
          return hashCode();
       if(method.equals(METHOD_TO_STRING))
          return toProxyString();
-      return endpoint.invoke(session, invokedBusinessInterface, method, args);
+      // create a naive instance of context data for this invocation
+      Map<String, Object> contextData = new HashMap<String, Object>();
+      return endpoint.invoke(session, contextData, invokedBusinessInterface, method, args);
    }
    
    public String toProxyString()

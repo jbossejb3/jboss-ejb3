@@ -29,16 +29,13 @@ import org.jboss.ejb3.endpoint.Endpoint;
 import org.jboss.ejb3.endpoint.SessionFactory;
 import org.jboss.ejb3.interceptors.container.AbstractContainer;
 import org.jboss.ejb3.interceptors.container.BeanContext;
-import org.jboss.ejb3.interceptors.effigy.Transformer;
 import org.jboss.ejb3.servitor.common.EnterpriseBeanServitor;
-import org.jboss.interceptor.proxy.DefaultInvocationContextFactory;
-import org.jboss.interceptor.spi.context.InvocationContextFactory;
-import org.jboss.interceptor.spi.instance.InterceptorInstantiator;
 
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Map;
 
 /**
  * StatelessServitor services stateless session beans via an endpoint.
@@ -93,10 +90,10 @@ public class StatelessServitor extends EnterpriseBeanServitor
       throw new RuntimeException("NYI: org.jboss.ejb3.servitor.stateless.StatelessServitor.getSessionFactory");
    }
 
-   public Object invoke(Serializable session, Class<?> invokedBusinessInterface, Method method, Object... args)
+   public Object invoke(Serializable session, Map<String, Object> contextData, Class<?> invokedBusinessInterface, Method method, Object... args)
            throws Throwable
    {
-      return interceptorContainer.invoke((BeanContext) session, method, args);
+      return interceptorContainer.invoke((BeanContext) session, contextData, method, args);
    }
 
    protected boolean isApplicationException(Exception ex, Method method)

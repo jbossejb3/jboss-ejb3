@@ -21,16 +21,17 @@
  */
 package org.jboss.ejb3.endpoint.test.proxy.unit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.io.Serializable;
-import java.lang.reflect.Method;
-
 import org.jboss.ejb3.endpoint.AbstractEndpoint;
 import org.jboss.ejb3.endpoint.Endpoint;
 import org.jboss.ejb3.endpoint.reflect.EndpointProxy;
 import org.junit.Test;
+
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * Test the utility class EndpointProxy.
@@ -50,7 +51,7 @@ public class EndpointProxyTestCase
    {
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
       Endpoint endpoint = new AbstractEndpoint() {
-         public Object invoke(Serializable session, Class<?> invokedBusinessInterface, Method method, Object[] args)
+         public Object invoke(Serializable session, Map<String, Object> contextData, Class<?> invokedBusinessInterface, Method method, Object[] args)
             throws Throwable
          {
             return "Hi " + args[0];
@@ -69,7 +70,7 @@ public class EndpointProxyTestCase
    {
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
       Endpoint endpoint = new AbstractEndpoint() {
-         public Object invoke(Serializable session, Class<?> invokedBusinessInterface, Method method, Object[] args)
+         public Object invoke(Serializable session, Map<String, Object> contextData, Class<?> invokedBusinessInterface, Method method, Object[] args)
             throws Throwable
          {
             return "Hi " + args[0];

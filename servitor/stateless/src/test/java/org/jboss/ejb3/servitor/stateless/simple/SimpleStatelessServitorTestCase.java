@@ -21,8 +21,6 @@
  */
 package org.jboss.ejb3.servitor.stateless.simple;
 
-import javassist.util.proxy.MethodHandler;
-import javassist.util.proxy.ProxyFactory;
 import org.jboss.ejb3.effigy.SessionBeanEffigy;
 import org.jboss.ejb3.effigy.dsl.SessionBeanFactory;
 import org.jboss.ejb3.endpoint.Endpoint;
@@ -31,12 +29,10 @@ import org.jboss.ejb3.servitor.stateless.StatelessServitor;
 import org.jboss.interceptor.builder.InterceptionModelBuilder;
 import org.jboss.interceptor.proxy.DefaultInvocationContextFactory;
 import org.jboss.interceptor.proxy.DirectClassInterceptorInstantiator;
-import org.jboss.interceptor.proxy.LifecycleMixin;
 import org.jboss.interceptor.spi.instance.InterceptorInstantiator;
 import org.jboss.interceptor.spi.metadata.ClassMetadata;
 import org.jboss.interceptor.spi.metadata.InterceptorMetadata;
 import org.jboss.interceptor.spi.model.InterceptionModel;
-import org.jboss.interceptor.util.proxy.TargetInstanceProxy;
 import org.junit.Test;
 
 import javax.interceptor.InvocationContext;
@@ -45,13 +41,14 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.jboss.ejb3.interceptors.dsl.InterceptorMetadataFactory.aroundInvokes;
 import static org.jboss.ejb3.interceptors.dsl.InterceptorMetadataFactory.interceptor;
 import static org.jboss.ejb3.interceptors.dsl.InterceptorReferenceFactory.interceptorReference;
 import static org.jboss.ejb3.interceptors.dsl.MethodMetadataFactory.methods;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * The goal of this test is to provide code coverage. There is no real link to specs.
@@ -75,14 +72,15 @@ public class SimpleStatelessServitorTestCase
       );
       InterceptionModelBuilder<ClassMetadata<StatelessServitor>, ?> builder = InterceptionModelBuilder.newBuilderFor(targetClassMetadata);
       // TODO: the interceptor should be put upon the component class, not the view class, but that doesn't work
-      builder.interceptAroundInvoke(Endpoint.class.getMethod("invoke", Serializable.class, Class.class, Method.class, Object[].class)).
+      builder.interceptAroundInvoke(Endpoint.class.getMethod("invoke", Serializable.class, Map.class, Class.class, Method.class, Object[].class)).
               with(interceptor(interceptorReference(new SimpleClassMetadata<StatelessInstanceInterceptor>(StatelessInstanceInterceptor.class)),
                       aroundInvokes(methods(StatelessInstanceInterceptor.class.getMethod("aroundInvoke", InvocationContext.class)))));
       InterceptionModel<ClassMetadata<StatelessServitor>, ?> interceptionModel = builder.build();
 
       Endpoint endpoint = proxifyInstance(servitor, Endpoint.class, targetClassInterceptorMetadata, interceptionModel);
-      
-      String result = (String) endpoint.invoke(null, SimpleStatelessBean.class, SimpleStatelessBean.class.getMethod("sayHi", String.class), "test");
+
+      Map<String, Object> contextData = new HashMap<String, Object>();
+      String result = (String) endpoint.invoke(null, contextData, SimpleStatelessBean.class, SimpleStatelessBean.class.getMethod("sayHi", String.class), "test");
 
       assertEquals("Hi test", result);
    }

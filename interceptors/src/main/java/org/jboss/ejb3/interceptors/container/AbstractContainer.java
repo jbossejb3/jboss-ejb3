@@ -23,7 +23,6 @@ package org.jboss.ejb3.interceptors.container;
 
 import org.jboss.ejb3.effigy.EnterpriseBeanEffigy;
 import org.jboss.ejb3.interceptors.effigy.Transformer;
-import org.jboss.interceptor.proxy.DefaultInvocationContextFactory;
 import org.jboss.interceptor.proxy.DirectClassInterceptorInstantiator;
 import org.jboss.interceptor.proxy.InterceptorInvocation;
 import org.jboss.interceptor.proxy.SimpleInterceptionChain;
@@ -53,7 +52,6 @@ import java.util.Map;
 public class AbstractContainer
 {
    private InterceptorInstantiator<?, ?> interceptorInstantiator;
-   private InvocationContextFactory invocationContextFactory;
    private InterceptionModel<ClassMetadata<?>, ?> interceptionModel;
    private InterceptorMetadata<ClassMetadata<?>> targetClassInterceptorMetadata;
 
@@ -65,12 +63,11 @@ public class AbstractContainer
     * @deprecated exposing the usage of jboss-interceptors is a bad thing.
     */
    @Deprecated
-   public AbstractContainer(InterceptorMetadata<ClassMetadata<?>> targetClassInterceptorMetadata, InterceptionModel<ClassMetadata<?>, ?> interceptionModel, InterceptorInstantiator<?,?> interceptorInstantiator, InvocationContextFactory invocationContextFactory)
+   public AbstractContainer(InterceptorMetadata<ClassMetadata<?>> targetClassInterceptorMetadata, InterceptionModel<ClassMetadata<?>, ?> interceptionModel, InterceptorInstantiator<?,?> interceptorInstantiator)
    {
       this.targetClassInterceptorMetadata = targetClassInterceptorMetadata;
       this.interceptionModel = interceptionModel;
       this.interceptorInstantiator = interceptorInstantiator;
-      this.invocationContextFactory = invocationContextFactory;
    }
 
    public AbstractContainer(EnterpriseBeanEffigy enterpriseBean)
@@ -80,7 +77,6 @@ public class AbstractContainer
       this.interceptionModel = transformer.getInterceptionModel();
 
       this.interceptorInstantiator = new DirectClassInterceptorInstantiator();
-      this.invocationContextFactory = new DefaultInvocationContextFactory();
    }
 
    /**
@@ -114,7 +110,8 @@ public class AbstractContainer
          BeanContext bean = new DummyBeanContext(instance, interceptorHandlerInstances);
          // 3. PostConstruct calls, if any
          // TODO: delegated? for now do it myself
-         executeInterception(bean, null, null, InterceptionType.POST_CONSTRUCT);
+         Map<String, Object> contextData = new HashMap<String, Object>();
+         executeInterception(bean, contextData, null, null, InterceptionType.POST_CONSTRUCT);
 
          // Step 4, which is only applicable to stateful session beans is explicitly beyond scope of this method.
          // 4. Init method, or ejbCreate<METHOD>, if any
@@ -135,13 +132,14 @@ public class AbstractContainer
    {
       // TODO: use BeanContextFactory
       // PreDestroy callbacks, if any
-      executeInterception(bean, null, null, InterceptionType.PRE_DESTROY);
+      Map<String, Object> contextData = new HashMap<String, Object>();
+      executeInterception(bean, contextData, null, null, InterceptionType.PRE_DESTROY);
    }
 
    /**
     * @see org.jboss.interceptor.proxy.InterceptorMethodHandler#executeInterception(Object, java.lang.reflect.Method, java.lang.reflect.Method, Object[], org.jboss.interceptor.spi.model.InterceptionType)
     */
-   private Object executeInterception(BeanContext bean, Method method, Object[] args, InterceptionType interceptionType) throws Exception
+   private Object executeInterception(BeanContext bean, Map<String, Object> contextData, Method method, Object[] args, InterceptionType interceptionType) throws Exception
    {
       if(bean == null)
          throw new NullPointerException("bean instance is null");
@@ -164,7 +162,7 @@ public class AbstractContainer
       SimpleInterceptionChain chain = new SimpleInterceptionChain(interceptorInvocations, interceptionType, targetInstance, method);
       try
       {
-         return chain.invokeNextInterceptor(invocationContextFactory.newInvocationContext(chain, targetInstance, method, args));
+         return chain.invokeNextInterceptor(new EJBInterceptorInvocationContext(chain, contextData, targetInstance, method, args));
       }
       catch(Throwable t)
       {
@@ -186,9 +184,26 @@ public class AbstractContainer
     * @param arguments  arguments to the method
     * @return           return value of the method
     * @throws Exception if anything goes wrong
+    * @deprecated use the invoke that specifies context data
     */
    public Object invoke(BeanContext target, Method method, Object... arguments) throws Exception
    {
-      return executeInterception(target, method, arguments, InterceptionType.AROUND_INVOKE);
+      Map<String, Object> contextData = new HashMap<String, Object>();
+      return invoke(target, contextData, method, arguments);
+   }
+
+   /**
+    * Call a method upon a target object with all interceptors in place.
+    *
+    * @param target     the target to invoke upon
+    * @param contextData   the context data for this invocation
+    * @param method     the method to invoke
+    * @param arguments  arguments to the method
+    * @return           return value of the method
+    * @throws Exception if anything goes wrong
+    */
+   public Object invoke(BeanContext target, Map<String, Object> contextData, Method method, Object... arguments) throws Exception
+   {
+      return executeInterception(target, contextData, method, arguments, InterceptionType.AROUND_INVOKE);
    }
 }

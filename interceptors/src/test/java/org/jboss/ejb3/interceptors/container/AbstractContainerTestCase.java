@@ -22,12 +22,10 @@
 package org.jboss.ejb3.interceptors.container;
 
 import org.jboss.interceptor.builder.InterceptionModelBuilder;
-import org.jboss.interceptor.proxy.DefaultInvocationContextFactory;
 import org.jboss.interceptor.proxy.DirectClassInterceptorInstantiator;
 import org.jboss.interceptor.reader.InterceptorMetadataUtils;
 import org.jboss.interceptor.reader.cache.DefaultMetadataCachingReader;
 import org.jboss.interceptor.reader.cache.MetadataCachingReader;
-import org.jboss.interceptor.spi.context.InvocationContextFactory;
 import org.jboss.interceptor.spi.instance.InterceptorInstantiator;
 import org.jboss.interceptor.spi.metadata.ClassMetadata;
 import org.jboss.interceptor.spi.metadata.InterceptorMetadata;
@@ -66,8 +64,6 @@ public class AbstractContainerTestCase
 
       InterceptorInstantiator<?,?> interceptorInstantiator = new DirectClassInterceptorInstantiator();
       
-      InvocationContextFactory invocationContextFactory = new DefaultInvocationContextFactory();
-
       ClassMetadata<?> targetClassMetadata =  metadataCachingReader.getClassMetadata(targetClass);
       // TODO: wrong, should really create the metadata myself, not generate reflective metadata
       InterceptorMetadata<ClassMetadata<?>> targetClassInterceptorMetadata = InterceptorMetadataUtils.readMetadataForTargetClass(targetClassMetadata);
@@ -82,7 +78,7 @@ public class AbstractContainerTestCase
       builder.interceptAll().with(interceptor);
       InterceptionModel<ClassMetadata<?>,?> interceptionModel = builder.build();
 
-      AbstractContainer container = new AbstractContainer(targetClassInterceptorMetadata, interceptionModel, interceptorInstantiator, invocationContextFactory);
+      AbstractContainer container = new AbstractContainer(targetClassInterceptorMetadata, interceptionModel, interceptorInstantiator);
 
       BeanContext instance = container.construct();
 

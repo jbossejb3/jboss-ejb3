@@ -23,6 +23,7 @@ package org.jboss.ejb3.endpoint;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Map;
 
 /**
  * An endpoint is capable of handling invocation on an EJB instance.
@@ -46,9 +47,12 @@ public interface Endpoint
    
    /**
     * Invoke a method on an EJB endpoint.
+    *
+    * The context data passed in does not have to be thread safe.
     * 
     * @param session the identification of the EJB instance to invoke the method upon
     *   or null if the endpoint doesn't support sessions.
+    * @param contextData the context data that is associated with this invocation
     * @param invokedBusinessInterface the invokedBusinessInterface or null if not known.
     * @param method the method to invoke on the EJB instance, note that if 
     *   invokedBusinessInterface is specified then the declaring class of the 
@@ -65,7 +69,7 @@ public interface Endpoint
     * @throws Throwable the exception to throw from the method
     *   invocation on the EJB instance.
     */
-   Object invoke(Serializable session, Class<?> invokedBusinessInterface, Method method, Object... args) throws Throwable;
+   Object invoke(Serializable session, Map<String, Object> contextData, Class<?> invokedBusinessInterface, Method method, Object... args) throws Throwable;
    
    /**
     * @return true if this Endpoint is session aware

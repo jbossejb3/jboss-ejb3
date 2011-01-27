@@ -21,18 +21,19 @@
  */
 package org.jboss.ejb3.endpoint.test.invocation.unit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import org.jboss.ejb3.endpoint.AbstractEndpoint;
+import org.jboss.ejb3.endpoint.Endpoint;
+import org.jboss.ejb3.endpoint.reflect.EndpointInvocationHandler;
+import org.junit.Test;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Date;
+import java.util.Map;
 
-import org.jboss.ejb3.endpoint.AbstractEndpoint;
-import org.jboss.ejb3.endpoint.Endpoint;
-import org.jboss.ejb3.endpoint.reflect.EndpointInvocationHandler;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * Test an invocation on a dummy endpoint.
@@ -46,7 +47,7 @@ public class InvocationTestCase
    public void testInvocation() throws Throwable
    {
       Endpoint endpoint = new AbstractEndpoint() {
-         public Object invoke(Serializable session, Class<?> invokedBusinessInterface, Method method, Object[] args)
+         public Object invoke(Serializable session, Map<String, Object> contextData, Class<?> invokedBusinessInterface, Method method, Object[] args)
             throws Throwable
          {
             return "Hi " + args[0];

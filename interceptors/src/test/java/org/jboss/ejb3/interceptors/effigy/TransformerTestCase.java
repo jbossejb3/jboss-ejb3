@@ -56,9 +56,7 @@ public class TransformerTestCase
 
       InterceptorInstantiator<?,?> interceptorInstantiator = new DirectClassInterceptorInstantiator();
 
-      InvocationContextFactory invocationContextFactory = new DefaultInvocationContextFactory();
-
-      AbstractContainer container = new AbstractContainer(transformer.getBeanClassInterceptorMetadata(), transformer.getInterceptionModel(), interceptorInstantiator, invocationContextFactory);
+      AbstractContainer container = new AbstractContainer(transformer.getBeanClassInterceptorMetadata(), transformer.getInterceptionModel(), interceptorInstantiator);
 
       AbstractContainerTestCase.testContainer(container);
    }
