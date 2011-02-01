@@ -27,9 +27,19 @@ import org.jboss.tm.TransactionTimeoutConfiguration;
 import org.jboss.util.deadlock.ApplicationDeadlockException;
 
 import javax.annotation.Resource;
-import javax.ejb.*;
+import javax.ejb.ApplicationException;
+import javax.ejb.EJBException;
+import javax.ejb.EJBTransactionRequiredException;
+import javax.ejb.EJBTransactionRolledbackException;
+import javax.ejb.TransactionAttributeType;
 import javax.interceptor.AroundInvoke;
-import javax.transaction.*;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.RollbackException;
+import javax.transaction.Status;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
 import java.rmi.RemoteException;
 import java.util.Random;
 
@@ -282,7 +292,7 @@ public class CMTTxInterceptor
       Transaction tx = tm.getTransaction();
       if (tx == null)
       {
-         throw new EJBTransactionRequiredException(invocation.getMethod().toString());
+         throw new EJBTransactionRequiredException("Transaction is required for invocation: " + invocation);
       }
       return invokeInCallerTx(invocation, tx);
    }
