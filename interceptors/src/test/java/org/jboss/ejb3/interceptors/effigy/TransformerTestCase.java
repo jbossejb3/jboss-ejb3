@@ -25,6 +25,7 @@ import org.jboss.ejb3.effigy.InterceptorEffigy;
 import org.jboss.ejb3.effigy.SessionBeanEffigy;
 import org.jboss.ejb3.interceptors.container.AbstractContainer;
 import org.jboss.ejb3.interceptors.container.AbstractContainerTestCase;
+import org.jboss.ejb3.interceptors.container.AbstractContainerTestCaseHelper;
 import org.jboss.ejb3.interceptors.container.SimpleBean;
 import org.jboss.ejb3.interceptors.container.SimpleInterceptor;
 import org.jboss.interceptor.proxy.DefaultInvocationContextFactory;
@@ -39,7 +40,7 @@ import static org.jboss.ejb3.effigy.dsl.SessionBeanFactory.session;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class TransformerTestCase
+public class TransformerTestCase extends AbstractContainerTestCaseHelper
 {
    @Test
    public void test1() throws Exception
@@ -58,6 +59,6 @@ public class TransformerTestCase
 
       AbstractContainer container = new AbstractContainer(transformer.getBeanClassInterceptorMetadata(), transformer.getInterceptionModel(), interceptorInstantiator);
 
-      AbstractContainerTestCase.testContainer(container);
+      testContainer(container);
    }
 }

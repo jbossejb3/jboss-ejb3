@@ -30,11 +30,9 @@ import org.jboss.interceptor.spi.instance.InterceptorInstantiator;
 import org.jboss.interceptor.spi.metadata.ClassMetadata;
 import org.jboss.interceptor.spi.metadata.InterceptorMetadata;
 import org.jboss.interceptor.spi.model.InterceptionModel;
-import org.junit.Before;
 import org.junit.Test;
 
 import javax.interceptor.InvocationContext;
-import java.lang.reflect.Method;
 
 import static org.jboss.ejb3.interceptors.dsl.InterceptorMetadataFactory.aroundInvokes;
 import static org.jboss.ejb3.interceptors.dsl.InterceptorMetadataFactory.interceptor;
@@ -42,21 +40,14 @@ import static org.jboss.ejb3.interceptors.dsl.InterceptorMetadataFactory.map;
 import static org.jboss.ejb3.interceptors.dsl.InterceptorMetadataFactory.postConstructs;
 import static org.jboss.ejb3.interceptors.dsl.InterceptorReferenceFactory.interceptorReference;
 import static org.jboss.ejb3.interceptors.dsl.MethodMetadataFactory.methods;
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class AbstractContainerTestCase
+public class AbstractContainerTestCase extends AbstractContainerTestCaseHelper
 {
    private MetadataCachingReader metadataCachingReader = new DefaultMetadataCachingReader();
 
-   @Before
-   public void before()
-   {
-      SimpleInterceptor.postConstructs = 0;
-   }
-   
    @Test
    public void testInterception() throws Throwable
    {
@@ -80,25 +71,6 @@ public class AbstractContainerTestCase
 
       AbstractContainer container = new AbstractContainer(targetClassInterceptorMetadata, interceptionModel, interceptorInstantiator);
 
-      BeanContext instance = container.construct();
-
-      assertEquals(1, SimpleInterceptor.postConstructs);
-
-      Method method = SimpleBean.class.getMethod("sayHi", String.class);
-      Object result = container.invoke(instance, method, "test");
-
-      assertEquals("Intercepted Hi test", result);
-   }
-
-   public static void testContainer(AbstractContainer container) throws Exception
-   {
-      BeanContext instance = container.construct();
-
-      assertEquals(1, SimpleInterceptor.postConstructs);
-
-      Method method = SimpleBean.class.getMethod("sayHi", String.class);
-      Object result = container.invoke(instance, method, "test");
-
-      assertEquals("Intercepted Hi test", result);      
+      testContainer(container);
    }
 }
