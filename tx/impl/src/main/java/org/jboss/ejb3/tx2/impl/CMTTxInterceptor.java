@@ -168,7 +168,7 @@ public class CMTTxInterceptor
       throw (Exception) t;
    }
 
-   protected void handleExceptionInOurTx(TransactionalInvocationContext invocation, Throwable t, Transaction tx) throws Exception
+   public void handleExceptionInOurTx(TransactionalInvocationContext invocation, Throwable t, Transaction tx) throws Exception
    {
       ApplicationException ae = invocation.getApplicationException(t.getClass());
       if (ae != null)
@@ -434,11 +434,6 @@ public class CMTTxInterceptor
       }
    }
 
-   /**
-    * Sets the transaction manager
-    * 
-    * @param tm
-    */
    @Resource
    public void setTransactionManager(TransactionManager tm)
    {
