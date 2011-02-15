@@ -34,7 +34,9 @@ import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 import org.jboss.metadata.ejb.spec.StatefulTimeoutMetaData;
 
 import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -138,6 +140,24 @@ public class JBossSessionBean31Effigy extends JBossSessionBeanEffigy
    public StatefulTimeoutEffigy getStatefulTimeout()
    {
       return statefulTimeout;
+   }
+
+   @Override
+   protected Set<Class<?>> getAllViews(ClassLoader cl)
+   {
+      Set<Class<?>> views = super.getAllViews(cl);
+      // check if it has a no-interface view
+      JBossSessionBean31MetaData sessionBean = this.getBeanMetaData();
+      if (sessionBean.isNoInterfaceBean())
+      {
+         if (views == null)
+         {
+            views = new HashSet<Class<?>>();
+         }
+         views.add(this.getEjbClass());
+      }
+      
+      return views;
    }
 
    private Method method(NamedMethodMetaData namedMethod)

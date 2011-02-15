@@ -68,6 +68,7 @@ public class InheritanceTestCase
 
       JBossSessionBean31MetaData beanMetaData = new JBossSessionBean31MetaData();
       beanMetaData.setEjbClass(InheritanceBean.class.getName());
+      beanMetaData.setEjbName(InheritanceBean.class.getSimpleName());
       beanMetaData.setEnterpriseBeansMetaData(enterpriseBeansMetaData);
 
       JBossBeanEffigyFactory factory = new JBossBeanEffigyFactory();

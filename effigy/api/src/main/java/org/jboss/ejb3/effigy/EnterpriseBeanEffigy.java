@@ -21,6 +21,7 @@
  */
 package org.jboss.ejb3.effigy;
 
+import javax.ejb.TransactionAttributeType;
 import java.lang.reflect.Method;
 
 /**
@@ -87,4 +88,11 @@ public interface EnterpriseBeanEffigy
     * @return an ordered list of bean methods
     */
    Iterable<Method> getPreDestroys();
+
+   /**
+    *
+    * @param method
+    * @return
+    */
+   TransactionAttributeType getTransactionAttributeType(Method method);
 }

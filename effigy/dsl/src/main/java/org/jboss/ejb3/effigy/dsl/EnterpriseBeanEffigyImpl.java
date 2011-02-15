@@ -25,6 +25,7 @@ import org.jboss.ejb3.effigy.ApplicationExceptionEffigy;
 import org.jboss.ejb3.effigy.EnterpriseBeanEffigy;
 import org.jboss.ejb3.effigy.InterceptorEffigy;
 
+import javax.ejb.TransactionAttributeType;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
@@ -102,5 +103,11 @@ class EnterpriseBeanEffigyImpl implements EnterpriseBeanEffigy
    public void setName(String name)
    {
       this.name = name;
+   }
+
+   @Override
+   public TransactionAttributeType getTransactionAttributeType(Method method)
+   {
+      throw new RuntimeException("NYI");
    }
 }
