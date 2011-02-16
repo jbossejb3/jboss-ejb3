@@ -21,16 +21,17 @@
  */
 package org.jboss.ejb3.tx2.impl;
 
-import org.jboss.ejb3.tx2.spi.TransactionalInvocationContext;
+import org.jboss.ejb3.tx2.spi.TransactionalComponent;
 import org.jboss.logging.Logger;
 
 import javax.interceptor.AroundInvoke;
+import javax.interceptor.InvocationContext;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 /**
  * Suspend an incoming tx.
- * 
+ *
  * @author <a href="mailto:bill@jboss.org">Bill Burke</a>
  * @author <a href="mailto:osh@sparre.dk">Ole Husgaard</a>
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
@@ -39,18 +40,15 @@ public abstract class BMTInterceptor
 {
    private static final Logger log = Logger.getLogger(BMTInterceptor.class);
 
-   protected final TransactionManager tm;
 
-   protected BMTInterceptor(TransactionManager tm)
-   {
-      this.tm = tm;
-   }
+   protected abstract TransactionalComponent getTransactionalComponent();
 
-   protected abstract Object handleInvocation(TransactionalInvocationContext invocation) throws Exception;
+   protected abstract Object handleInvocation(InvocationContext invocation) throws Exception;
 
    @AroundInvoke
-   public Object invoke(TransactionalInvocationContext invocation) throws Exception
+   public Object invoke(InvocationContext invocation) throws Exception
    {
+      TransactionManager tm = this.getTransactionManager();
       Transaction oldTx = tm.suspend();
       try
       {
@@ -58,7 +56,15 @@ public abstract class BMTInterceptor
       }
       finally
       {
-         if (oldTx != null) tm.resume(oldTx);
+         if (oldTx != null)
+         {
+            tm.resume(oldTx);
+         }
       }
+   }
+
+   protected TransactionManager getTransactionManager()
+   {
+      return this.getTransactionalComponent().getTransactionManager();
    }
 }

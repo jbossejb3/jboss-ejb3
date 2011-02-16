@@ -22,9 +22,9 @@
 package org.jboss.ejb3.tx2.impl;
 
 import org.jboss.ejb3.tx2.spi.StatefulContext;
-import org.jboss.ejb3.tx2.spi.TransactionalInvocationContext;
 import org.jboss.logging.Logger;
 
+import javax.interceptor.InvocationContext;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
@@ -43,19 +43,14 @@ import static org.jboss.ejb3.tx2.impl.util.StatusHelper.statusAsString;
  *
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class StatefulBMTInterceptor extends BMTInterceptor
+public abstract class StatefulBMTInterceptor extends BMTInterceptor
 {
    private static final Logger log = Logger.getLogger(StatefulBMTInterceptor.class);
-
-   protected StatefulBMTInterceptor(TransactionManager tm)
-   {
-      super(tm);
-   }
 
    private void checkBadStateful(String ejbName)
    {
       int status = Status.STATUS_NO_TRANSACTION;
-
+      TransactionManager tm = this.getTransactionManager();
       try
       {
          status = tm.getStatus();
@@ -67,10 +62,10 @@ public class StatefulBMTInterceptor extends BMTInterceptor
 
       switch (status)
       {
-         case Status.STATUS_COMMITTING :
-         case Status.STATUS_MARKED_ROLLBACK :
-         case Status.STATUS_PREPARING :
-         case Status.STATUS_ROLLING_BACK :
+         case Status.STATUS_COMMITTING:
+         case Status.STATUS_MARKED_ROLLBACK:
+         case Status.STATUS_PREPARING:
+         case Status.STATUS_ROLLING_BACK:
             try
             {
                tm.rollback();
@@ -80,13 +75,24 @@ public class StatefulBMTInterceptor extends BMTInterceptor
                log.error("Failed to rollback", ex);
             }
             String msg = "BMT stateful bean '" + ejbName
-                         + "' did not complete user transaction properly status=" + statusAsString(status);
+                    + "' did not complete user transaction properly status=" + statusAsString(status);
             log.error(msg);
       }
    }
 
-   protected Object handleInvocation(TransactionalInvocationContext invocation) throws Exception
+   @Override
+   protected Object handleInvocation(InvocationContext invocation) throws Exception
    {
+      if (!(invocation instanceof org.jboss.ejb3.context.spi.InvocationContext))
+      {
+         throw new IllegalArgumentException("Cannot handle invocation context of type: " + invocation.getClass());
+      }
+      return this.handleInvocation((org.jboss.ejb3.context.spi.InvocationContext) invocation);
+   }
+
+   protected Object handleInvocation(org.jboss.ejb3.context.spi.InvocationContext invocation) throws Exception
+   {
+      TransactionManager tm = this.getTransactionManager();
       assert tm.getTransaction() == null : "can't handle BMT transaction, there is a transaction active";
 
       StatefulContext ctx = (StatefulContext) invocation.getEJBContext();

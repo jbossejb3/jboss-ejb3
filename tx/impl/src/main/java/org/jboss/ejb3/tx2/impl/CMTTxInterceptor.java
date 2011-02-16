@@ -21,18 +21,18 @@
  */
 package org.jboss.ejb3.tx2.impl;
 
-import org.jboss.ejb3.tx2.spi.TransactionalInvocationContext;
+import org.jboss.ejb3.tx2.spi.TransactionalComponent;
 import org.jboss.logging.Logger;
 import org.jboss.tm.TransactionTimeoutConfiguration;
 import org.jboss.util.deadlock.ApplicationDeadlockException;
 
-import javax.annotation.Resource;
 import javax.ejb.ApplicationException;
 import javax.ejb.EJBException;
 import javax.ejb.EJBTransactionRequiredException;
 import javax.ejb.EJBTransactionRolledbackException;
 import javax.ejb.TransactionAttributeType;
 import javax.interceptor.AroundInvoke;
+import javax.interceptor.InvocationContext;
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
 import javax.transaction.RollbackException;
@@ -40,35 +40,36 @@ import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.util.Random;
 
 /**
  * Ensure the correct exceptions are thrown based on both caller
  * transactional context and supported Transaction Attribute Type
- *
+ * <p/>
  * EJB3 13.6.2.6
  * EJB3 Core Specification 14.3.1 Table 14
  *
  * @author <a href="mailto:andrew.rubinger@redhat.com">ALR</a>
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class CMTTxInterceptor
+public abstract class CMTTxInterceptor
 {
    private static final Logger log = Logger.getLogger(CMTTxInterceptor.class);
 
    private static final int MAX_RETRIES = 5;
    private static final Random RANDOM = new Random();
 
-   private TransactionManager tm;
-   
+   protected abstract TransactionalComponent getTransactionalComponent();
+
    /**
     * The <code>endTransaction</code> method ends a transaction and
     * translates any exceptions into
     * TransactionRolledBack[Local]Exception or SystemException.
     *
-    * @param tm         a <code>TransactionManager</code> value
-    * @param tx         a <code>Transaction</code> value
+    * @param tm a <code>TransactionManager</code> value
+    * @param tx a <code>Transaction</code> value
     */
    protected void endTransaction(TransactionManager tm, Transaction tx)
    {
@@ -112,7 +113,8 @@ public class CMTTxInterceptor
 
    protected int getCurrentTransactionTimeout() throws SystemException
    {
-      if(tm instanceof TransactionTimeoutConfiguration)
+      TransactionManager tm = this.getTransactionManager();
+      if (tm instanceof TransactionTimeoutConfiguration)
       {
          return ((TransactionTimeoutConfiguration) tm).getTransactionTimeout();
       }
@@ -121,26 +123,30 @@ public class CMTTxInterceptor
 
    protected void handleEndTransactionException(Exception e)
    {
-      if(e instanceof RollbackException)
+      if (e instanceof RollbackException)
+      {
          throw new EJBTransactionRolledbackException("Transaction rolled back", e);
+      }
       throw new EJBException(e);
    }
 
-   protected void handleInCallerTx(TransactionalInvocationContext invocation, Throwable t, Transaction tx) throws Exception
+   protected void handleInCallerTx(InvocationContext invocation, Throwable t, Transaction tx) throws Exception
    {
-      ApplicationException ae = invocation.getApplicationException(t.getClass());
-
+      ApplicationException ae = this.getApplicationException(t.getClass());
       if (ae != null)
       {
-         if (ae.rollback()) setRollbackOnly(tx);
+         if (ae.rollback())
+         {
+            setRollbackOnly(tx);
+         }
          // an app exception can never be an Error
          throw (Exception) t;
       }
 
       // if it's not EJBTransactionRolledbackException
-      if(!(t instanceof EJBTransactionRolledbackException))
+      if (!(t instanceof EJBTransactionRolledbackException))
       {
-         if(t instanceof Error)
+         if (t instanceof Error)
          {
             //t = new EJBTransactionRolledbackException(formatException("Unexpected Error", t));
             Throwable cause = t;
@@ -153,7 +159,7 @@ public class CMTTxInterceptor
             // Leave Exception as-is (this is in place to handle specifically, and not
             // as a generic RuntimeException
          }
-         else if(t instanceof RuntimeException)
+         else if (t instanceof RuntimeException)
          {
             t = new EJBTransactionRolledbackException(t.getMessage(), (Exception) t);
          }
@@ -168,20 +174,23 @@ public class CMTTxInterceptor
       throw (Exception) t;
    }
 
-   public void handleExceptionInOurTx(TransactionalInvocationContext invocation, Throwable t, Transaction tx) throws Exception
+   public void handleExceptionInOurTx(InvocationContext invocation, Throwable t, Transaction tx) throws Exception
    {
-      ApplicationException ae = invocation.getApplicationException(t.getClass());
+      ApplicationException ae = this.getApplicationException(t.getClass());
       if (ae != null)
       {
-         if (ae.rollback()) setRollbackOnly(tx);
+         if (ae.rollback())
+         {
+            setRollbackOnly(tx);
+         }
          throw (Exception) t;
       }
 
       // if it's neither EJBException nor RemoteException
-      if(!(t instanceof EJBException || t instanceof RemoteException))
+      if (!(t instanceof EJBException || t instanceof RemoteException))
       {
          // errors and unchecked are wrapped into EJBException
-         if(t instanceof Error)
+         if (t instanceof Error)
          {
             //t = new EJBException(formatException("Unexpected Error", t));
             Throwable cause = t;
@@ -190,7 +199,7 @@ public class CMTTxInterceptor
          }
          else if (t instanceof RuntimeException)
          {
-            t = new EJBException((Exception)t);
+            t = new EJBException((Exception) t);
          }
          else
          {
@@ -204,10 +213,11 @@ public class CMTTxInterceptor
    }
 
    @AroundInvoke
-   public Object invoke(TransactionalInvocationContext invocation) throws Exception
+   public Object invoke(InvocationContext invocation) throws Exception
    {
-      TransactionAttributeType attr = invocation.getTransactionAttribute();
-      switch(attr)
+      Method invokedMethod = invocation.getMethod();
+      TransactionAttributeType txAttr = this.getTransactionalComponent().getTransactionAttributeType(invokedMethod);
+      switch (txAttr)
       {
          case MANDATORY:
             return mandatory(invocation);
@@ -222,11 +232,11 @@ public class CMTTxInterceptor
          case SUPPORTS:
             return supports(invocation);
          default:
-            throw new IllegalStateException("Unexpected tx attribute " + attr + " on " + invocation);
+            throw new IllegalStateException("Unexpected tx attribute " + txAttr + " on " + invocation);
       }
    }
 
-   protected Object invokeInCallerTx(TransactionalInvocationContext invocation, Transaction tx) throws Exception
+   protected Object invokeInCallerTx(InvocationContext invocation, Transaction tx) throws Exception
    {
       try
       {
@@ -239,12 +249,12 @@ public class CMTTxInterceptor
       throw new RuntimeException("UNREACHABLE");
    }
 
-   protected Object invokeInNoTx(TransactionalInvocationContext invocation) throws Exception
+   protected Object invokeInNoTx(InvocationContext invocation) throws Exception
    {
       return invocation.proceed();
    }
 
-   protected Object invokeInOurTx(TransactionalInvocationContext invocation, TransactionManager tm) throws Exception
+   protected Object invokeInOurTx(InvocationContext invocation, TransactionManager tm) throws Exception
    {
       for (int i = 0; i < MAX_RETRIES; i++)
       {
@@ -287,8 +297,9 @@ public class CMTTxInterceptor
       throw new RuntimeException("UNREACHABLE");
    }
 
-   protected Object mandatory(TransactionalInvocationContext invocation) throws Exception
+   protected Object mandatory(InvocationContext invocation) throws Exception
    {
+      TransactionManager tm = this.getTransactionManager();
       Transaction tx = tm.getTransaction();
       if (tx == null)
       {
@@ -297,8 +308,9 @@ public class CMTTxInterceptor
       return invokeInCallerTx(invocation, tx);
    }
 
-   protected Object never(TransactionalInvocationContext invocation) throws Exception
+   protected Object never(InvocationContext invocation) throws Exception
    {
+      TransactionManager tm = this.getTransactionManager();
       if (tm.getTransaction() != null)
       {
          throw new EJBException("Transaction present on server in Never call (EJB3 13.6.2.6)");
@@ -306,8 +318,9 @@ public class CMTTxInterceptor
       return invokeInNoTx(invocation);
    }
 
-   protected Object notSupported(TransactionalInvocationContext invocation) throws Exception
+   protected Object notSupported(InvocationContext invocation) throws Exception
    {
+      TransactionManager tm = this.getTransactionManager();
       Transaction tx = tm.getTransaction();
       if (tx != null)
       {
@@ -319,7 +332,7 @@ public class CMTTxInterceptor
          catch (Exception e)
          {
             // If application exception was thrown, rethrow
-            if(invocation.getApplicationException(e.getClass()) != null)
+            if (this.getApplicationException(e.getClass()) != null)
             {
                throw e;
             }
@@ -337,14 +350,15 @@ public class CMTTxInterceptor
       else
       {
          return invokeInNoTx(invocation);
-      }      
+      }
    }
 
-   protected Object required(TransactionalInvocationContext invocation) throws Exception
+   protected Object required(InvocationContext invocation) throws Exception
    {
       int oldTimeout = getCurrentTransactionTimeout();
-      int timeout = invocation.getTransactionTimeout();
-
+      Method invokedMethod = invocation.getMethod();
+      int timeout = this.getTransactionalComponent().getTransactionTimeout(invokedMethod);
+      TransactionManager tm = this.getTransactionManager();
       try
       {
          if (timeout != -1 && tm != null)
@@ -369,14 +383,15 @@ public class CMTTxInterceptor
          {
             tm.setTransactionTimeout(oldTimeout);
          }
-      }      
+      }
    }
 
-   protected Object requiresNew(TransactionalInvocationContext invocation) throws Exception
+   protected Object requiresNew(InvocationContext invocation) throws Exception
    {
       int oldTimeout = getCurrentTransactionTimeout();
-      int timeout = invocation.getTransactionTimeout();
-
+      Method invokedMethod = invocation.getMethod();
+      int timeout = this.getTransactionalComponent().getTransactionTimeout(invokedMethod);
+      TransactionManager tm = this.getTransactionManager();
       try
       {
          if (timeout != -1 && tm != null)
@@ -408,7 +423,7 @@ public class CMTTxInterceptor
          {
             tm.setTransactionTimeout(oldTimeout);
          }
-      }      
+      }
    }
 
    /**
@@ -434,15 +449,10 @@ public class CMTTxInterceptor
       }
    }
 
-   @Resource
-   public void setTransactionManager(TransactionManager tm)
+
+   protected Object supports(InvocationContext invocation) throws Exception
    {
-      this.tm = tm;
-   }
-   
-   protected Object supports(TransactionalInvocationContext invocation) throws Exception
-   {
-      Transaction tx = tm.getTransaction();
+      Transaction tx = this.getTransactionManager().getTransaction();
       if (tx == null)
       {
          return invokeInNoTx(invocation);
@@ -451,5 +461,16 @@ public class CMTTxInterceptor
       {
          return invokeInCallerTx(invocation, tx);
       }
+   }
+
+   private TransactionManager getTransactionManager()
+   {
+      return this.getTransactionalComponent().getTransactionManager();
+   }
+
+   private ApplicationException getApplicationException(Class<?> exceptionClass)
+   {
+      TransactionalComponent txComponent = this.getTransactionalComponent();
+      return txComponent.getApplicationException(exceptionClass);
    }
 }
