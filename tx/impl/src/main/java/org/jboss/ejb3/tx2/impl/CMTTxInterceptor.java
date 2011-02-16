@@ -61,6 +61,10 @@ public abstract class CMTTxInterceptor
    private static final int MAX_RETRIES = 5;
    private static final Random RANDOM = new Random();
 
+   /**
+    * Returns the {@link TransactionalComponent} applicable for this interceptor
+    * @return
+    */
    protected abstract TransactionalComponent getTransactionalComponent();
 
    /**

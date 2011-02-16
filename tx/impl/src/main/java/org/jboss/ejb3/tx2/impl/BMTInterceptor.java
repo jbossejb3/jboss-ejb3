@@ -41,6 +41,10 @@ public abstract class BMTInterceptor
    private static final Logger log = Logger.getLogger(BMTInterceptor.class);
 
 
+   /**
+    * Returns the {@link TransactionalComponent} applicable for this interceptor
+    * @return
+    */
    protected abstract TransactionalComponent getTransactionalComponent();
 
    protected abstract Object handleInvocation(InvocationContext invocation) throws Exception;
