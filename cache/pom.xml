@@ -1,0 +1,136 @@
+<!--
+  vi:ts=2:sw=2:expandtab
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <!-- Parent -->
+  <parent>
+    <groupId>org.jboss.ejb3</groupId>
+    <artifactId>jboss-ejb3-build</artifactId>
+    <version>1.0.13</version>
+    <relativePath>../build/pom.xml</relativePath>
+  </parent>
+
+  <!-- POM Model Version -->
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- Artifact Information -->
+  <artifactId>jboss-ejb3-core-cache</artifactId>
+  <packaging>jar</packaging>
+  <version>1.7.21-SNAPSHOT</version>
+  <name>JBoss EJB 3.0 Core Cache</name>
+  <url>http://labs.jboss.com/jbossejb3</url>
+  <description>JBoss EJB 3.0 Core Cache (legacy)</description>
+
+  <repositories>
+    <!-- APIviz repository -->
+    <repository>
+      <id>apiviz.release</id>
+      <name>APIviz releases</name>
+      <url>http://apiviz.googlecode.com/svn/site/repo/mvn/release</url>
+      <releases>
+
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <!-- Build Information -->
+  <build>
+
+    <plugins>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+<!--
+        <executions>
+          <execution>
+            <id>attach-javadoc</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+-->
+        <configuration>
+          <doclet>net.gleamynode.apiviz.APIviz</doclet>
+          <docletArtifact>
+            <groupId>net.gleamynode.apiviz</groupId>
+            <artifactId>apiviz</artifactId>
+            <version>1.0.3</version>
+          </docletArtifact>
+<!--
+          <aggregate>true</aggregate>
+          <encoding>UTF-8</encoding>
+          <locale>en_US</locale>
+-->
+        </configuration>
+      </plugin>
+
+    </plugins>
+
+  </build>
+
+  <!-- Dependencies -->
+
+  <dependencies>
+
+    <!-- Because AOP doesn't declare a proper dependency -->
+    <!--
+    <dependency>
+      <groupId>javassist</groupId>
+      <artifactId>javassist</artifactId>
+      <version>3.7.1.GA</version>
+    </dependency>
+    -->
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jboss.logging</groupId>
+      <artifactId>jboss-logging-spi</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jboss.aop</groupId>
+      <artifactId>jboss-aop</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jboss</groupId>
+          <artifactId>javassist</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jboss.microcontainer</groupId>
+          <artifactId>jboss-container</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jboss.ejb3</groupId>
+      <artifactId>jboss-ejb3-cache</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jboss.ejb3</groupId>
+      <artifactId>jboss-ejb3-ext-api</artifactId>
+      <version>1.1.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jboss.ejb3.effigy</groupId>
+      <artifactId>jboss-ejb3-effigy-api</artifactId>
+      <version>0.2.0</version>
+    </dependency>
+  </dependencies>
+</project>
