@@ -21,15 +21,15 @@
  */
 package org.jboss.ejb3.cache;
 
+import org.jboss.aop.advice.Interceptor;
+import org.jboss.aop.joinpoint.Invocation;
+import org.jboss.ejb3.cache.legacy.StatefulBeanContext;
+import org.jboss.ejb3.cache.legacy.StatefulContainer;
+import org.jboss.ejb3.cache.legacy.StatefulContainerInvocation;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
-
-import org.jboss.aop.advice.Interceptor;
-import org.jboss.aop.joinpoint.Invocation;
-import org.jboss.ejb3.stateful.StatefulBeanContext;
-import org.jboss.ejb3.stateful.StatefulContainer;
-import org.jboss.ejb3.stateful.StatefulContainerInvocation;
 
 /**
  * Replicate SFSB if it is modified.
@@ -106,15 +106,15 @@ public class StatefulReplicationInterceptor implements Interceptor
          // Mark the bean for replication. If the call stack is not
          // unwound yet this will tell the outer caller the tree is 
          // dirty even if the outer bean's isModified() returns false
-         root.markedForReplication = true;
+         root.setMarkedForReplication(true);
       }
       
-      if (stackUnwound && root.markedForReplication)
+      if (stackUnwound && root.isMarkedForReplication())
       {
          clusteredCache.replicate(root);
       }
       
-      if (ctx != root && ctx.markedForReplication)
+      if (ctx != root && ctx.isMarkedForReplication())
       {
          // ctx is a ProxiedStatefulBeanContext that may have failed over
          // and needs to invalidate any remote nodes that hold stale refs
@@ -129,7 +129,7 @@ public class StatefulReplicationInterceptor implements Interceptor
          else
          {
             // not replicable
-            ctx.markedForReplication = false;
+            ctx.setMarkedForReplication(false);
          }
       }
       

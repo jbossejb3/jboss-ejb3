@@ -22,16 +22,16 @@
 package org.jboss.ejb3.cache.simple;
 
 import org.jboss.aop.Advisor;
-import org.jboss.ejb3.EJBContainer;
 import org.jboss.ejb3.annotation.CacheConfig;
 import org.jboss.ejb3.annotation.PersistenceManager;
 import org.jboss.ejb3.cache.StatefulCache;
+import org.jboss.ejb3.cache.legacy.EJBContainer;
+import org.jboss.ejb3.cache.legacy.StatefulBeanContext;
+import org.jboss.ejb3.cache.legacy.StatefulContainer;
 import org.jboss.ejb3.cache.persistence.PersistenceManagerFactory;
 import org.jboss.ejb3.cache.persistence.PersistenceManagerFactoryRegistry;
 import org.jboss.ejb3.effigy.SessionBeanEffigy;
 import org.jboss.ejb3.effigy.StatefulTimeoutEffigy;
-import org.jboss.ejb3.stateful.StatefulBeanContext;
-import org.jboss.ejb3.stateful.StatefulContainer;
 import org.jboss.logging.Logger;
 
 import javax.ejb.EJBException;
@@ -99,7 +99,7 @@ public class SimpleStatefulCache implements StatefulCache
                }
                else
                {
-                  centry.markedForPassivation = true;
+                  centry.markForPassivation();
                   
                   if (!centry.isInUse())
                   {
@@ -166,7 +166,7 @@ public class SimpleStatefulCache implements StatefulCache
                   {
                      Entry<Object, StatefulBeanContext> entry = it.next();
                      StatefulBeanContext centry = entry.getValue();
-                     if (now - centry.lastUsed >= removalTimeout)
+                     if (now - centry.lastUsed() >= removalTimeout)
                      {
                         synchronized (centry)
                         {                                                                    
@@ -181,7 +181,7 @@ public class SimpleStatefulCache implements StatefulCache
                while (it.hasNext())
                {       
                   StatefulBeanContext centry = it.next();
-                  if (now - centry.lastUsed >= removalTimeout)
+                  if (now - centry.lastUsed() >= removalTimeout)
                   {
                      get(centry.getId(), false);
                      remove(centry.getId());
@@ -260,7 +260,7 @@ public class SimpleStatefulCache implements StatefulCache
                   {
                      Entry<Object, StatefulBeanContext> entry = it.next();
                      StatefulBeanContext centry = entry.getValue();
-                     if (now - centry.lastUsed >= sessionTimeout * 1000)
+                     if (now - centry.lastUsed() >= sessionTimeout * 1000)
                      {
                         synchronized (centry)
                         {                     
@@ -277,7 +277,7 @@ public class SimpleStatefulCache implements StatefulCache
                            }
                            else
                            {
-                              centry.markedForPassivation = true;                              
+                              centry.markForPassivation();
                               assert centry.isInUse() : centry + " is not in use, and thus will never be passivated";
                            }
                            // its ok to evict because it will be passivated
@@ -288,7 +288,7 @@ public class SimpleStatefulCache implements StatefulCache
                      else if (trace)
                      {
                         log.trace("Not passivating; id=" + centry.getId() +
-                              " only inactive " + Math.max(0, now - centry.lastUsed) + " ms");
+                              " only inactive " + Math.max(0, now - centry.lastUsed()) + " ms");
                      }
                   }                  
                }
@@ -423,7 +423,7 @@ public class SimpleStatefulCache implements StatefulCache
          {
             cacheMap.put(ctx.getId(), ctx);
             ctx.setInUse(true);
-            ctx.lastUsed = System.currentTimeMillis();
+            //ctx.lastUsed = System.currentTimeMillis();
          }
          ++createCount;
       }
@@ -520,7 +520,7 @@ public class SimpleStatefulCache implements StatefulCache
          }      
       
          entry.setInUse(true);
-         entry.lastUsed = System.currentTimeMillis();
+         //entry.lastUsed = System.currentTimeMillis();
       }
       
       return entry;
@@ -536,8 +536,8 @@ public class SimpleStatefulCache implements StatefulCache
       synchronized (ctx)
       {
          ctx.setInUse(false);
-         ctx.lastUsed = System.currentTimeMillis();
-         if (ctx.markedForPassivation)
+         //ctx.lastUsed = System.currentTimeMillis();
+         if (ctx.isMarkedForPassivation())
          {
             passivate(ctx);
          }

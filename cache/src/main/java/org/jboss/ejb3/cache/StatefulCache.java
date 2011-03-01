@@ -21,11 +21,11 @@
  */
 package org.jboss.ejb3.cache;
 
+import org.jboss.ejb3.cache.legacy.EJBContainer;
+import org.jboss.ejb3.cache.legacy.StatefulBeanContext;
+
 import javax.ejb.EJBException;
 import javax.ejb.NoSuchEJBException;
-
-import org.jboss.ejb3.EJBContainer;
-import org.jboss.ejb3.stateful.StatefulBeanContext;
 
 /**
  * Stateful StatelessBean Bean cache

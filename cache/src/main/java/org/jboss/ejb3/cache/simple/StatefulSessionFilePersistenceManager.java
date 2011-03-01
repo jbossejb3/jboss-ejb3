@@ -21,6 +21,13 @@
  */
 package org.jboss.ejb3.cache.simple;
 
+import org.jboss.ejb3.cache.legacy.Container;
+import org.jboss.ejb3.cache.legacy.StatefulBeanContext;
+import org.jboss.serial.io.JBossObjectInputStream;
+import org.jboss.serial.io.JBossObjectOutputStream;
+import org.jboss.util.id.UID;
+
+import javax.ejb.EJBException;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,17 +40,8 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-
-import java.util.List;
 import java.util.LinkedList;
-
-import javax.ejb.EJBException;
-import org.jboss.ejb3.Container;
-import org.jboss.ejb3.stateful.StatefulBeanContext;
-import org.jboss.serial.io.JBossObjectInputStream;
-import org.jboss.serial.io.JBossObjectOutputStream;
-import org.jboss.system.server.ServerConfigLocator;
-import org.jboss.util.id.UID;
+import java.util.List;
 
 /**
  * A file-based stateful session bean persistence manager.

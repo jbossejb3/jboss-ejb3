@@ -21,14 +21,13 @@
  */
 package org.jboss.ejb3.cache;
 
-import java.util.HashMap;
+import org.jboss.ejb3.cache.legacy.EJBContainer;
+import org.jboss.ejb3.cache.legacy.StatefulBeanContext;
+import org.jboss.ejb3.cache.legacy.StatefulContainer;
 
 import javax.ejb.EJBException;
 import javax.ejb.NoSuchEJBException;
-
-import org.jboss.ejb3.EJBContainer;
-import org.jboss.ejb3.stateful.StatefulBeanContext;
-import org.jboss.ejb3.stateful.StatefulContainer;
+import java.util.HashMap;
 
 /**
  * Comment
@@ -123,7 +122,7 @@ public class NoPassivationCache implements StatefulCache
          }      
       
          entry.setInUse(true);
-         entry.lastUsed = System.currentTimeMillis();
+         //entry.lastUsed = System.currentTimeMillis();
       }
       
       return entry;
@@ -139,7 +138,7 @@ public class NoPassivationCache implements StatefulCache
       synchronized (ctx)
       {
          ctx.setInUse(false);
-         ctx.lastUsed = System.currentTimeMillis();
+         //ctx.lastUsed = System.currentTimeMillis();
       }
    }
 

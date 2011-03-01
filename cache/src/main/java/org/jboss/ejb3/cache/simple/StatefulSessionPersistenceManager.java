@@ -21,11 +21,11 @@
  */
 package org.jboss.ejb3.cache.simple;
 
-import java.util.List;
-
-import org.jboss.ejb3.Container;
-import org.jboss.ejb3.stateful.StatefulBeanContext;
+import org.jboss.ejb3.cache.legacy.Container;
+import org.jboss.ejb3.cache.legacy.StatefulBeanContext;
 import org.jboss.logging.Logger;
+
+import java.util.List;
 
 /**
  * Comment
