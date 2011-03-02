@@ -1,0 +1,67 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <!-- Define Parent -->
+  <parent>
+    <groupId>org.jboss.ejb3</groupId>
+    <artifactId>jboss-ejb3-build</artifactId>
+    <version>1.0.0</version>
+    <relativePath>../build/pom.xml</relativePath>
+  </parent>
+
+  <!-- Maven POM Model Version -->
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- Artifact Information -->
+  <groupId>org.jboss.ejb3</groupId>
+  <artifactId>jboss-ejb3-cache</artifactId>
+  <version>1.0.1-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <name>JBoss EJB 3.0 Cache</name>
+  <url>http://labs.jboss.com/jbossejb3/</url>
+  <description>The Java EJB 3.0 Cache classes</description>
+
+
+  <dependencies>
+
+    <!-- EJB3 API -->
+    <dependency>
+      <groupId>org.jboss.javaee</groupId>
+      <artifactId>jboss-ejb-api</artifactId>
+    </dependency>
+
+    <!-- GNU Trove -->
+    <dependency>
+      <groupId>trove</groupId>
+      <artifactId>trove</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
+    <!-- JBoss Common Core -->
+    <dependency>
+      <groupId>org.jboss</groupId>
+      <artifactId>jboss-common-core</artifactId>
+    </dependency>
+
+    <!-- JBoss Common Logging -->
+    <dependency>
+      <groupId>org.jboss.logging</groupId>
+      <artifactId>jboss-logging-log4j</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
+    <!-- JBoss Serialization -->
+    <dependency>
+      <groupId>jboss</groupId>
+      <artifactId>jboss-serialization</artifactId>
+      <version>1.0.3.GA</version>
+    </dependency>
+
+    <!-- JUnit -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+</project>
