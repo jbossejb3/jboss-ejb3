@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2006, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2007, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,128 +21,100 @@
  */
 package org.jboss.ejb3.pool.threadlocal;
 
+import org.jboss.ejb3.pool.AbstractPool;
 import org.jboss.ejb3.pool.Pool;
+import org.jboss.ejb3.pool.StatelessObjectFactory;
 import org.jboss.ejb3.pool.infinite.InfinitePool;
-import org.jboss.ejb3.pool.legacy.BeanContext;
-import org.jboss.ejb3.pool.legacy.Container;
-import org.jboss.ejb3.pool.legacy.Injector;
 import org.jboss.logging.Logger;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-
 /**
- * Pools EJBs within a ThreadLocal.
+ * A pool which keeps an object ready per thread.
  *
+ * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  * @author <a href="mailto:bill@jboss.org">Bill Burke</a>
- * @version $Revision$
+ * @version $Revision: $
  */
-public class ThreadLocalPool implements Pool
+public class ThreadLocalPool<T> extends AbstractPool<T> implements Pool<T>
 {
-private static final Logger log = Logger.getLogger(ThreadLocalPool.class);
-   
-   protected Pool pool = new InfinitePool();
-   protected WeakThreadLocal<BeanContext> currentBeanContext = new WeakThreadLocal<BeanContext>();
+   private static final Logger log = Logger.getLogger(ThreadLocalPool.class);
+
+   protected final Pool<T> delegate;
+   protected WeakThreadLocal<T> pool = new WeakThreadLocal<T>();
    private AtomicInteger inUse = new AtomicInteger();
-   
-   public ThreadLocalPool()
+
+   public ThreadLocalPool(StatelessObjectFactory<T> factory)
    {
+      super(factory);
+      this.delegate = new InfinitePool<T>(factory);
    }
 
-   protected BeanContext create()
+   @Override
+   protected T create()
    {
-      return pool.get();
+      return delegate.get();
    }
    
-   protected BeanContext create(Class[] initTypes, Object[] initValues)
+   public void discard(T obj)
    {
-      return pool.get(initTypes, initValues);
-   }
-
-   public void discard(BeanContext obj)
-   {
-      pool.discard(obj);
+      delegate.discard(obj);
       inUse.decrementAndGet();
    }
    
-   public void destroy()
+   @Override
+   public T get()
    {
-      log.trace("destroying pool");
-      
-      pool.destroy();
-      
-      // This really serves little purpose, because we want the whole thread local map to die
-      currentBeanContext.remove();
-      
-      inUse.getAndSet(0);
-   }
-   
-   public BeanContext get()
-   {
-      BeanContext ctx = currentBeanContext.get();
-      if (ctx != null)
-         currentBeanContext.set(null);
+      T obj = pool.get();
+      if (obj != null)
+         pool.set(null);
       else
-         ctx = create();
+         obj = delegate.get();
 
       inUse.incrementAndGet();
       
-      return ctx;
+      return obj;
    }
 
-   public BeanContext get(Class[] initTypes, Object[] initValues)
+   @Override
+   public void release(T obj)
    {
-      BeanContext ctx = currentBeanContext.get();
-      if (ctx != null)
-         currentBeanContext.set(null);
+      if(pool.get() == null)
+      {
+         pool.set(obj);
+      }
       else
-         ctx = create(initTypes, initValues);
-
-      inUse.incrementAndGet();
-
-      return ctx;
-   }
-
-   public void initialize(Container container, int maxSize, long timeout)
-   {
-      pool.initialize(container, maxSize, timeout);
-   }
-   
-   public void release(BeanContext ctx)
-   {
-      if (currentBeanContext.get() != null)
-         remove(ctx);
-      else
-         currentBeanContext.set(ctx);
+      {
+         delegate.release(obj);
+      }
 
       inUse.decrementAndGet();
    }
-   
-   public void remove(BeanContext ctx)
-   {
-      pool.remove(ctx);
-   }
-   
+
+   @Override
    public int getCurrentSize()
    {
       int size;
-      synchronized (pool)
+      synchronized (delegate)
       {
-         size = pool.getCreateCount() - pool.getRemoveCount();
+         size = delegate.getCreateCount() - delegate.getRemoveCount();
       }
       return size;
    }
-   
+
+   @Override
    public int getAvailableCount()
    {
       return getMaxSize() - inUse.get();
    }
-   
+
+   @Override
    public int getCreateCount()
    {
-      return pool.getCreateCount();
+      return delegate.getCreateCount();
    }
-   
+
+   @Override
    public int getMaxSize()
    {
       // the thread local pool dynamically grows for new threads
@@ -150,19 +122,35 @@ private static final Logger log = Logger.getLogger(ThreadLocalPool.class);
       return getCurrentSize();
    }
 
+   @Override
    public int getRemoveCount()
    {
-      return pool.getRemoveCount();
+      return delegate.getRemoveCount();
    }
-   
-   public void setInjectors(Injector[] injectors)
-   {
-      pool.setInjectors(injectors);
-   }
-   
+
+   @Override
    public void setMaxSize(int maxSize)
    {
       //this.maxSize = maxSize;
       log.warn("EJBTHREE-1703: setting a max size on ThreadlocalPool is bogus");
+   }
+
+   @Override
+   public void start()
+   {
+      delegate.start();
+   }
+
+   @Override
+   public void stop()
+   {
+      log.trace("destroying pool");
+
+      delegate.stop();
+
+      // This really serves little purpose, because we want the whole thread local map to die
+      pool.remove();
+
+      inUse.getAndSet(0);
    }
 }

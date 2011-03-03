@@ -35,7 +35,7 @@ public class StrictMaxPoolFactory implements PoolFactory
 
    public Pool createPool()
    {
-      return new StrictMaxPool();
+      throw new RuntimeException("NYI");
    }
 
 }

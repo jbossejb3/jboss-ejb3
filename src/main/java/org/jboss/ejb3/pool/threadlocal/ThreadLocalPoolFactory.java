@@ -35,7 +35,7 @@ public class ThreadLocalPoolFactory implements PoolFactory
 
    public Pool createPool()
    {
-      return new ThreadLocalPool();
+      throw new RuntimeException("NYI");
    }
 
 }

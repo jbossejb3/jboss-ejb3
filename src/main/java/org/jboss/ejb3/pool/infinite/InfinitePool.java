@@ -22,7 +22,7 @@
 package org.jboss.ejb3.pool.infinite;
 
 import org.jboss.ejb3.pool.AbstractPool;
-import org.jboss.ejb3.pool.legacy.BeanContext;
+import org.jboss.ejb3.pool.StatelessObjectFactory;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -31,77 +31,92 @@ import java.util.List;
  * A pool that has no constraints.
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
- * @version $Revision$
  */
-public class InfinitePool extends AbstractPool
+public class InfinitePool<T> extends AbstractPool<T>
 {
-   private List<BeanContext> active = new LinkedList<BeanContext>();
+   private List<T> active = new LinkedList<T>();
 
    /**
     * Needs to be part of the sync block, because else other threads will miss it.
     */
    private int size;
 
-   public void destroy()
+   public InfinitePool(StatelessObjectFactory<T> factory)
    {
-      for(BeanContext ctx : active)
-      {
-         // call super.remove or else get concurrent modification
-         super.remove(ctx);
-      }
-      active = null;
-      size = 0;
+      super(factory);
    }
 
-   public BeanContext<?> get()
+   @Override
+   public void discard(T obj)
    {
-      return get(null, null);
+      throw new RuntimeException("NYI");
    }
 
-   public BeanContext<?> get(Class[] initTypes, Object[] initValues)
+   @Override
+   public T get()
    {
-      BeanContext ctx = create(initTypes, initValues);
+      T obj = create();
       synchronized(active)
       {
-         active.add(ctx);
+         active.add(obj);
          size = active.size();
       }
-      return ctx;
+      return obj;
    }
 
+   @Override
    public int getAvailableCount()
    {
       return -1;
    }
 
+   @Override
    public int getCurrentSize()
    {
       return size;
    }
 
+   @Override
    public int getMaxSize()
    {
       return -1;
    }
 
-   public void release(BeanContext ctx)
+   @Override
+   public void release(T obj)
    {
-      remove(ctx);
+      synchronized (active)
+      {
+         boolean contains = active.remove(obj);
+         if(!contains)
+            throw new IllegalArgumentException(obj + " is not of this pool");
+      }
+      destroy(obj);
    }
 
-   public void remove(BeanContext ctx)
-   {
-      synchronized(active)
-      {
-         active.remove(ctx);
-         size = active.size();
-      }
-      
-      super.remove(ctx);
-   }
-   
+   @Override
    public void setMaxSize(int maxSize)
    {
+      // makes no sense on an infinite pool
+   }
+
+   @Override
+   public void start()
+   {
+      // TODO Auto-generated method stub
+
+   }
+
+   @Override
+   public void stop()
+   {
+      // TODO: this is a bit wicked
+      for(T obj : active)
+      {
+         destroy(obj);
+      }
+      active.clear();
+      size = 0;
    }
 
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2006, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2007, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,62 +21,66 @@
  */
 package org.jboss.ejb3.pool;
 
-import org.jboss.ejb3.pool.legacy.BeanContext;
-import org.jboss.ejb3.pool.legacy.Container;
-import org.jboss.ejb3.pool.legacy.Injector;
-
 /**
- * Minimally a pool acts as a factory for a bean.  It will handle callbacks
- * to ejbCreate and ejbRemove as well.
+ * A pool of stateless objects.
+ * 
+ * A pool is linked to an object factory. How this link is established
+ * is left beyond scope.
  *
- * @author <a href="mailto:bill@jboss.org">Bill Burke</a>
- * @version $Revision$
+ * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
+ * @version $Revision: $
  */
-public interface Pool
+public interface Pool<T>
 {
    /**
-    * Creates if no object is available in pool.  ejbCreate will be called if created
+    * Discard an object. This will be called
+    * in case of a system exception.
+    * 
+    * @param obj    the object
     */
-   BeanContext<?> get();
-
-   BeanContext<?> get(Class<?>[] initTypes, Object[] initValues);
-
+   void discard(T obj);
+   
    /**
-    * Put bean back in pool
+    * Get the an object from the pool. This will mark
+    * the object as being in use.
+    * 
+    * @return       the object
     */
-   void release(BeanContext<?> obj);
+   T get();
 
-   /**
-    * Destroy bean.  ejbRemove callback is executed
-    */
-   void remove(BeanContext<?> obj);
+   int getAvailableCount();
 
-   /**
-    * Discard the bean.  Called in different context as remove.  If there is a system exception this is
-    * called.
-    *
-    * @param obj
-    */
-   void discard(BeanContext<?> obj);
-
-   public void setInjectors(Injector[] injectors);
-
-   void initialize(Container container, int maxSize, long timeout);
+   int getCreateCount();
 
    int getCurrentSize();
-   
-   int getAvailableCount();
-   
+
    int getMaxSize();
+
+   int getRemoveCount();
+
+   /**
+    * Release the object from use.
+    * 
+    * @param obj    the object
+    */
+   void release(T obj);
+   
+   /**
+    * Remove the specified object from the pool.
+    * 
+    * @param key    the identifier of the object
+    */
+   //void remove(Object key);
    
    void setMaxSize(int maxSize);
-   
-   int getCreateCount();
-   
-   int getRemoveCount();
-  
+
    /**
-    * Destroy the pool.
+    * Start the pool.
     */
-   void destroy();
+   void start();
+   
+   /**
+    * Stop the pool.
+    */
+   void stop();
 }

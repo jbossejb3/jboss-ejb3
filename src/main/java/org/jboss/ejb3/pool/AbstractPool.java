@@ -21,9 +21,6 @@
  */
 package org.jboss.ejb3.pool;
 
-import org.jboss.ejb3.pool.legacy.BeanContext;
-import org.jboss.ejb3.pool.legacy.Container;
-import org.jboss.ejb3.pool.legacy.Injector;
 import org.jboss.logging.Logger;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,19 +32,20 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  * @version $Revision$
  */
-public abstract class AbstractPool implements Pool
+public abstract class AbstractPool<T> implements Pool<T>
 {
    @SuppressWarnings("unused")
    private static final Logger log = Logger.getLogger(AbstractPool.class);
 
-   protected Injector[] injectors;
-   protected Container container;
+   private final StatelessObjectFactory<T> factory;
    private AtomicInteger createCount = new AtomicInteger(0);
    private AtomicInteger removeCount = new AtomicInteger(0);
 
-   public AbstractPool()
+   protected AbstractPool(StatelessObjectFactory<T> factory)
    {
+      assert factory != null : "factory is null";
 
+      this.factory = factory;
    }
 
    public int getCreateCount()
@@ -60,70 +58,42 @@ public abstract class AbstractPool implements Pool
       return removeCount.get();
    }
 
-   public void initialize(Container container, int maxSize, long timeout)
-   {
-      assert container != null : "container is null";
-
-      this.container = container;
-   }
-
    public abstract void setMaxSize(int maxSize);
 
-   @Deprecated
-   protected BeanContext<?> create()
+   protected T create()
    {
-      return create(null, null);
-   }
-
-   protected BeanContext<?> create(Class[] initTypes, Object[] initValues)
-   {
-      BeanContext ctx;
-      ctx = createBeanContext();
-
-      container.invokePostConstruct(ctx, initValues);
-
-      // the init method only applies to stateful session beans
+      T bean = factory.create();
 
       createCount.incrementAndGet();
 
-      return ctx;
+      return bean;
    }
 
-   private BeanContext createBeanContext()
+   @Deprecated
+   protected void remove(T bean)
    {
-      return container.createBeanContext();
+      this.doRemove(bean);
    }
 
-   public void remove(BeanContext ctx)
+   protected void destroy(T bean)
    {
-      this.doRemove(ctx);
-   }
-
-   public void discard(BeanContext<?> ctx)
-   {
-      this.doRemove(ctx);
-   }
-
-   public void setInjectors(Injector[] injectors)
-   {
-      this.injectors = injectors;
+      doRemove(bean);
    }
 
    /**
     * Remove the bean context and invoke any callbacks
     * and track the remove count
     *
-    * @param ctx
+    * @param bean
     */
-   protected void doRemove(BeanContext<?> ctx)
+   protected void doRemove(T bean)
    {
       try
       {
-         container.invokePreDestroy(ctx);
+         factory.destroy(bean);
       }
       finally
       {
-         ctx.remove();
          removeCount.incrementAndGet();
       }
    }

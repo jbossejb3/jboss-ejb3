@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2006, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2007, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,8 +22,7 @@
 package org.jboss.ejb3.pool.strictmax;
 
 import org.jboss.ejb3.pool.AbstractPool;
-import org.jboss.ejb3.pool.legacy.BeanContext;
-import org.jboss.ejb3.pool.legacy.Container;
+import org.jboss.ejb3.pool.StatelessObjectFactory;
 import org.jboss.logging.Logger;
 
 import javax.ejb.EJBException;
@@ -32,86 +31,62 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * A pool with a maximum size.
+ *
+ * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  * @author <a href="mailto:kabir.khan@jboss.org">Kabir Khan</a>
- * @version $Revision$
  */
-public class StrictMaxPool
-        extends AbstractPool
+public class StrictMaxPool<T> extends AbstractPool<T>
 {
-// Constants -----------------------------------------------------
-   public static final int DEFAULT_MAX_SIZE = 30;
-   public static final long DEFAULT_TIMEOUT = Long.MAX_VALUE;
+   private static final Logger log = Logger.getLogger(StrictMaxPool.class);
 
-   // Attributes ----------------------------------------------------
    /**
     * A FIFO semaphore that is set when the strict max size behavior is in effect.
     * When set, only maxSize instances may be active and any attempt to get an
     * instance will block until an instance is freed.
     */
-   private Semaphore strictMaxSize;
-   private int inUse = 0;
-   /**
-    * The time in milliseconds to wait for the strictMaxSize semaphore.
-    */
-   private long strictTimeout;
-
-   /**
-    * The pool data structure
-    */
-   protected LinkedList pool = new LinkedList();
+   private Semaphore semaphore;
    /**
     * The maximum number of instances allowed in the pool
     */
-   protected int maxSize = 30;
-
-   Logger log = Logger.getLogger(StrictMaxPool.class);
-
+   private int maxSize = 30;
    /**
-    * Acquire a permit and check the pool.
-    *
-    * @return a BeanContext from the pool or null if one needs to be created
+    * The time to wait for the semaphore.
     */
-   private BeanContext acquire()
-   {
-      boolean trace = log.isTraceEnabled();
-      if (trace)
-         log.trace("Get instance " + this + "#" + pool.size() + "#" + container.getBeanClass());
-
-      // Block until an instance is available
-      try
-      {
-         boolean acquired = strictMaxSize.tryAcquire(strictTimeout, TimeUnit.MILLISECONDS);
-         if (trace)
-            log.trace("Acquired(" + acquired + ") strictMaxSize semaphore, remaining=" + strictMaxSize.availablePermits());
-         if (acquired == false)
-            throw new EJBException("Failed to acquire the pool semaphore, strictTimeout=" + strictTimeout);
-      }
-      catch (InterruptedException e)
-      {
-         throw new EJBException("Pool strictMaxSize semaphore was interrupted");
-      }
-
-      synchronized (pool)
-      {
-         if (!pool.isEmpty())
-         {
-            BeanContext bean = (BeanContext) pool.removeFirst();
-            ++inUse;
-            return bean;
-         }
-      }
-      return null;
-   }
-
+   private long timeout;
+   private TimeUnit timeUnit;
    /**
-    * super.initialize() must have been called in advance
+    * The pool data structure
+    * Guarded by the implicit lock for "pool"
     */
-   public void initialize(Container container, int maxSize, long timeout)
+   private LinkedList<T> pool = new LinkedList<T>();
+
+   private int inUse = 0;
+
+   public StrictMaxPool(StatelessObjectFactory<T> factory, int maxSize, long timeout, TimeUnit timeUnit)
    {
-      super.initialize(container, maxSize, timeout);
+      super(factory);
+
       this.maxSize = maxSize;
-      this.strictMaxSize = new Semaphore(maxSize, true);
-      this.strictTimeout = timeout;
+      this.semaphore = new Semaphore(maxSize, true);
+      this.timeout = timeout;
+      this.timeUnit = timeUnit;
+   }
+   
+   public void discard(T ctx)
+   {
+      if (log.isTraceEnabled())
+      {
+         String msg = "Discard instance:" + this + "#" + ctx;
+         log.trace(msg);
+      }
+
+      // If we block when maxSize instances are in use, invoke release on strictMaxSize
+      semaphore.release();
+      --inUse;
+
+      // Let the super do any other remove stuff
+      super.doRemove(ctx);
    }
 
    public int getCurrentSize()
@@ -132,7 +107,7 @@ public class StrictMaxPool
    public void setMaxSize(int maxSize)
    {
       this.maxSize = maxSize;
-      this.strictMaxSize = new Semaphore(maxSize, true);
+      this.semaphore = new Semaphore(maxSize, true);
    }
 
    /**
@@ -141,12 +116,28 @@ public class StrictMaxPool
     *
     * @return Context /w instance
     */
-   public BeanContext get()
+   public T get()
    {
-      BeanContext bean = acquire();
-      if(bean != null)
-         return bean;
-
+      try
+      {
+         boolean acquired = semaphore.tryAcquire(timeout, timeUnit);
+         if(!acquired)
+            throw new EJBException("Failed to acquire a permit within " + timeout + " " + timeUnit);
+      }
+      catch (InterruptedException e)
+      {
+         throw new EJBException("Acquire semaphore was interrupted");
+      }
+      
+      synchronized(pool)
+      {
+         if(!pool.isEmpty())
+         {
+            return pool.removeFirst();
+         }
+      }
+      
+      T bean = null;
       try
       {
          // Pool is empty, create an instance
@@ -158,30 +149,7 @@ public class StrictMaxPool
          if(bean == null)
          {
             --inUse;
-            strictMaxSize.release();
-         }
-      }
-      return bean;
-   }
-
-   public BeanContext get(Class[] initTypes, Object[] initValues)
-   {
-      BeanContext bean = acquire();
-      if(bean != null)
-         return bean;
-      
-      try
-      {
-         // Pool is empty, create an instance
-         ++inUse;
-         bean = create(initTypes, initValues);
-      }
-      finally
-      {
-         if(bean == null)
-         {
-            --inUse;
-            strictMaxSize.release();
+            semaphore.release();
          }
       }
       return bean;
@@ -194,109 +162,62 @@ public class StrictMaxPool
     * a) Done with finder method
     * b) Just removed
     *
-    * @param ctx
+    * @param obj
     */
-   public void release(BeanContext ctx)
+   public void release(T obj)
    {
       if (log.isTraceEnabled())
       {
-         String msg = pool.size() + "/" + maxSize + " Free instance:" + this
-                      + "#" + container.getBeanClass();
+         String msg = pool.size() + "/" + maxSize + " Free instance:" + this;
          log.trace(msg);
       }
-
-      try
+      
+      boolean destroyIt = false;
+      synchronized (pool)
       {
          // Add the unused context back into the pool
-         boolean removeIt = false;
-         synchronized (pool)
-         {
-            if (pool.size() < maxSize)
-            {
-               pool.addFirst(ctx);
-            }
-            else
-            {
-               removeIt = true;
-            }
-         }
-         if (removeIt) remove(ctx);
-         // If we block when maxSize instances are in use, invoke release on strictMaxSize
-         strictMaxSize.release();
-         --inUse;
+         if(pool.size() < maxSize)
+            pool.add(obj);
+         else
+            destroyIt = true;
       }
-      catch (Exception ignored)
-      {
-      }
-
-   }
-
-   public void destroy()
-   {
-      freeAll();
-   }
-
-   public void discard(BeanContext ctx)
-   {
-      if (log.isTraceEnabled())
-      {
-         String msg = "Discard instance:" + this + "#" + ctx
-                      + "#" + container.getBeanClass();
-         log.trace(msg);
-      }
-
+      if(destroyIt)
+         destroy(obj);
       // If we block when maxSize instances are in use, invoke release on strictMaxSize
-      strictMaxSize.release();
+      semaphore.release();
       --inUse;
-
-      // Let the super do any other remove stuff
-      super.doRemove(ctx);
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-   /*
-   protected void destroy() throws Exception
-   {
-      freeAll();
-      this.container = null;
-   }
-   */
-
-   // Private -------------------------------------------------------
-
-   /**
-    * At undeployment we want to free completely the pool.
-    */
-   private void freeAll()
-   {
-      LinkedList clone = (LinkedList) pool.clone();
-      for (int i = 0; i < clone.size(); i++)
-      {
-         BeanContext bc = (BeanContext) clone.get(i);
-         // Clear TX so that still TX entity pools get killed as well
-         discard(bc);
-      }
-      pool.clear();
-      inUse = 0;
-
-   }
-
-   // Inner classes -------------------------------------------------
 
    @Override
-   public void remove(BeanContext ctx)
+   public void remove(T ctx)
    {
       if (log.isTraceEnabled())
       {
-         String msg = "Removing instance:" + this + "#" + ctx + "#" + container.getBeanClass();
+         String msg = "Removing instance:" + this + "#" + ctx;
          log.trace(msg);
       }
 
-      strictMaxSize.release();
+      semaphore.release();
       --inUse;
       // let the super do the other remove stuff
       super.doRemove(ctx);
+   }
+
+   public void start()
+   {
+      // TODO Auto-generated method stub
+
+   }
+
+   public void stop()
+   {
+      synchronized (pool)
+      {
+         for (T obj : pool)
+         {
+            destroy(obj);
+         }
+         pool.clear();
+      }
    }
 }
