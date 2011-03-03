@@ -30,11 +30,8 @@ package org.jboss.ejb3.test.pool.threadlocal;
 
 import junit.framework.TestCase;
 import org.jboss.ejb3.pool.StatelessObjectFactory;
-import org.jboss.ejb3.pool.legacy.BeanContext;
-import org.jboss.ejb3.pool.legacy.Container;
 import org.jboss.ejb3.pool.threadlocal.ThreadLocalPool;
 import org.jboss.ejb3.test.pool.common.MockBean;
-import org.jboss.ejb3.test.pool.common.MockContainer;
 import org.jboss.ejb3.test.pool.common.MockFactory;
 
 import java.lang.Thread.UncaughtExceptionHandler;
@@ -89,10 +86,6 @@ public class ThreadLocalPoolUnitTestCase extends TestCase
    {
       final MockFactory factory = new MockFactory();
       final ThreadLocalPool<MockBean> pool = new ThreadLocalPool<MockBean>(factory);
-      Container container = new MockContainer();
-      int maxSize = -1;
-      int timeout = -1;
-      //pool.initialize(container, maxSize, timeout);
       pool.start();
 
       MockBean ctx = pool.get();
@@ -115,10 +108,6 @@ public class ThreadLocalPoolUnitTestCase extends TestCase
    {
       final MockFactory factory = new MockFactory();
       final ThreadLocalPool<MockBean> pool = new ThreadLocalPool<MockBean>(factory);
-      Container container = new MockContainer();
-      int maxSize = -1;
-      int timeout = -1;
-      //pool.initialize(container, maxSize, timeout);
       pool.start();
 
       assertEquals(0, pool.getAvailableCount());
@@ -141,10 +130,6 @@ public class ThreadLocalPoolUnitTestCase extends TestCase
    {
       final MockFactory factory = new MockFactory();
       final ThreadLocalPool<MockBean> pool = new ThreadLocalPool<MockBean>(factory);
-      Container container = new MockContainer();
-      int maxSize = -1;
-      int timeout = -1;
-      //pool.initialize(container, maxSize, timeout);
       pool.start();
       
       Runnable r = new Runnable()
@@ -188,10 +173,6 @@ public class ThreadLocalPoolUnitTestCase extends TestCase
    {
       final MockFactory factory = new MockFactory();
       final ThreadLocalPool<MockBean> pool = new ThreadLocalPool<MockBean>(factory);
-      Container container = new MockContainer();
-      int maxSize = -1;
-      int timeout = -1;
-      //pool.initialize(container, maxSize, timeout);
       pool.start();
       
       Runnable r = new Runnable()
@@ -238,10 +219,6 @@ public class ThreadLocalPoolUnitTestCase extends TestCase
    {
       final MockFactory factory = new MockFactory();
       final ThreadLocalPool<MockBean> pool = new ThreadLocalPool<MockBean>(factory);
-      Container container = new MockContainer();
-      int maxSize = -1;
-      int timeout = -1;
-      //pool.initialize(container, maxSize, timeout);
       pool.start();
       
       Runnable r = new Runnable()
