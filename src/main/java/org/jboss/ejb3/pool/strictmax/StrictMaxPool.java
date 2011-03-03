@@ -19,8 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.pool;
+package org.jboss.ejb3.pool.strictmax;
 
+import org.jboss.ejb3.pool.AbstractPool;
 import org.jboss.ejb3.pool.legacy.BeanContext;
 import org.jboss.ejb3.pool.legacy.Container;
 import org.jboss.logging.Logger;

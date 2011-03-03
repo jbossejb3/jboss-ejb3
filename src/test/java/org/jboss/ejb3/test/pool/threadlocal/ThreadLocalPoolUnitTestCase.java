@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2007, Red Hat Middleware LLC, and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,14 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.test.threadlocal.unit;
+package org.jboss.ejb3.test.pool.threadlocal;
 
 import junit.framework.TestCase;
-import org.jboss.ejb3.pool.ThreadlocalPool;
 import org.jboss.ejb3.pool.legacy.BeanContext;
 import org.jboss.ejb3.pool.legacy.Container;
-import org.jboss.ejb3.test.threadlocal.MockBean;
-import org.jboss.ejb3.test.threadlocal.MockContainer;
+import org.jboss.ejb3.pool.threadlocal.ThreadLocalPool;
+import org.jboss.ejb3.test.pool.common.MockBean;
+import org.jboss.ejb3.test.pool.common.MockContainer;
 
 /**
  * Comment
@@ -57,7 +57,7 @@ public class ThreadLocalPoolUnitTestCase extends TestCase
    
    public void test1()
    {
-      ThreadlocalPool pool = new ThreadlocalPool();
+      ThreadLocalPool pool = new ThreadLocalPool();
       Container container = new MockContainer();
       int maxSize = -1;
       int timeout = -1;
@@ -80,7 +80,7 @@ public class ThreadLocalPoolUnitTestCase extends TestCase
 
    public void testInUse1()
    {
-      ThreadlocalPool pool = new ThreadlocalPool();
+      ThreadLocalPool pool = new ThreadLocalPool();
       Container container = new MockContainer();
       int maxSize = -1;
       int timeout = -1;
@@ -104,7 +104,7 @@ public class ThreadLocalPoolUnitTestCase extends TestCase
 
    public void testWithThreads() throws Exception
    {
-      final ThreadlocalPool pool = new ThreadlocalPool();
+      final ThreadLocalPool pool = new ThreadLocalPool();
       Container container = new MockContainer();
       int maxSize = -1;
       int timeout = -1;
@@ -149,7 +149,7 @@ public class ThreadLocalPoolUnitTestCase extends TestCase
    
    public void testMultipleWithThreads() throws Exception
    {
-      final ThreadlocalPool pool = new ThreadlocalPool();
+      final ThreadLocalPool pool = new ThreadLocalPool();
       Container container = new MockContainer();
       int maxSize = -1;
       int timeout = -1;
@@ -197,7 +197,7 @@ public class ThreadLocalPoolUnitTestCase extends TestCase
    
    public void testMultipleRecursiveWithThreads() throws Exception
    {
-      final ThreadlocalPool pool = new ThreadlocalPool();
+      final ThreadLocalPool pool = new ThreadLocalPool();
       Container container = new MockContainer();
       int maxSize = -1;
       int timeout = -1;

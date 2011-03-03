@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2007, Red Hat Middleware LLC, and individual contributors
+ * Copyright (c) 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,20 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.pool;
+package org.jboss.ejb3.pool.threadlocal;
+
+import java.lang.ref.WeakReference;
 
 /**
- * Factory for obtaining ThreadlocalPool instances
- * 
- * @author <a href="mailto:andrew.rubinger@redhat.com">ALR</a>
- * @version $Revision: $
+ * @author carlo
+ *
  */
-public class ThreadlocalPoolFactory implements PoolFactory
+public class WeakThreadLocal<T>
 {
+   private ThreadLocal<WeakReference<T>> delegate = new ThreadLocal<WeakReference<T>>();
 
-   public Pool createPool()
+   public T get()
    {
-      return new ThreadlocalPool();
+      WeakReference<T> ref = delegate.get();
+      if(ref == null)
+         return null;
+      return ref.get();
+   }
+   
+   public void remove()
+   {
+      delegate.remove();
    }
 
+   public void set(T value)
+   {
+      delegate.set(new WeakReference<T>(value));
+   }
 }

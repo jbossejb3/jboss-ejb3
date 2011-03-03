@@ -19,20 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.pool;
+package org.jboss.ejb3.pool.threadlocal;
+
+import org.jboss.ejb3.pool.Pool;
+import org.jboss.ejb3.pool.PoolFactory;
 
 /**
- * Factory for obtaining StrictMaxPool instances
+ * Factory for obtaining ThreadlocalPool instances
  * 
  * @author <a href="mailto:andrew.rubinger@redhat.com">ALR</a>
  * @version $Revision: $
  */
-public class StrictMaxPoolFactory implements PoolFactory
+public class ThreadLocalPoolFactory implements PoolFactory
 {
 
    public Pool createPool()
    {
-      return new StrictMaxPool();
+      return new ThreadLocalPool();
    }
 
 }

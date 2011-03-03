@@ -19,13 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.pool;
+package org.jboss.ejb3.pool.threadlocal;
 
-import org.jboss.ejb3.InfinitePool;
+import org.jboss.ejb3.pool.Pool;
+import org.jboss.ejb3.pool.infinite.InfinitePool;
 import org.jboss.ejb3.pool.legacy.BeanContext;
 import org.jboss.ejb3.pool.legacy.Container;
 import org.jboss.ejb3.pool.legacy.Injector;
-import org.jboss.lang.ref.WeakThreadLocal;
 import org.jboss.logging.Logger;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,15 +37,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author <a href="mailto:bill@jboss.org">Bill Burke</a>
  * @version $Revision$
  */
-public class ThreadlocalPool implements Pool
+public class ThreadLocalPool implements Pool
 {
-private static final Logger log = Logger.getLogger(ThreadlocalPool.class);
+private static final Logger log = Logger.getLogger(ThreadLocalPool.class);
    
    protected Pool pool = new InfinitePool();
    protected WeakThreadLocal<BeanContext> currentBeanContext = new WeakThreadLocal<BeanContext>();
    private AtomicInteger inUse = new AtomicInteger();
    
-   public ThreadlocalPool()
+   public ThreadLocalPool()
    {
    }
 

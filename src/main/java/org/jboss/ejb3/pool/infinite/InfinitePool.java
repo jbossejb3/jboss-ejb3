@@ -19,13 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3;
-
-import java.util.LinkedList;
-import java.util.List;
+package org.jboss.ejb3.pool.infinite;
 
 import org.jboss.ejb3.pool.AbstractPool;
 import org.jboss.ejb3.pool.legacy.BeanContext;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * A pool that has no constraints.

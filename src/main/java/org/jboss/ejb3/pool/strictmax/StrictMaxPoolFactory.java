@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2007, Red Hat Middleware LLC, and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2007, Red Hat Middleware LLC, and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,33 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.lang.ref;
+package org.jboss.ejb3.pool.strictmax;
 
-import java.lang.ref.WeakReference;
+import org.jboss.ejb3.pool.Pool;
+import org.jboss.ejb3.pool.PoolFactory;
 
 /**
- * @author carlo
- *
+ * Factory for obtaining StrictMaxPool instances
+ * 
+ * @author <a href="mailto:andrew.rubinger@redhat.com">ALR</a>
+ * @version $Revision: $
  */
-public class WeakThreadLocal<T>
+public class StrictMaxPoolFactory implements PoolFactory
 {
-   private ThreadLocal<WeakReference<T>> delegate = new ThreadLocal<WeakReference<T>>();
 
-   public T get()
+   public Pool createPool()
    {
-      WeakReference<T> ref = delegate.get();
-      if(ref == null)
-         return null;
-      return ref.get();
-   }
-   
-   public void remove()
-   {
-      delegate.remove();
+      return new StrictMaxPool();
    }
 
-   public void set(T value)
-   {
-      delegate.set(new WeakReference<T>(value));
-   }
 }
