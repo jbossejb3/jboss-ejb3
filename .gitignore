@@ -1,2 +1,5 @@
+/.idea
 /ObjectStore
 /temp
+*.iml
+target
