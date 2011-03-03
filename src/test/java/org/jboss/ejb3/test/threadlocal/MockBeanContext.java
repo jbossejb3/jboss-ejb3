@@ -21,7 +21,6 @@
  */
 package org.jboss.ejb3.test.threadlocal;
 
-import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.ejb3.pool.legacy.BeanContext;
 import org.jboss.ejb3.pool.legacy.Container;
 import org.jboss.logging.Logger;
@@ -91,15 +90,6 @@ public class MockBeanContext implements BeanContext<Container>
     * @see org.jboss.ejb3.BeanContext#getInvokedMethodKey()
     */
    public Object getInvokedMethodKey()
-   {
-      // TODO Auto-generated method stub
-      return null;
-   }
-
-   /* (non-Javadoc)
-    * @see org.jboss.ejb3.BeanContext#getMetaData()
-    */
-   public SimpleMetaData getMetaData()
    {
       // TODO Auto-generated method stub
       return null;
