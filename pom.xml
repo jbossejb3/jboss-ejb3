@@ -105,8 +105,14 @@
 
          <dependency>
             <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-spi</artifactId>
+            <version>${version.org.jboss.logging}</version>
+         </dependency>
+
+         <dependency>
+            <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-log4j</artifactId>
-            <version>2.1.2.GA</version>
+            <version>${version.org.jboss.logging}</version>
             <scope>test</scope>
          </dependency>
       </dependencies>
@@ -157,6 +163,7 @@
       <module>effigy</module>
       <module>endpoint</module>
       <module>interceptors</module>
+      <module>pool</module>
       <module>servitor</module>
       <module>tx</module>
    </modules>
@@ -169,6 +176,8 @@
       <javax.interceptor.groupId>org.jboss.spec.javax.interceptor</javax.interceptor.groupId>
       <javax.interceptor.artifactId>jboss-interceptors-api_1.1_spec</javax.interceptor.artifactId>
       <javax.interceptor.version>1.0.0.Final</javax.interceptor.version>
+
+      <version.org.jboss.logging>2.1.2.GA</version.org.jboss.logging>
    </properties>
 
    <scm>

@@ -35,18 +35,12 @@
     <dependency>
       <groupId>org.jboss.logging</groupId>
       <artifactId>jboss-logging-spi</artifactId>
-      <version>${version.org.jboss.logging}</version>
     </dependency>
 
     <dependency>
       <groupId>org.jboss.logging</groupId>
       <artifactId>jboss-logging-log4j</artifactId>
-      <version>${version.org.jboss.logging}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
-
-  <properties>
-    <version.org.jboss.logging>2.1.0.GA</version.org.jboss.logging>
-  </properties>
 </project>

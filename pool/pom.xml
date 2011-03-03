@@ -1,101 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  vi:ts=2:sw=2:expandtab
+  vi:ts=3:sw=3:expandtab
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-  <!-- Parent -->
-  <parent>
-    <groupId>org.jboss.ejb3</groupId>
-    <artifactId>jboss-ejb3-build</artifactId>
-    <version>1.0.13</version>
-  </parent>
+   <!-- Parent -->
+   <parent>
+      <groupId>org.jboss.ejb3</groupId>
+      <artifactId>jboss-ejb3-aggregator</artifactId>
+      <version>2.0.0-SNAPSHOT</version>
+   </parent>
 
-  <!-- POM Model Version -->
-  <modelVersion>4.0.0</modelVersion>
+   <!-- POM Model Version -->
+   <modelVersion>4.0.0</modelVersion>
 
-  <!-- Artifact Information -->
-  <artifactId>jboss-ejb3-core-pool</artifactId>
-  <packaging>jar</packaging>
-  <version>1.7.21-SNAPSHOT</version>
-  <name>JBoss EJB 3.0 Core Pool</name>
-  <url>http://labs.jboss.com/jbossejb3</url>
-  <description>JBoss EJB 3.0 Core Pool (legacy)</description>
+   <!-- Artifact Information -->
+   <artifactId>jboss-ejb3-core-pool</artifactId>
+   <packaging>jar</packaging>
+   <name>JBoss EJB 3 Pool</name>
+   <description>JBoss EJB 3 Pool classes</description>
 
-  <repositories>
-    <!-- APIviz repository -->
-    <repository>
-      <id>apiviz.release</id>
-      <name>APIviz releases</name>
-      <url>http://apiviz.googlecode.com/svn/site/repo/mvn/release</url>
-      <releases>
+   <dependencies>
+      <!-- EJB3 API -->
+      <dependency>
+         <groupId>${javax.ejb.groupId}</groupId>
+         <artifactId>${javax.ejb.artifactId}</artifactId>
+      </dependency>
 
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
+      <dependency>
+         <groupId>junit</groupId>
+         <artifactId>junit</artifactId>
+         <scope>test</scope>
+      </dependency>
 
-  <!-- Build Information -->
-  <build>
-
-    <plugins>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-<!--
-        <executions>
-          <execution>
-            <id>attach-javadoc</id>
-            <phase>package</phase>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
--->
-        <configuration>
-          <doclet>net.gleamynode.apiviz.APIviz</doclet>
-          <docletArtifact>
-            <groupId>net.gleamynode.apiviz</groupId>
-            <artifactId>apiviz</artifactId>
-            <version>1.0.3</version>
-          </docletArtifact>
-<!--
-          <aggregate>true</aggregate>
-          <encoding>UTF-8</encoding>
-          <locale>en_US</locale>
--->
-        </configuration>
-      </plugin>
-
-    </plugins>
-
-  </build>
-
-  <!-- Dependencies -->
-
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.jboss.javaee</groupId>
-      <artifactId>jboss-ejb-api</artifactId>
-      <version>3.0.0.GA_SP1</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.jboss.logging</groupId>
-      <artifactId>jboss-logging-spi</artifactId>
-    </dependency>
-  </dependencies>
+      <dependency>
+         <groupId>org.jboss.logging</groupId>
+         <artifactId>jboss-logging-spi</artifactId>
+      </dependency>
+   </dependencies>
 </project>
