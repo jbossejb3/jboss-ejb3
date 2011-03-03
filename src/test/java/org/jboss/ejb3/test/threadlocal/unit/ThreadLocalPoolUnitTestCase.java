@@ -22,10 +22,9 @@
 package org.jboss.ejb3.test.threadlocal.unit;
 
 import junit.framework.TestCase;
-
-import org.jboss.ejb3.BeanContext;
-import org.jboss.ejb3.Container;
 import org.jboss.ejb3.pool.ThreadlocalPool;
+import org.jboss.ejb3.pool.legacy.BeanContext;
+import org.jboss.ejb3.pool.legacy.Container;
 import org.jboss.ejb3.test.threadlocal.MockBean;
 import org.jboss.ejb3.test.threadlocal.MockContainer;
 

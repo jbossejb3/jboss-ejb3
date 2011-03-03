@@ -21,9 +21,9 @@
  */
 package org.jboss.ejb3.pool;
 
-import org.jboss.ejb3.BeanContext;
-import org.jboss.ejb3.Container;
-import org.jboss.injection.Injector;
+import org.jboss.ejb3.pool.legacy.BeanContext;
+import org.jboss.ejb3.pool.legacy.Container;
+import org.jboss.ejb3.pool.legacy.Injector;
 
 /**
  * Minimally a pool acts as a factory for a bean.  It will handle callbacks

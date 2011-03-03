@@ -21,10 +21,10 @@
  */
 package org.jboss.ejb3.pool;
 
-import org.jboss.ejb3.BeanContext;
-import org.jboss.ejb3.Container;
 import org.jboss.ejb3.InfinitePool;
-import org.jboss.injection.Injector;
+import org.jboss.ejb3.pool.legacy.BeanContext;
+import org.jboss.ejb3.pool.legacy.Container;
+import org.jboss.ejb3.pool.legacy.Injector;
 import org.jboss.lang.ref.WeakThreadLocal;
 import org.jboss.logging.Logger;
 

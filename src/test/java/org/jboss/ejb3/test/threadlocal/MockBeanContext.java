@@ -22,12 +22,8 @@
 package org.jboss.ejb3.test.threadlocal;
 
 import org.jboss.aop.metadata.SimpleMetaData;
-import org.jboss.ejb3.BeanContext;
-import org.jboss.ejb3.Container;
-import org.jboss.ejb3.context.spi.EJBContext;
-import org.jboss.ejb3.context.spi.InvocationContext;
-import org.jboss.ejb3.interceptor.InterceptorInfo;
-import org.jboss.injection.Injector;
+import org.jboss.ejb3.pool.legacy.BeanContext;
+import org.jboss.ejb3.pool.legacy.Container;
 import org.jboss.logging.Logger;
 
 /**
@@ -49,16 +45,6 @@ public class MockBeanContext implements BeanContext<Container>
       this.instance = instance;
    }
 
-   public InvocationContext createInjectionInvocation(Iterable<Injector> injectors)
-   {
-      throw new RuntimeException("NYI");
-   }
-
-   public InvocationContext createLifecycleInvocation()
-   {
-      throw new RuntimeException("NYI");
-   }
-
    @Override
    protected void finalize() throws Throwable
    {
@@ -76,30 +62,12 @@ public class MockBeanContext implements BeanContext<Container>
    }
 
    /* (non-Javadoc)
-    * @see org.jboss.ejb3.BeanContext#getEJBContext()
-    */
-   public EJBContext getEJBContext()
-   {
-      // TODO Auto-generated method stub
-      return null;
-   }
-
-   /* (non-Javadoc)
     * @see org.jboss.ejb3.BeanContext#getInstance()
     */
    public Object getInstance()
    {
       assert instance != null;
       return instance;
-   }
-
-   /* (non-Javadoc)
-    * @see org.jboss.ejb3.BeanContext#getInterceptorInstances(org.jboss.ejb3.interceptor.InterceptorInfo[])
-    */
-   public Object[] getInterceptorInstances(InterceptorInfo[] interceptorInfos)
-   {
-      // TODO Auto-generated method stub
-      return null;
    }
 
    /* (non-Javadoc)

@@ -25,6 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.jboss.ejb3.pool.AbstractPool;
+import org.jboss.ejb3.pool.legacy.BeanContext;
 
 /**
  * A pool that has no constraints.
