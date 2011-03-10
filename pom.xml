@@ -182,7 +182,7 @@
 
    <scm>
       <connection>scm:git:git://github.com/jbossejb3/jboss-ejb3.git</connection>
-      <developerConnection>scm:git:git@github.com/jbossejb3/jboss-ejb3.git</developerConnection>
+      <developerConnection>scm:git:git@github.com:jbossejb3/jboss-ejb3.git</developerConnection>
       <url>http://github.com/jbossejb3/jboss-ejb3</url>
    </scm>
 </project>
