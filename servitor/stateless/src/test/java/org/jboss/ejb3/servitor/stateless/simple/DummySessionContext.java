@@ -22,7 +22,7 @@
 package org.jboss.ejb3.servitor.stateless.simple;
 
 import org.jboss.ejb3.context.base.BaseSessionContext;
-import org.jboss.ejb3.context.spi.SessionBeanManager;
+import org.jboss.ejb3.context.spi.SessionBeanComponent;
 import org.jboss.ejb3.context.spi.SessionContext;
 import org.jboss.ejb3.interceptors.container.BeanContext;
 
@@ -34,7 +34,7 @@ public class DummySessionContext extends BaseSessionContext
 {
    private static final long serialVersionUID = 1L;
 
-   public DummySessionContext(SessionBeanManager manager, Object instance)
+   public DummySessionContext(SessionBeanComponent manager, Object instance)
    {
       super(manager, instance);
    }

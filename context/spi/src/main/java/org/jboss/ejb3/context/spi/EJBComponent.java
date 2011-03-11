@@ -34,10 +34,10 @@ import java.security.Principal;
  * per invocation.
  *
  * Formerly known as Container.
- * 
+ *
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public interface BeanManager
+public interface EJBComponent
 {
    /**
     * @see javax.ejb.EJBContext#getEJBHome()
@@ -51,12 +51,12 @@ public interface BeanManager
 
    /**
     * TODO: should this really be per EJB or per invocation
-    * @see javax.ejb.EJBContext#getRollbackOnly() 
+    * @see javax.ejb.EJBContext#getRollbackOnly()
     */
    boolean getRollbackOnly() throws IllegalStateException;
 
    /**
-    * @see javax.ejb.EJBContext#getTimerService() 
+    * @see javax.ejb.EJBContext#getTimerService()
     */
    TimerService getTimerService() throws IllegalStateException;
 
@@ -78,7 +78,7 @@ public interface BeanManager
    Object lookup(String name) throws IllegalArgumentException;
 
    /**
-    * @see javax.ejb.EJBContext#setRollbackOnly() 
+    * @see javax.ejb.EJBContext#setRollbackOnly()
     */
    void setRollbackOnly() throws IllegalStateException;
 }

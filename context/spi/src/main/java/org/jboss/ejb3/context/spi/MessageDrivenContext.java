@@ -26,5 +26,5 @@ package org.jboss.ejb3.context.spi;
  */
 public interface MessageDrivenContext extends EJBContext, javax.ejb.MessageDrivenContext
 {
-   MessageDrivenBeanManager getManager();
+   MessageDrivenBeanComponent getComponent();
 }

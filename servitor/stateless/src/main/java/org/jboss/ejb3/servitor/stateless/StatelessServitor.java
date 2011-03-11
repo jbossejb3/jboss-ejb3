@@ -22,7 +22,7 @@
 package org.jboss.ejb3.servitor.stateless;
 
 import org.jboss.ejb3.context.spi.EJBContext;
-import org.jboss.ejb3.context.spi.SessionBeanManager;
+import org.jboss.ejb3.context.spi.SessionBeanComponent;
 import org.jboss.ejb3.context.spi.SessionContext;
 import org.jboss.ejb3.effigy.SessionBeanEffigy;
 import org.jboss.ejb3.endpoint.Endpoint;
@@ -39,14 +39,14 @@ import java.util.Map;
 
 /**
  * StatelessServitor services stateless session beans via an endpoint.
- * 
+ *
  * Stateless session beans are session beans whose instances have no conversational state. This means that
  * all bean instances are equivalent when they are not involved in servicing a client-invoked method.
- * 
+ *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class StatelessServitor extends EnterpriseBeanServitor
-        implements Endpoint, SessionBeanManager
+        implements Endpoint, SessionBeanComponent
 {
    private SessionBeanEffigy sessionBeanEffigy;
 

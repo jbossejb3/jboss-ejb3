@@ -22,7 +22,7 @@
 package org.jboss.ejb3.context.base;
 
 import org.jboss.ejb3.context.CurrentInvocationContext;
-import org.jboss.ejb3.context.spi.SessionBeanManager;
+import org.jboss.ejb3.context.spi.SessionBeanComponent;
 import org.jboss.ejb3.context.spi.SessionContext;
 import org.jboss.ejb3.context.spi.SessionInvocationContext;
 
@@ -36,7 +36,7 @@ import java.io.Serializable;
  * Implementation of the SessionContext interface.
  *
  * The class is Serializable to allow stateful beans to passivate.
- * 
+ *
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class BaseSessionContext extends BaseEJBContext
@@ -60,12 +60,12 @@ public class BaseSessionContext extends BaseEJBContext
 
       private Object readResolve() throws ObjectStreamException
       {
-         SessionBeanManager manager = CurrentInvocationContext.get(SessionInvocationContext.class).getManager();
+         SessionBeanComponent manager = CurrentInvocationContext.get(SessionInvocationContext.class).getComponent();
          return new BaseSessionContext(manager, instance);
       }
    }
 
-   public BaseSessionContext(SessionBeanManager manager, Object instance)
+   public BaseSessionContext(SessionBeanComponent manager, Object instance)
    {
       super(manager, instance);
    }
@@ -100,11 +100,11 @@ public class BaseSessionContext extends BaseEJBContext
       return getCurrentInvocationContext().getInvokedBusinessInterface();
    }
 
-   public SessionBeanManager getManager()
+   public SessionBeanComponent getComponent()
    {
-      return (SessionBeanManager) super.getManager();
+      return (SessionBeanComponent) super.getComponent();
    }
-   
+
    public MessageContext getMessageContext() throws IllegalStateException
    {
       return getCurrentInvocationContext().getMessageContext();

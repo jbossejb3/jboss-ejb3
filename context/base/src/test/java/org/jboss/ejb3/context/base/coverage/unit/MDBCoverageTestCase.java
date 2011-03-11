@@ -22,8 +22,8 @@
 package org.jboss.ejb3.context.base.coverage.unit;
 
 import org.jboss.ejb3.context.base.BaseMessageDrivenContext;
-import org.jboss.ejb3.context.base.coverage.MDBeanManager;
-import org.jboss.ejb3.context.spi.MessageDrivenBeanManager;
+import org.jboss.ejb3.context.base.coverage.MDEJBComponent;
+import org.jboss.ejb3.context.spi.MessageDrivenBeanComponent;
 import org.jboss.ejb3.context.spi.MessageDrivenContext;
 import org.junit.Test;
 
@@ -37,11 +37,11 @@ public class MDBCoverageTestCase
    @Test
    public void testMDB()
    {
-      MessageDrivenBeanManager manager = new MDBeanManager();
+      MessageDrivenBeanComponent manager = new MDEJBComponent();
       Object instance = new Object();
       MessageDrivenContext ctx = new BaseMessageDrivenContext(manager, instance);
-      
-      MessageDrivenBeanManager result = ctx.getManager();
+
+      MessageDrivenBeanComponent result = ctx.getComponent();
       assertSame(manager, result);
    }
 }

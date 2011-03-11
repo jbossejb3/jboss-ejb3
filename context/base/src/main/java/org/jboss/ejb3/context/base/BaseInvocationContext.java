@@ -21,7 +21,7 @@
  */
 package org.jboss.ejb3.context.base;
 
-import org.jboss.ejb3.context.spi.BeanManager;
+import org.jboss.ejb3.context.spi.EJBComponent;
 import org.jboss.ejb3.context.spi.EJBContext;
 import org.jboss.ejb3.context.spi.InvocationContext;
 
@@ -71,6 +71,12 @@ public abstract class BaseInvocationContext implements InvocationContext
       return callerPrincipal;
    }
 
+   public EJBComponent getComponent()
+   {
+      // for now
+      return getEJBContext().getComponent();
+   }
+
    public Map<String, Object> getContextData()
    {
       return contextData;
@@ -86,25 +92,19 @@ public abstract class BaseInvocationContext implements InvocationContext
    // redundant
    public EJBHome getEJBHome()
    {
-      return getManager().getEJBHome();
+      return getComponent().getEJBHome();
    }
 
    // redundant
    public EJBLocalHome getEJBLocalHome()
    {
-      return getManager().getEJBLocalHome();
+      return getComponent().getEJBLocalHome();
    }
 
    // redundant
    public Properties getEnvironment()
    {
       throw new UnsupportedOperationException("getEnvironment is deprecated");
-   }
-
-   public BeanManager getManager()
-   {
-      // for now
-      return getEJBContext().getManager();
    }
 
    public Method getMethod()
@@ -121,7 +121,7 @@ public abstract class BaseInvocationContext implements InvocationContext
 
    public boolean getRollbackOnly()
    {
-      return getManager().getRollbackOnly();
+      return getComponent().getRollbackOnly();
    }
 
    public Object getTarget()
@@ -137,12 +137,12 @@ public abstract class BaseInvocationContext implements InvocationContext
    // redundant
    public TimerService getTimerService()
    {
-      return getManager().getTimerService();
+      return getComponent().getTimerService();
    }
 
    public UserTransaction getUserTransaction()
    {
-      return getManager().getUserTransaction();
+      return getComponent().getUserTransaction();
    }
 
    // redundant
@@ -155,17 +155,17 @@ public abstract class BaseInvocationContext implements InvocationContext
    public boolean isCallerInRole(String roleName)
    {
       // TODO: really?
-      return getManager().isCallerInRole(getCallerPrincipal(), roleName);
+      return getComponent().isCallerInRole(getCallerPrincipal(), roleName);
    }
 
    // redundant
    public Object lookup(String name) throws IllegalArgumentException
    {
-      return getManager().lookup(name);
+      return getComponent().lookup(name);
    }
 
    public abstract Object proceed() throws Exception;
-   
+
    public void setCallerPrincipal(Principal callerPrincipal)
    {
       // FIXME: security check
@@ -181,14 +181,14 @@ public abstract class BaseInvocationContext implements InvocationContext
     * Transform an invocation context from lifecycle to business method and vica versa.
     *
     * Whether this is wise remains to be seen, best not used.
-    * 
+    *
     * @param method
     */
    protected void setMethod(Method method)
    {
       this.method = method;
    }
-   
+
    public void setParameters(Object[] params) throws IllegalArgumentException, IllegalStateException
    {
       if(method == null)
@@ -220,7 +220,7 @@ public abstract class BaseInvocationContext implements InvocationContext
 
    public void setRollbackOnly()
    {
-      getManager().setRollbackOnly();
+      getComponent().setRollbackOnly();
    }
 
    public void setTimer(Timer timer)

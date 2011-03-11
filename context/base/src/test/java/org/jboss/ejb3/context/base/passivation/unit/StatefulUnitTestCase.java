@@ -26,8 +26,8 @@ import org.jboss.ejb3.context.CurrentInvocationContext;
 import org.jboss.ejb3.context.base.BaseSessionContext;
 import org.jboss.ejb3.context.base.BaseSessionInvocationContext;
 import org.jboss.ejb3.context.base.passivation.StatefulGreeterBean;
-import org.jboss.ejb3.context.base.stateless.StatelessBeanManager;
-import org.jboss.ejb3.context.spi.SessionBeanManager;
+import org.jboss.ejb3.context.base.stateless.StatelessBeanComponent;
+import org.jboss.ejb3.context.spi.SessionBeanComponent;
 import org.jboss.ejb3.context.spi.SessionContext;
 import org.junit.Test;
 
@@ -46,7 +46,7 @@ public class StatefulUnitTestCase
    public void testPassivation() throws Exception
    {
       final StatefulGreeterBean bean = new StatefulGreeterBean();
-      final SessionBeanManager manager = new StatelessBeanManager();
+      final SessionBeanComponent manager = new StatelessBeanComponent();
       final BaseSessionContext context = new BaseSessionContext(manager, bean);
       BaseSessionInvocationContext invocation = new BaseSessionInvocationContext(null, null, null) {
          public Object proceed()
@@ -61,7 +61,7 @@ public class StatefulUnitTestCase
       try
       {
          invocation.setEJBContext(context);
-         
+
          invocation.proceed();
       }
       finally
@@ -77,7 +77,7 @@ public class StatefulUnitTestCase
       StatefulGreeterBean bean2;
       BaseSessionInvocationContext activateInvocation = new BaseSessionInvocationContext(null, null, null) {
          @Override
-         public SessionBeanManager getManager()
+         public SessionBeanComponent getComponent()
          {
             return manager;
          }

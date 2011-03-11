@@ -26,8 +26,8 @@ import org.jboss.ejb3.context.CurrentInvocationContext;
 import org.jboss.ejb3.context.base.BaseSessionContext;
 import org.jboss.ejb3.context.base.BaseSessionInvocationContext;
 import org.jboss.ejb3.context.base.stateless.GreeterBean;
-import org.jboss.ejb3.context.base.stateless.StatelessBeanManager;
-import org.jboss.ejb3.context.spi.SessionBeanManager;
+import org.jboss.ejb3.context.base.stateless.StatelessBeanComponent;
+import org.jboss.ejb3.context.spi.SessionBeanComponent;
 import org.jboss.ejb3.context.spi.SessionContext;
 import org.junit.Test;
 
@@ -43,7 +43,7 @@ public class StatelessUnitTestCase
    public void test1() throws Exception
    {
       final GreeterBean bean = new GreeterBean();
-      SessionBeanManager manager = new StatelessBeanManager();
+      SessionBeanComponent manager = new StatelessBeanComponent();
       final BaseSessionContext context = new BaseSessionContext(manager, bean);
       BaseSessionInvocationContext invocation = new BaseSessionInvocationContext(null, null, null) {
          @Override
@@ -77,7 +77,7 @@ public class StatelessUnitTestCase
       try
       {
          invocation.setEJBContext(context);
-         
+
          invocation.proceed();
       }
       finally

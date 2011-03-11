@@ -96,7 +96,7 @@ public abstract class StatefulBMTInterceptor extends BMTInterceptor
       assert tm.getTransaction() == null : "can't handle BMT transaction, there is a transaction active";
 
       StatefulContext ctx = (StatefulContext) invocation.getEJBContext();
-      String ejbName = ctx.getManager().toString();
+      String ejbName = ctx.getComponent().toString();
 
       // Is the instance already associated with a transaction?
       Transaction tx = ctx.getTransaction();

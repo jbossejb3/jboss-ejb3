@@ -39,12 +39,12 @@ public interface EJBContext extends javax.ejb.EJBContext
    /**
     * @return the runtime context for this EJB
     */
-   BeanManager getManager();
+   EJBComponent getComponent();
 
    /**
     * Returns the bean instance associated with this context. This must be
     * the same one which has the context injected.
-    * 
+    *
     * @return the bean instance associated with this context
     */
    Object getTarget();

@@ -19,15 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.context.base.stateless;
+package org.jboss.ejb3.context.base.coverage;
 
-import org.jboss.ejb3.context.spi.SessionBeanManager;
-import org.jboss.ejb3.context.spi.SessionContext;
+import org.jboss.ejb3.context.spi.MessageDrivenBeanComponent;
 
 import javax.ejb.EJBHome;
 import javax.ejb.EJBLocalHome;
-import javax.ejb.EJBLocalObject;
-import javax.ejb.EJBObject;
 import javax.ejb.TimerService;
 import javax.transaction.UserTransaction;
 import java.security.Principal;
@@ -35,13 +32,8 @@ import java.security.Principal;
 /**
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class StatelessBeanManager implements SessionBeanManager
+public class MDEJBComponent implements MessageDrivenBeanComponent
 {
-   public <T> T getBusinessObject(SessionContext ctx, Class<T> businessInterface)
-   {
-      return businessInterface.cast(ctx.getTarget());
-   }
-
    public EJBHome getEJBHome()
    {
       throw new IllegalStateException("Bean does not define a remote home");
@@ -52,20 +44,9 @@ public class StatelessBeanManager implements SessionBeanManager
       throw new IllegalStateException("Bean does not define a local home");
    }
 
-   public EJBLocalObject getEJBLocalObject(SessionContext ctx)
-   {
-      throw new IllegalStateException("Bean does not define a local interface");
-   }
-
-   public EJBObject getEJBObject(SessionContext ctx)
-   {
-      throw new IllegalStateException("Bean does not define a remote interface");
-   }
-
    public boolean getRollbackOnly()
    {
-      // FIXME
-      throw new IllegalStateException("FIXME");
+      throw new RuntimeException("NYI");
    }
 
    public TimerService getTimerService()
@@ -90,7 +71,6 @@ public class StatelessBeanManager implements SessionBeanManager
 
    public void setRollbackOnly()
    {
-      // FIXME
-      throw new IllegalStateException("FIXME");
+      throw new RuntimeException("NYI");
    }
 }

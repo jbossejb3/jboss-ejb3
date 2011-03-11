@@ -21,7 +21,7 @@
  */
 package org.jboss.ejb3.servitor.common;
 
-import org.jboss.ejb3.context.spi.BeanManager;
+import org.jboss.ejb3.context.spi.EJBComponent;
 
 import javax.ejb.EJBHome;
 import javax.ejb.EJBLocalHome;
@@ -32,7 +32,7 @@ import java.security.Principal;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class EnterpriseBeanServitor implements BeanManager
+public class EnterpriseBeanServitor implements EJBComponent
 {
    @Override
    public EJBHome getEJBHome() throws IllegalStateException

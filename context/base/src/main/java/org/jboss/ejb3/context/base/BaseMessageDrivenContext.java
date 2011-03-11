@@ -21,7 +21,7 @@
  */
 package org.jboss.ejb3.context.base;
 
-import org.jboss.ejb3.context.spi.MessageDrivenBeanManager;
+import org.jboss.ejb3.context.spi.MessageDrivenBeanComponent;
 import org.jboss.ejb3.context.spi.MessageDrivenContext;
 
 /**
@@ -30,14 +30,14 @@ import org.jboss.ejb3.context.spi.MessageDrivenContext;
 public class BaseMessageDrivenContext extends BaseEJBContext
    implements MessageDrivenContext
 {
-   public BaseMessageDrivenContext(MessageDrivenBeanManager manager, Object instance)
+   public BaseMessageDrivenContext(MessageDrivenBeanComponent manager, Object instance)
    {
       super(manager, instance);
    }
 
    @Override
-   public MessageDrivenBeanManager getManager()
+   public MessageDrivenBeanComponent getComponent()
    {
-      return (MessageDrivenBeanManager) super.getManager();
+      return (MessageDrivenBeanComponent) super.getComponent();
    }
 }

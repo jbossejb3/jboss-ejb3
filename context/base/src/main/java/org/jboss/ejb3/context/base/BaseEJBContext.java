@@ -22,7 +22,7 @@
 package org.jboss.ejb3.context.base;
 
 import org.jboss.ejb3.context.CurrentInvocationContext;
-import org.jboss.ejb3.context.spi.BeanManager;
+import org.jboss.ejb3.context.spi.EJBComponent;
 import org.jboss.ejb3.context.spi.EJBContext;
 import org.jboss.ejb3.context.spi.InvocationContext;
 
@@ -40,10 +40,10 @@ import java.util.Properties;
  */
 public class BaseEJBContext implements EJBContext
 {
-   private BeanManager manager;
+   private EJBComponent manager;
    private Object instance;
 
-   public BaseEJBContext(BeanManager manager, Object instance)
+   public BaseEJBContext(EJBComponent manager, Object instance)
    {
       this.manager = manager;
       this.instance = instance;
@@ -88,7 +88,7 @@ public class BaseEJBContext implements EJBContext
       throw new UnsupportedOperationException("getCallerIdentity is deprecated");
    }
 
-   public BeanManager getManager()
+   public EJBComponent getComponent()
    {
       return manager;
    }
@@ -129,7 +129,7 @@ public class BaseEJBContext implements EJBContext
 
    public Object lookup(String name) throws IllegalArgumentException
    {
-      return getManager().lookup(name);
+      return getComponent().lookup(name);
    }
 
    public void setRollbackOnly() throws IllegalStateException

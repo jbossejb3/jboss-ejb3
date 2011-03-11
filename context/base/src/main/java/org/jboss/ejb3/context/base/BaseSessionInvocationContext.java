@@ -21,7 +21,7 @@
  */
 package org.jboss.ejb3.context.base;
 
-import org.jboss.ejb3.context.spi.SessionBeanManager;
+import org.jboss.ejb3.context.spi.SessionBeanComponent;
 import org.jboss.ejb3.context.spi.SessionContext;
 import org.jboss.ejb3.context.spi.SessionInvocationContext;
 
@@ -54,7 +54,7 @@ public abstract class BaseSessionInvocationContext extends BaseInvocationContext
    {
       // we need an instance attached
       SessionContext ctx = getEJBContext();
-      return ctx.getManager().getBusinessObject(ctx, businessInterface);      
+      return ctx.getComponent().getBusinessObject(ctx, businessInterface);
    }
 
    public SessionContext getEJBContext()
@@ -65,13 +65,13 @@ public abstract class BaseSessionInvocationContext extends BaseInvocationContext
    public EJBLocalObject getEJBLocalObject() throws IllegalStateException
    {
       SessionContext ctx = getEJBContext();
-      return ctx.getManager().getEJBLocalObject(ctx);
+      return ctx.getComponent().getEJBLocalObject(ctx);
    }
 
    public EJBObject getEJBObject() throws IllegalStateException
    {
       SessionContext ctx = getEJBContext();
-      return ctx.getManager().getEJBObject(ctx);
+      return ctx.getComponent().getEJBObject(ctx);
    }
 
    public Class<?> getInvokedBusinessInterface() throws IllegalStateException
@@ -81,10 +81,10 @@ public abstract class BaseSessionInvocationContext extends BaseInvocationContext
       return invokedBusinessInterface;
    }
 
-   public SessionBeanManager getManager()
+   public SessionBeanComponent getComponent()
    {
       // for now
-      return getEJBContext().getManager();
+      return getEJBContext().getComponent();
    }
 
    public MessageContext getMessageContext() throws IllegalStateException
@@ -98,7 +98,7 @@ public abstract class BaseSessionInvocationContext extends BaseInvocationContext
    {
       this.future = future;
    }
-   
+
    public void setMessageContext(MessageContext messageContext)
    {
       this.messageContext = messageContext;
