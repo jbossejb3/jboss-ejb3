@@ -39,6 +39,8 @@ public abstract class BMTInterceptor
 {
    private static final Logger log = Logger.getLogger(BMTInterceptor.class);
 
+   protected abstract String getComponentName();
+
    protected abstract Object handleInvocation(InvocationContext invocation) throws Exception;
 
    @AroundInvoke
