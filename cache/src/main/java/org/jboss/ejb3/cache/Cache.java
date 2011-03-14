@@ -22,28 +22,31 @@
 package org.jboss.ejb3.cache;
 
 import javax.ejb.NoSuchEJBException;
+import java.io.Serializable;
 
 /**
  * Cache a stateful object and make sure any life cycle callbacks are
  * called at the appropriate time.
  * 
- * A cache is linked to an object factory. How the link is established is left beyond
- * scope.
- *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  * @version $Revision: $
  */
 public interface Cache<T extends Identifiable>
 {
    /**
-    * Create a new object.
+    * Creates and caches a new instance of <code>T</code>.
     * 
-    * @param initTypes
-    * @param initValues
-    * @return
+    * @return a new <code>T</code>
     */
-   T create(Class<?> initTypes[], Object initValues[]);
+   T create();
    
+   /**
+    * Discard the specified object from cache.
+    *
+    * @param key    the identifier of the object
+    */
+   void discard(Serializable key);
+
    /**
     * Get the specified object from cache. This will mark
     * the object as being in use.
@@ -52,7 +55,7 @@ public interface Cache<T extends Identifiable>
     * @return       the object
     * @throws NoSuchEJBException    if the object does not exist
     */
-   T get(Object key) throws NoSuchEJBException;
+   T get(Serializable key) throws NoSuchEJBException;
    
    /**
     * Peek at an object which might be in use.
@@ -61,7 +64,7 @@ public interface Cache<T extends Identifiable>
     * @return       the object
     * @throws NoSuchEJBException    if the object does not exist
     */
-   T peek(Object key) throws NoSuchEJBException;
+   //T peek(Serializable key) throws NoSuchEJBException;
    
    /**
     * Release the object from use.
@@ -75,8 +78,15 @@ public interface Cache<T extends Identifiable>
     * 
     * @param key    the identifier of the object
     */
-   void remove(Object key);
+   void remove(Serializable key);
    
+   /**
+    * Associate the cache with a stateful object factory.
+    *
+    * @param factory   the factory this cache should use.
+    */
+   void setStatefulObjectFactory(StatefulObjectFactory<T> factory);
+
    /**
     * Start the cache.
     */

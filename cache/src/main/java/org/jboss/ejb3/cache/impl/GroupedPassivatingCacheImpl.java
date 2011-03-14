@@ -21,12 +21,6 @@
  */
 package org.jboss.ejb3.cache.impl;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.ejb.NoSuchEJBException;
-
 import org.jboss.ejb3.cache.Identifiable;
 import org.jboss.ejb3.cache.ObjectStore;
 import org.jboss.ejb3.cache.PassivatingCache;
@@ -35,6 +29,11 @@ import org.jboss.ejb3.cache.StatefulObjectFactory;
 import org.jboss.ejb3.cache.grouped.GroupedPassivatingCache;
 import org.jboss.ejb3.cache.grouped.PassivationGroup;
 import org.jboss.logging.Logger;
+
+import javax.ejb.NoSuchEJBException;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Comment
@@ -46,19 +45,20 @@ public class GroupedPassivatingCacheImpl<T extends Identifiable & Serializable> 
 {
    private static final Logger log = Logger.getLogger(GroupedPassivatingCacheImpl.class);
    
-   private PassivatingCache<PassivationGroup> groupCache;
+   private StatefulObjectFactory<T> factory;
    
-   private SimplePassivatingCache<Entry> delegate;
-   private Map<Object, Entry> storage = new HashMap<Object, Entry>();
+   private final PassivatingCache<PassivationGroup> groupCache;
+   private final SimplePassivatingCache<Entry> delegate;
+   private final Map<Serializable, Entry> storage = new HashMap<Serializable, Entry>();
    
    protected class Entry implements Identifiable, Serializable
    {
       private static final long serialVersionUID = 1L;
       
-      Object id;
+      Serializable id;
       T obj;
       PassivationGroupImpl group;
-      Object groupId;
+      Serializable groupId;
       
       Entry(T obj)
       {
@@ -68,7 +68,7 @@ public class GroupedPassivatingCacheImpl<T extends Identifiable & Serializable> 
          this.id = obj.getId();
       }
       
-      public Object getId()
+      public Serializable getId()
       {
          return id;
       }
@@ -92,27 +92,28 @@ public class GroupedPassivatingCacheImpl<T extends Identifiable & Serializable> 
    
    private class EntryContainer implements StatefulObjectFactory<Entry>, PassivationManager<Entry>, ObjectStore<Entry>
    {
-      private StatefulObjectFactory<T> factory;
-      private PassivationManager<T> passivationManager;
-      private ObjectStore<T> store;
+      private final PassivationManager<T> passivationManager;
+      private final ObjectStore<T> store;
       
-      EntryContainer(StatefulObjectFactory<T> factory, PassivationManager<T> passivationManager, ObjectStore<T> store)
+      EntryContainer(PassivationManager<T> passivationManager, ObjectStore<T> store)
       {
-         this.factory = factory;
          this.passivationManager = passivationManager;
          this.store = store;
       }
       
-      public Entry create(Class<?>[] initTypes, Object[] initValues)
+      @Override
+      public Entry createInstance()
       {
-         return new Entry(factory.create(initTypes, initValues));
-      }
-
-      public void destroy(Entry entry)
-      {
-         factory.destroy(entry.obj);
+         return new Entry(factory.createInstance());
       }
       
+      @Override
+      public void destroyInstance(Entry entry)
+      {
+         factory.destroyInstance(entry.obj);
+      }
+      
+      @Override
       public Entry load(Object key)
       {
          Entry entry = storage.get(key);
@@ -128,6 +129,7 @@ public class GroupedPassivatingCacheImpl<T extends Identifiable & Serializable> 
          return new Entry(obj);
       }
       
+      @Override
       @SuppressWarnings("unchecked")
       public void postActivate(Entry entry)
       {
@@ -137,13 +139,14 @@ public class GroupedPassivatingCacheImpl<T extends Identifiable & Serializable> 
             if(entry.group == null)
             {
                // TODO: peek or get?
-               entry.group = (PassivationGroupImpl) groupCache.peek(entry.groupId);
+               entry.group = (PassivationGroupImpl) groupCache.get(entry.groupId);
             }
             entry.obj = (T) entry.group.getMember(entry.id);
          }
          passivationManager.postActivate(entry.obj);
       }
       
+      @Override
       public void prePassivate(Entry entry)
       {
          log.trace("pre passivate " + entry);
@@ -160,6 +163,7 @@ public class GroupedPassivatingCacheImpl<T extends Identifiable & Serializable> 
          }
       }
       
+      @Override
       public void store(Entry entry)
       {
          log.trace("store " + entry);
@@ -170,46 +174,59 @@ public class GroupedPassivatingCacheImpl<T extends Identifiable & Serializable> 
       }
    }
    
-   public GroupedPassivatingCacheImpl(StatefulObjectFactory<T> factory, PassivationManager<T> passivationManager, ObjectStore<T> store, PassivatingCache<PassivationGroup> groupCache)
+   public GroupedPassivatingCacheImpl(PassivationManager<T> passivationManager, ObjectStore<T> store, PassivatingCache<PassivationGroup> groupCache)
    {
       assert groupCache != null : "groupCache is null";
       assert passivationManager != null : "passivationManager is null";
       
       this.groupCache = groupCache;
-      EntryContainer container = new EntryContainer(factory, passivationManager, store);
-      this.delegate = new SimplePassivatingCache<Entry>(container, container, container);
+      EntryContainer container = new EntryContainer(passivationManager, store);
+      this.delegate = new SimplePassivatingCache<Entry>(container, container);
+      this.delegate.setStatefulObjectFactory(container);
    }
    
+   @Override
    public void passivate(Object key)
    {
       delegate.passivate(key);
    }
 
-   public T create(Class<?>[] initTypes, Object[] initValues)
+   @Override
+   public T create()
    {
-      return delegate.create(initTypes, initValues).obj;
+      return delegate.create().obj;
    }
 
-   public T get(Object key) throws NoSuchEJBException
+   @Override
+   public void discard(Serializable key)
+   {
+      remove(key);
+   }
+   
+   @Override
+   public T get(Serializable key) throws NoSuchEJBException
    {
       return delegate.get(key).obj;
    }
 
-   public T peek(Object key) throws NoSuchEJBException
+   public T peek(Serializable key) throws NoSuchEJBException
    {
       return delegate.peek(key).obj;
    }
 
+   @Override
    public void release(T obj)
    {
       delegate.releaseByKey(obj.getId());
    }
 
-   public void remove(Object key)
+   @Override
+   public void remove(Serializable key)
    {
       delegate.remove(key);
    }
 
+   @Override
    public void setGroup(T obj, PassivationGroup group)
    {
       Entry entry;
@@ -231,6 +248,12 @@ public class GroupedPassivatingCacheImpl<T extends Identifiable & Serializable> 
    public void setSessionTimeout(int sessionTimeout)
    {
       delegate.setSessionTimeout(sessionTimeout);
+   }
+   
+   @Override
+   public void setStatefulObjectFactory(StatefulObjectFactory<T> factory)
+   {
+      this.factory = factory;
    }
    
    public void start()

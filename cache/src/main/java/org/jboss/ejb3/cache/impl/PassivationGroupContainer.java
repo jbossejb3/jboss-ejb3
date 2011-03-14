@@ -35,23 +35,27 @@ import org.jboss.logging.Logger;
 public class PassivationGroupContainer implements StatefulObjectFactory<PassivationGroup>, PassivationManager<PassivationGroup>
 {
    private static final Logger log = Logger.getLogger(PassivationGroupContainer.class);
-   
-   public PassivationGroup create(Class<?>[] initTypes, Object[] initValues)
+
+   @Override
+   public PassivationGroup createInstance()
    {
       return new PassivationGroupImpl();
    }
 
-   public void destroy(PassivationGroup obj)
+   @Override
+   public void destroyInstance(PassivationGroup obj)
    {
       // TODO: nothing?
    }
 
+   @Override
    public void postActivate(PassivationGroup obj)
    {
       log.trace("post activate " + obj);
       ((PassivationGroupImpl) obj).postActivate();
    }
 
+   @Override
    public void prePassivate(PassivationGroup obj)
    {
       log.trace("pre passivate " + obj);

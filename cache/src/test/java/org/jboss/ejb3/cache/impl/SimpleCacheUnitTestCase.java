@@ -21,12 +21,12 @@
  */
 package org.jboss.ejb3.cache.impl;
 
-import javax.ejb.NoSuchEJBException;
-
+import junit.framework.TestCase;
 import org.jboss.ejb3.cache.Cache;
 import org.jboss.ejb3.cache.StatefulObjectFactory;
 
-import junit.framework.TestCase;
+import javax.ejb.NoSuchEJBException;
+import java.io.Serializable;
 
 /**
  * Comment
@@ -40,7 +40,7 @@ public class SimpleCacheUnitTestCase extends TestCase
    public void test1()
    {
       StatefulObjectFactory<MockIdentifiable> factory = new MockStatefulObjectFactory();
-      Cache<MockIdentifiable> cache = new SimpleCache<MockIdentifiable>(factory);
+      Cache<MockIdentifiable> cache = new SimpleCache<MockIdentifiable>();
       
       try
       {
@@ -56,10 +56,11 @@ public class SimpleCacheUnitTestCase extends TestCase
    public void test2()
    {
       StatefulObjectFactory<MockIdentifiable> factory = new MockStatefulObjectFactory();
-      Cache<MockIdentifiable> cache = new SimpleCache<MockIdentifiable>(factory);
+      Cache<MockIdentifiable> cache = new SimpleCache<MockIdentifiable>();
+      cache.setStatefulObjectFactory(factory);
       
-      MockIdentifiable object = cache.create(null, null);
-      Object key = object.getId();
+      MockIdentifiable object = cache.create();
+      Serializable key = object.getId();
       
       MockIdentifiable obj2 = cache.get(key);
       assertEquals(object, obj2);

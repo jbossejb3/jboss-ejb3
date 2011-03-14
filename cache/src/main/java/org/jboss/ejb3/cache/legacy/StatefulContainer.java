@@ -27,11 +27,15 @@ import org.jboss.ejb3.effigy.SessionBeanEffigy;
 
 /**
  * A legacy construct to help migration.
- * 
+ *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 @Deprecated
 public interface StatefulContainer extends EJBContainer, StatefulObjectFactory<StatefulBeanContext> {
+    StatefulBeanContext create(Class<?>[] initTypes, Object[] initValues);
+
+    void destroy(StatefulBeanContext ctx);
+
     StatefulCache getCache();
     
     SessionBeanEffigy getEffigy();

@@ -21,19 +21,18 @@
  */
 package org.jboss.ejb3.cache.impl;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
-import javax.ejb.NoSuchEJBException;
-
 import org.jboss.ejb3.cache.Identifiable;
 import org.jboss.ejb3.cache.ObjectStore;
 import org.jboss.ejb3.cache.PassivatingCache;
 import org.jboss.ejb3.cache.PassivationManager;
 import org.jboss.ejb3.cache.StatefulObjectFactory;
 import org.jboss.logging.Logger;
+
+import javax.ejb.NoSuchEJBException;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Comment
@@ -46,10 +45,10 @@ public class SimplePassivatingCache<T extends Identifiable & Serializable> imple
    private static final Logger log = Logger.getLogger(SimplePassivatingCache.class);
    
    private StatefulObjectFactory<T> factory;
-   private PassivationManager<T> passivationManager;
-   private ObjectStore<T> store;
+   private final PassivationManager<T> passivationManager;
+   private final ObjectStore<T> store;
    
-   private Map<Object, Entry> cache;
+   private final Map<Object, Entry> cache;
    
    private int sessionTimeout = -1;
    private String name;
@@ -128,13 +127,11 @@ public class SimplePassivatingCache<T extends Identifiable & Serializable> imple
       }
    }
    
-   public SimplePassivatingCache(StatefulObjectFactory<T> factory, PassivationManager<T> passivationManager, ObjectStore<T> store)
+   public SimplePassivatingCache(PassivationManager<T> passivationManager, ObjectStore<T> store)
    {
-      assert factory != null : "factory is null";
       assert passivationManager != null : "passivationManager is null";
       assert store != null : "store is null";
       
-      this.factory = factory;
       this.passivationManager = passivationManager;
       this.store = store;
       this.cache = new HashMap<Object, Entry>();
@@ -142,11 +139,11 @@ public class SimplePassivatingCache<T extends Identifiable & Serializable> imple
    
    /**
     * Activate an entry and put it back in the cache.
-    * 
+    * <p/>
     * This method is not thread safe.
-    * 
-    * @param key    the indentifier of the object
-    * @return       the entry or null if not found
+    *
+    * @param key the indentifier of the object
+    * @return the entry or null if not found
     */
    protected Entry activate(Object key)
    {
@@ -161,9 +158,10 @@ public class SimplePassivatingCache<T extends Identifiable & Serializable> imple
       return entry;
    }
    
-   public T create(Class<?>[] initTypes, Object[] initValues)
+   @Override
+   public T create()
    {
-      T obj = factory.create(initTypes, initValues);
+      T obj = factory.createInstance();
       Entry entry = new Entry(obj);
       synchronized (cache)
       {
@@ -172,7 +170,14 @@ public class SimplePassivatingCache<T extends Identifiable & Serializable> imple
       return obj;
    }
 
-   public T get(Object key) throws NoSuchEJBException
+   @Override
+   public void discard(Serializable key)
+   {
+      remove(key);
+   }
+
+   @Override
+   public T get(Serializable key) throws NoSuchEJBException
    {
       synchronized (cache)
       {
@@ -193,6 +198,7 @@ public class SimplePassivatingCache<T extends Identifiable & Serializable> imple
       }
    }
 
+   @Override
    public void passivate(Object key)
    {
       log.trace("passivate " + key);
@@ -252,7 +258,8 @@ public class SimplePassivatingCache<T extends Identifiable & Serializable> imple
       }
    }
    
-   public void remove(Object key)
+   @Override
+   public void remove(Serializable key)
    {
       Entry entry;
       synchronized (cache)
@@ -270,7 +277,7 @@ public class SimplePassivatingCache<T extends Identifiable & Serializable> imple
             throw new IllegalStateException("entry " + entry + " is not ready");
       }
       if(entry != null)
-         factory.destroy(entry.obj);
+         factory.destroyInstance(entry.obj);
    }
 
    public void setName(String name)
@@ -284,6 +291,14 @@ public class SimplePassivatingCache<T extends Identifiable & Serializable> imple
       this.sessionTimeout = sessionTimeout;
    }
    
+   @Override
+   public void setStatefulObjectFactory(StatefulObjectFactory<T> factory)
+   {
+      assert factory != null : "factory is null";
+      this.factory = factory;
+   }
+
+   @Override
    public void start()
    {
       assert name != null : "name has not been set";
@@ -296,6 +311,7 @@ public class SimplePassivatingCache<T extends Identifiable & Serializable> imple
       }
    }
 
+   @Override
    public void stop()
    {
       if(sessionTimeoutTask != null)

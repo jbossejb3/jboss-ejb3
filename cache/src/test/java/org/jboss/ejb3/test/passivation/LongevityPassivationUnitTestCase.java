@@ -27,6 +27,8 @@ import org.jboss.ejb3.cache.impl.SimpleLongevityCache;
 import org.jboss.ejb3.cache.impl.SimplePassivatingCache;
 import org.jboss.ejb3.test.cache.common.CacheTestCase;
 
+import java.io.Serializable;
+
 /**
  * Test the passivation on a longevity cache.
  *
@@ -41,14 +43,15 @@ public class LongevityPassivationUnitTestCase extends CacheTestCase
       FileObjectStore<MockBeanContext> store = new FileObjectStore<MockBeanContext>();
       store.setStorageDirectory("./target/tmp/passivation");
       store.start();
-      SimplePassivatingCache<MockBeanContext> delegate = new SimplePassivatingCache<MockBeanContext>(container, container, store);
+      SimplePassivatingCache<MockBeanContext> delegate = new SimplePassivatingCache<MockBeanContext>(container, store);
+      delegate.setStatefulObjectFactory(container);
       delegate.setName("MockBeanContainer");
       delegate.setSessionTimeout(1);
       LongevityCache<MockBeanContext> cache = new SimpleLongevityCache<MockBeanContext>(delegate);
       cache.start();
       
-      MockBeanContext obj = cache.create(null, null);
-      Object key = obj.getId();
+      MockBeanContext obj = cache.create();
+      Serializable key = obj.getId();
       
       cache.finished(obj);
       

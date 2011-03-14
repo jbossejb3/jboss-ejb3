@@ -38,15 +38,18 @@ public class MockBeanContainer implements StatefulObjectFactory<MockBeanContext>
    protected int activations = 0;
    protected int passivations = 0;
    
-   public MockBeanContext create(Class<?>[] initTypes, Object[] initValues)
+   @Override
+   public MockBeanContext createInstance()
    {
       return new MockBeanContext();
    }
    
-   public void destroy(MockBeanContext obj)
+   @Override
+   public void destroyInstance(MockBeanContext obj)
    {
    }
 
+   @Override
    public void postActivate(MockBeanContext obj)
    {
       log.info("postActivate " + obj);
@@ -57,6 +60,7 @@ public class MockBeanContainer implements StatefulObjectFactory<MockBeanContext>
       }
    }
 
+   @Override
    public void prePassivate(MockBeanContext obj)
    {
       log.info("prePassivate " + obj);

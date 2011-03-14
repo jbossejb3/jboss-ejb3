@@ -23,6 +23,8 @@ package org.jboss.ejb3.test.cache.invocation;
 
 import org.jboss.ejb3.cache.Identifiable;
 
+import java.io.Serializable;
+
 /**
  * Comment
  *
@@ -40,7 +42,7 @@ public class MockIdentifiable implements Identifiable
       this.id = ++currentId;
    }
    
-   public Object getId()
+   public Serializable getId()
    {
       return id;
    }

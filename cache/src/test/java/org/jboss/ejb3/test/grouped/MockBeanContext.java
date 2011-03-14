@@ -21,9 +21,9 @@
  */
 package org.jboss.ejb3.test.grouped;
 
-import java.io.Serializable;
-
 import org.jboss.ejb3.cache.Identifiable;
+
+import java.io.Serializable;
 
 /**
  * Comment
@@ -46,7 +46,7 @@ public class MockBeanContext implements Identifiable, Serializable
       this.id = ++currentId;
    }
    
-   public Object getId()
+   public Serializable getId()
    {
       return id;
    }

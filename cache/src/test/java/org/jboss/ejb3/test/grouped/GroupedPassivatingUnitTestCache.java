@@ -21,10 +21,7 @@
  */
 package org.jboss.ejb3.test.grouped;
 
-import java.io.Serializable;
-
 import junit.framework.TestCase;
-
 import org.jboss.ejb3.cache.PassivationManager;
 import org.jboss.ejb3.cache.StatefulObjectFactory;
 import org.jboss.ejb3.cache.grouped.PassivationGroup;
@@ -32,6 +29,8 @@ import org.jboss.ejb3.cache.impl.FileObjectStore;
 import org.jboss.ejb3.cache.impl.PassivationGroupContainer;
 import org.jboss.ejb3.cache.impl.SimplePassivatingCache;
 import org.jboss.logging.Logger;
+
+import java.io.Serializable;
 
 /**
  * Comment
@@ -63,7 +62,8 @@ public class GroupedPassivatingUnitTestCache extends TestCase
       FileObjectStore<PassivationGroup> store = new FileObjectStore<PassivationGroup>();
       store.setStorageDirectory("./target/tmp/groups");
       store.start();
-      SimplePassivatingCache<PassivationGroup> groupCache = new SimplePassivatingCache<PassivationGroup>(factory, passivationManager, store);
+      SimplePassivatingCache<PassivationGroup> groupCache = new SimplePassivatingCache<PassivationGroup>(passivationManager, store);
+      groupCache.setStatefulObjectFactory(factory);
       groupCache.setName("PassivationGroupContainer");
       groupCache.setSessionTimeout(0);
       groupCache.start();
@@ -75,15 +75,15 @@ public class GroupedPassivatingUnitTestCache extends TestCase
          private static final long serialVersionUID = 1L;
       };
       MockBeanContext firstCtx1;
-      MockBeanContext ctx1 = firstCtx1 = container1.getCache().create(null, null);
-      Object key1 = ctx1.getId();
+      MockBeanContext ctx1 = firstCtx1 = container1.getCache().create();
+      Serializable key1 = ctx1.getId();
       ctx1.shared = shared;
-      MockBeanContext ctx2 = container2.getCache().create(null, null);
-      Object key2 = ctx2.getId();
+      MockBeanContext ctx2 = container2.getCache().create();
+      Serializable key2 = ctx2.getId();
       ctx2.shared = shared;
       
       // TODO: how will passivation groups be created?
-      PassivationGroup group = groupCache.create(null, null);
+      PassivationGroup group = groupCache.create();
       container1.getCache().setGroup(ctx1, group);
       container2.getCache().setGroup(ctx2, group);
       // TODO: currently we need to release the group

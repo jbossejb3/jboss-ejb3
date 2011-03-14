@@ -21,14 +21,14 @@
  */
 package org.jboss.ejb3.cache.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.ejb.NoSuchEJBException;
-
 import org.jboss.ejb3.cache.Cache;
 import org.jboss.ejb3.cache.Identifiable;
 import org.jboss.ejb3.cache.StatefulObjectFactory;
+
+import javax.ejb.NoSuchEJBException;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Comment
@@ -41,17 +41,15 @@ public class SimpleCache<T extends Identifiable> implements Cache<T>
    private StatefulObjectFactory<T> factory;
    private Map<Object, T> cache;
    
-   public SimpleCache(StatefulObjectFactory<T> factory)
+   public SimpleCache()
    {
-      assert factory != null;
-      
-      this.factory = factory;
       this.cache = new HashMap<Object, T>();
    }
-   
-   public T create(Class<?>[] initTypes, Object[] initValues)
+
+   @Override
+   public T create()
    {
-      T obj = factory.create(initTypes, initValues);
+      T obj = factory.createInstance();
       synchronized(cache)
       {
          cache.put(obj.getId(), obj);
@@ -59,7 +57,14 @@ public class SimpleCache<T extends Identifiable> implements Cache<T>
       return obj;
    }
 
-   public T get(Object key) throws NoSuchEJBException
+   @Override
+   public void discard(Serializable key)
+   {
+      remove(key);
+   }
+
+   @Override
+   public T get(Serializable key) throws NoSuchEJBException
    {
       T obj;
       synchronized (cache)
@@ -71,17 +76,19 @@ public class SimpleCache<T extends Identifiable> implements Cache<T>
       return obj;
    }
 
-   public T peek(Object key) throws NoSuchEJBException
+   public T peek(Serializable key) throws NoSuchEJBException
    {
       return get(key);
    }
    
+   @Override
    public void release(T obj)
    {
       // release does nothing
    }
    
-   public void remove(Object key)
+   @Override
+   public void remove(Serializable key)
    {
       T obj;
       synchronized (cache)
@@ -92,14 +99,23 @@ public class SimpleCache<T extends Identifiable> implements Cache<T>
       if(obj == null)
          throw new NoSuchEJBException(String.valueOf(key));
       
-      factory.destroy(obj);
+      factory.destroyInstance(obj);
    }
    
+   @Override
+   public void setStatefulObjectFactory(StatefulObjectFactory<T> factory)
+   {
+      assert factory != null;
+      this.factory = factory;
+   }
+
+   @Override
    public void start()
    {
       // do nothing
    }
    
+   @Override
    public void stop()
    {
       // do nothing

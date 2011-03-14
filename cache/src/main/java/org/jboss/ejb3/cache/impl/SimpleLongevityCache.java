@@ -21,14 +21,15 @@
  */
 package org.jboss.ejb3.cache.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.ejb.NoSuchEJBException;
-
 import org.jboss.ejb3.cache.Cache;
 import org.jboss.ejb3.cache.Identifiable;
 import org.jboss.ejb3.cache.LongevityCache;
+import org.jboss.ejb3.cache.StatefulObjectFactory;
+
+import javax.ejb.NoSuchEJBException;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Comment
@@ -38,9 +39,9 @@ import org.jboss.ejb3.cache.LongevityCache;
  */
 public class SimpleLongevityCache<T extends Identifiable> implements LongevityCache<T>
 {
-   private Cache<T> delegate;
+   private final Cache<T> delegate;
    
-   private Map<Object, Entry> cache;
+   private final Map<Object, Entry> cache;
    
    private static enum State { FINISHED, IN_OPERATION };
    
@@ -68,6 +69,7 @@ public class SimpleLongevityCache<T extends Identifiable> implements LongevityCa
       this.cache = new HashMap<Object, Entry>();
    }
    
+   @Override
    public void finished(T obj)
    {
       synchronized (cache)
@@ -80,9 +82,10 @@ public class SimpleLongevityCache<T extends Identifiable> implements LongevityCa
       }
    }
 
-   public T create(Class<?>[] initTypes, Object[] initValues)
+   @Override
+   public T create()
    {
-      T obj = delegate.create(initTypes, initValues);
+      T obj = delegate.create();
       Entry entry = new Entry(obj);
       synchronized (cache)
       {
@@ -91,7 +94,14 @@ public class SimpleLongevityCache<T extends Identifiable> implements LongevityCa
       return obj;
    }
 
-   public T get(Object key) throws NoSuchEJBException
+   @Override
+   public void discard(Serializable key)
+   {
+      remove(key);
+   }
+
+   @Override
+   public T get(Serializable key) throws NoSuchEJBException
    {
       synchronized (cache)
       {
@@ -111,12 +121,14 @@ public class SimpleLongevityCache<T extends Identifiable> implements LongevityCa
       }
    }
 
-   public T peek(Object key) throws NoSuchEJBException
+   public T peek(Serializable key) throws NoSuchEJBException
    {
       // This is the fastest
-      return delegate.peek(key);
+      // TODO: it should be peek
+      return delegate.get(key);
    }
 
+   @Override
    public void release(T obj)
    {
       synchronized (cache)
@@ -130,17 +142,26 @@ public class SimpleLongevityCache<T extends Identifiable> implements LongevityCa
       }
    }
 
-   public void remove(Object key)
+   @Override
+   public void remove(Serializable key)
    {
       // Note that the object is not in my cache at this point.
       delegate.remove(key);
    }
 
+   @Override
+   public void setStatefulObjectFactory(StatefulObjectFactory<T> factory)
+   {
+      delegate.setStatefulObjectFactory(factory);
+   }
+
+   @Override
    public void start()
    {
       delegate.start();
    }
 
+   @Override
    public void stop()
    {
       delegate.stop();

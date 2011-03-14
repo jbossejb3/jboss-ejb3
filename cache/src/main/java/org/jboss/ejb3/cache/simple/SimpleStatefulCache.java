@@ -24,6 +24,7 @@ package org.jboss.ejb3.cache.simple;
 import org.jboss.aop.Advisor;
 import org.jboss.ejb3.annotation.CacheConfig;
 import org.jboss.ejb3.annotation.PersistenceManager;
+import org.jboss.ejb3.cache.AbstractLegacyCache;
 import org.jboss.ejb3.cache.StatefulCache;
 import org.jboss.ejb3.cache.legacy.EJBContainer;
 import org.jboss.ejb3.cache.legacy.StatefulBeanContext;
@@ -50,7 +51,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  * @author <a href="mailto:bill@jboss.org">Bill Burke</a>
  * @version $Revision$
  */
-public class SimpleStatefulCache implements StatefulCache
+public class SimpleStatefulCache extends AbstractLegacyCache implements StatefulCache
 {
    private Logger log = Logger.getLogger(SimpleStatefulCache.class);
 

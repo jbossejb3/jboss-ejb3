@@ -21,14 +21,14 @@
  */
 package org.jboss.ejb3.cache.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.ejb.NoSuchEJBException;
-
 import org.jboss.ejb3.cache.Cache;
 import org.jboss.ejb3.cache.Identifiable;
 import org.jboss.ejb3.cache.StatefulObjectFactory;
+
+import javax.ejb.NoSuchEJBException;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Comment
@@ -39,7 +39,7 @@ import org.jboss.ejb3.cache.StatefulObjectFactory;
 public class EntryStateCache<T extends Identifiable> implements Cache<T>
 {
    private StatefulObjectFactory<T> factory;
-   private Map<Object, Entry> cache;
+   private final Map<Serializable, Entry> cache;
    
    private static enum State { READY, IN_USE };
    
@@ -59,17 +59,15 @@ public class EntryStateCache<T extends Identifiable> implements Cache<T>
       }
    }
    
-   public EntryStateCache(StatefulObjectFactory<T> factory)
+   public EntryStateCache()
    {
-      assert factory != null : "factory is null";
-      
-      this.factory = factory;
-      this.cache = new HashMap<Object, Entry>();
+      this.cache = new HashMap<Serializable, Entry>();
    }
    
-   public T create(Class<?>[] initTypes, Object[] initValues)
+   @Override
+   public T create()
    {
-      T obj = factory.create(initTypes, initValues);
+      T obj = factory.createInstance();
       Entry entry = new Entry(obj);
       synchronized (cache)
       {
@@ -78,7 +76,14 @@ public class EntryStateCache<T extends Identifiable> implements Cache<T>
       return obj;
    }
 
-   public T get(Object key) throws NoSuchEJBException
+   @Override
+   public void discard(Serializable key)
+   {
+      remove(key);
+   }
+   
+   @Override
+   public T get(Serializable key) throws NoSuchEJBException
    {
       synchronized (cache)
       {
@@ -93,7 +98,7 @@ public class EntryStateCache<T extends Identifiable> implements Cache<T>
       }
    }
 
-   public T peek(Object key) throws NoSuchEJBException
+   public T peek(Serializable key) throws NoSuchEJBException
    {
       synchronized (cache)
       {
@@ -104,6 +109,7 @@ public class EntryStateCache<T extends Identifiable> implements Cache<T>
       }
    }
 
+   @Override
    public void release(T obj)
    {
       synchronized (cache)
@@ -116,7 +122,8 @@ public class EntryStateCache<T extends Identifiable> implements Cache<T>
       }
    }
 
-   public void remove(Object key)
+   @Override
+   public void remove(Serializable key)
    {
       Entry entry;
       synchronized (cache)
@@ -127,19 +134,27 @@ public class EntryStateCache<T extends Identifiable> implements Cache<T>
       }
       if(entry == null)
          throw new NoSuchEJBException(String.valueOf(key));
-      factory.destroy(entry.obj);
+      factory.destroyInstance(entry.obj);
    }
 
+   @Override
+   public void setStatefulObjectFactory(StatefulObjectFactory<T> factory)
+   {
+      assert factory != null : "factory is null";
+      this.factory = factory;
+   }
+
+   @Override
    public void start()
    {
       // TODO Auto-generated method stub
 
    }
 
+   @Override
    public void stop()
    {
       // TODO Auto-generated method stub
 
    }
-
 }

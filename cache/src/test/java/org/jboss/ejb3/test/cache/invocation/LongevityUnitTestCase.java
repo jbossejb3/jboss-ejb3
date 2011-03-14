@@ -29,6 +29,8 @@ import org.jboss.ejb3.cache.impl.SimpleLongevityCache;
 
 import junit.framework.TestCase;
 
+import java.io.Serializable;
+
 /**
  * The release of a bean is at tx completion. In the mean time
  * I can have multiple invocations on a bean.
@@ -40,7 +42,7 @@ public class LongevityUnitTestCase extends TestCase
 {
    private Cache<MockIdentifiable> delegate;
    private LongevityCache<MockIdentifiable> cache;
-   private Object key;
+   private Serializable key;
    
    /**
     * After setUp you have a delegate, a cache and a key.
@@ -51,11 +53,12 @@ public class LongevityUnitTestCase extends TestCase
       super.setUp();
       
       StatefulObjectFactory<MockIdentifiable> factory = new MockStatefulObjectFactory();
-      this.delegate = new EntryStateCache<MockIdentifiable>(factory);
+      this.delegate = new EntryStateCache<MockIdentifiable>();
+      this.delegate.setStatefulObjectFactory(factory);
       this.cache = new SimpleLongevityCache<MockIdentifiable>(delegate);
       cache.start();
       
-      MockIdentifiable bean = cache.create(null, null);
+      MockIdentifiable bean = cache.create();
       this.key = bean.getId();
       cache.finished(bean);
       cache.release(bean);

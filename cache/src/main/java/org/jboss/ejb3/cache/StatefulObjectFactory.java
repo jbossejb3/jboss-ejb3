@@ -23,10 +23,10 @@ package org.jboss.ejb3.cache;
 
 /**
  * Creates and destroys stateful objects.
- * 
+ * <p/>
  * The object returned by create has dependencies injected. The PostConstruct
- * callback, if defined, has been called and the Init callback, if defined,
- * has been called.
+ * callback, if defined, has been called. It'll <b>not<b> call back on the appropriate
+ * Init method.
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  * @version $Revision: $
@@ -34,21 +34,22 @@ package org.jboss.ejb3.cache;
 public interface StatefulObjectFactory<T>
 {
    /**
-    * Creates a new stateful object by calling it's empty constructor,
-    * do injection, calling post-construct and finally calling the
-    * appropriate init method.
+    * Create a new instance of this component.  This may be invoked by a component interceptor, a client interceptor,
+    * or in the course of creating a new client, or in the case of an "eager" singleton, at component start.  This
+    * method will block until the component is available.  If the component fails to start then a runtime exception
+    * will be thrown.
+    * <p/>
+    * The instance has been injected and post-construct has been called.
     * 
-    * @param initTypes  the argument types for the init method
-    * @param initValues the arguments for the init method
-    * @return
+    * @return the component instance
     */
-   T create(Class<?> initTypes[], Object initValues[]);
+   T createInstance();
    
    /**
-    * Perform any cleanup actions on the object, such as
-    * calling the pre-destroy callback.
+    * Destroy an instance of the component.  This method causes all uninjection and pre-destroy lifecycle invocations
+    * to occur.
     * 
-    * @param obj    the object
+    * @param instance the instance to destroy
     */
-   void destroy(T obj);
+   void destroyInstance(T instance);
 }

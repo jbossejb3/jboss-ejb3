@@ -25,6 +25,8 @@ import org.jboss.ejb3.cache.impl.FileObjectStore;
 import org.jboss.ejb3.cache.impl.SimplePassivatingCache;
 import org.jboss.ejb3.test.cache.common.CacheTestCase;
 
+import java.io.Serializable;
+
 /**
  * Comment
  *
@@ -39,13 +41,14 @@ public class PassivationUnitTestCase extends CacheTestCase
       FileObjectStore<MockBeanContext> store = new FileObjectStore<MockBeanContext>();
       store.setStorageDirectory("./target/tmp/passivation");
       store.start();
-      SimplePassivatingCache<MockBeanContext> cache = new SimplePassivatingCache<MockBeanContext>(container, container, store);
+      SimplePassivatingCache<MockBeanContext> cache = new SimplePassivatingCache<MockBeanContext>(container, store);
+      cache.setStatefulObjectFactory(container);
       cache.setName("MockBeanContainer");
       cache.setSessionTimeout(1);
       cache.start();
       
-      MockBeanContext obj = cache.create(null, null);
-      Object key = obj.getId();
+      MockBeanContext obj = cache.create();
+      Serializable key = obj.getId();
       
       cache.release(obj);
       obj = null;
@@ -79,13 +82,14 @@ public class PassivationUnitTestCase extends CacheTestCase
       FileObjectStore<MockBeanContext> store = new FileObjectStore<MockBeanContext>();
       store.setStorageDirectory("./target/tmp/passivation");
       store.start();
-      SimplePassivatingCache<MockBeanContext> cache = new SimplePassivatingCache<MockBeanContext>(container, container, store);
+      SimplePassivatingCache<MockBeanContext> cache = new SimplePassivatingCache<MockBeanContext>(container, store);
+      cache.setStatefulObjectFactory(container);
       cache.setName("MockBeanContainer");
       cache.setSessionTimeout(1);
       cache.start();
       
-      MockBeanContext obj = cache.create(null, null);
-      Object key = obj.getId();
+      MockBeanContext obj = cache.create();
+      Serializable key = obj.getId();
       
       cache.peek(key);
       
@@ -102,13 +106,14 @@ public class PassivationUnitTestCase extends CacheTestCase
       FileObjectStore<MockBeanContext> store = new FileObjectStore<MockBeanContext>();
       store.setStorageDirectory("./target/tmp/passivation");
       store.start();
-      SimplePassivatingCache<MockBeanContext> cache = new SimplePassivatingCache<MockBeanContext>(container, container, store);
+      SimplePassivatingCache<MockBeanContext> cache = new SimplePassivatingCache<MockBeanContext>(container, store);
+      cache.setStatefulObjectFactory(container);
       cache.setName("MockBeanContainer");
       cache.setSessionTimeout(1);
       cache.start();
       
-      MockBeanContext obj = cache.create(null, null);
-      Object key = obj.getId();
+      MockBeanContext obj = cache.create();
+      Serializable key = obj.getId();
       
       cache.release(obj);
       obj = null;

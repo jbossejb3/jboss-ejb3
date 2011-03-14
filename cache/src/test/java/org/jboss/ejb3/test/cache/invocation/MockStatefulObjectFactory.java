@@ -31,12 +31,14 @@ import org.jboss.ejb3.cache.StatefulObjectFactory;
  */
 public class MockStatefulObjectFactory implements StatefulObjectFactory<MockIdentifiable>
 {
-   public MockIdentifiable create(Class<?>[] initTypes, Object[] initValues)
+   @Override
+   public MockIdentifiable createInstance()
    {
       return new MockIdentifiable();
    }
 
-   public void destroy(MockIdentifiable obj)
+   @Override
+   public void destroyInstance(MockIdentifiable obj)
    {
    }
 

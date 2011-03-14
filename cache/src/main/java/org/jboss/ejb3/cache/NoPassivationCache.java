@@ -21,13 +21,12 @@
  */
 package org.jboss.ejb3.cache;
 
-import org.jboss.ejb3.cache.legacy.EJBContainer;
-import org.jboss.ejb3.cache.legacy.StatefulBeanContext;
-import org.jboss.ejb3.cache.legacy.StatefulContainer;
-
 import javax.ejb.EJBException;
 import javax.ejb.NoSuchEJBException;
+import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Comment
@@ -35,22 +34,17 @@ import java.util.HashMap;
  * @author <a href="mailto:bill@jboss.org">Bill Burke</a>
  * @version $Revision$
  */
-public class NoPassivationCache implements StatefulCache
-{   
-   private StatefulContainer container;
-   private HashMap<Object, StatefulBeanContext> cacheMap;
-   private int createCount = 0;
-   private int removeCount = 0;
+public class NoPassivationCache<T extends Identifiable> implements Cache<T>
+{
+   private StatefulObjectFactory<T> factory;
+   private Map<Serializable, T> cacheMap;
+   private AtomicInteger createCount = new AtomicInteger(0);
+   private AtomicInteger removeCount = new AtomicInteger(0);
    private boolean running;
    
-   public void initialize(EJBContainer container) throws Exception
-   {
-      this.container = (StatefulContainer) container;
-      cacheMap = new HashMap<Object, StatefulBeanContext>();
-   }
-
    public NoPassivationCache()
    {
+      cacheMap = new HashMap<Serializable, T>();
    }
 
    public void start()
@@ -67,22 +61,18 @@ public class NoPassivationCache implements StatefulCache
       this.running = false;
    }
 
-   public StatefulBeanContext create()
+   @Override
+   public T create()
    {
-      return create(null, null);
-   }
-   
-   public StatefulBeanContext create(Class<?>[] initTypes, Object[] initValues)
-   {
-      StatefulBeanContext ctx = null;
       try
       {
-         ctx = container.create(initTypes, initValues);
-         ++createCount;
+         T instance = factory.createInstance();
+         createCount.incrementAndGet();
          synchronized (cacheMap)
          {
-            cacheMap.put(ctx.getId(), ctx);
+            cacheMap.put(instance.getId(), instance);
          }
+         return instance;
       }
       catch (EJBException e)
       {
@@ -92,67 +82,44 @@ public class NoPassivationCache implements StatefulCache
       {
          throw new EJBException(e);
       }
-      return ctx;
    }
 
-   public StatefulBeanContext get(Object key) throws EJBException
+   @Override
+   public void discard(Serializable key)
    {
-      return get(key, true);
+      // TODO: can we really do this? it might be a failing pre-destroy?
+      remove(key);
    }
    
-   public StatefulBeanContext get(Object key, boolean markInUse) throws EJBException
+   public T get(Serializable key) throws EJBException
    {
-      StatefulBeanContext entry = null;
       synchronized (cacheMap)
       {
-         entry = (StatefulBeanContext) cacheMap.get(key);
-      }
-      
-      if (entry == null)
-      {
-         throw new NoSuchEJBException("Could not find Stateful bean: " + key);
-      }      
-      
-      if (markInUse)
-      {   
-         if (entry.isRemoved())
+         T instance = cacheMap.get(key);
+         if(instance == null)
          {
-            throw new NoSuchEJBException("Could not find stateful bean: " + key +
-                                         " (bean was marked as removed");
-         }      
-      
-         entry.setInUse(true);
-         //entry.lastUsed = System.currentTimeMillis();
-      }
-      
-      return entry;
-   }
-
-   public StatefulBeanContext peek(Object key) throws NoSuchEJBException
-   {
-      return get(key, false);
-   }
-   
-   public void release(StatefulBeanContext ctx)
-   {
-      synchronized (ctx)
-      {
-         ctx.setInUse(false);
-         //ctx.lastUsed = System.currentTimeMillis();
+            throw new NoSuchEJBException("Could not find Stateful bean: " + key);
+         }
+         return instance;
       }
    }
 
-   public void remove(Object key)
+   public void release(T instance)
    {
-      StatefulBeanContext ctx = null;
+      // do nothing
+   }
+
+   public void remove(Serializable key)
+   {
+      T instance;
       synchronized (cacheMap)
       {
-         ctx = (StatefulBeanContext) cacheMap.remove(key);
+         instance = cacheMap.remove(key);
+         if(instance == null)
+            throw new NoSuchEJBException("Could not find Stateful bean: " + key);
       }
-      if(ctx == null)
-         throw new NoSuchEJBException("Could not find Stateful bean: " + key);
-      container.destroy(ctx);
-      ++removeCount;
+      removeCount.incrementAndGet();
+      factory.destroyInstance(instance);
    }
 
    public int getCacheSize()
@@ -167,7 +134,7 @@ public class NoPassivationCache implements StatefulCache
    
    public int getCreateCount()
    {
-	   return createCount;
+      return createCount.intValue();
    }
    
    public int getPassivatedCount()
@@ -177,7 +144,7 @@ public class NoPassivationCache implements StatefulCache
    
    public int getRemoveCount()
    {
-      return removeCount;
+      return removeCount.intValue();
    }
    
    public int getAvailableCount()
@@ -205,5 +172,10 @@ public class NoPassivationCache implements StatefulCache
    public boolean isStarted()
    {
       return this.running;
+   }
+
+   public void setStatefulObjectFactory(StatefulObjectFactory<T> factory)
+   {
+      this.factory = factory;
    }
 }

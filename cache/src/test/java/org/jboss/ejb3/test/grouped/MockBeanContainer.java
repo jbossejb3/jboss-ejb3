@@ -50,14 +50,16 @@ public class MockBeanContainer implements StatefulObjectFactory<MockBeanContext>
       FileObjectStore<MockBeanContext> store = new FileObjectStore<MockBeanContext>();
       store.setStorageDirectory("./target/tmp/" + name);
       store.start();
-      GroupedPassivatingCacheImpl<MockBeanContext> cache = new GroupedPassivatingCacheImpl<MockBeanContext>(this, this, store, groupCache);
+      GroupedPassivatingCacheImpl<MockBeanContext> cache = new GroupedPassivatingCacheImpl<MockBeanContext>(this, store, groupCache);
+      cache.setStatefulObjectFactory(this);
       this.cache = cache;
       cache.setName(name);
       cache.setSessionTimeout(sessionTimeout);
       cache.start();
    }
    
-   public MockBeanContext create(Class<?>[] initTypes, Object[] initValues)
+   @Override
+   public MockBeanContext createInstance()
    {
       return new MockBeanContext();
    }
@@ -67,10 +69,12 @@ public class MockBeanContainer implements StatefulObjectFactory<MockBeanContext>
       return cache;
    }
    
-   public void destroy(MockBeanContext obj)
+   @Override
+   public void destroyInstance(MockBeanContext obj)
    {
    }
 
+   @Override
    public void postActivate(MockBeanContext obj)
    {
       if(obj == null) throw new IllegalArgumentException("obj is null");
@@ -83,6 +87,7 @@ public class MockBeanContainer implements StatefulObjectFactory<MockBeanContext>
       }
    }
 
+   @Override
    public void prePassivate(MockBeanContext obj)
    {
       if(obj == null) throw new IllegalArgumentException("obj is null");

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2007, Red Hat Middleware LLC, and individual contributors
+ * Copyright (c) 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,17 +21,48 @@
  */
 package org.jboss.ejb3.cache;
 
+import org.jboss.ejb3.cache.legacy.StatefulBeanContext;
+
+import javax.ejb.NoSuchEJBException;
+import java.io.Serializable;
+
 /**
- * Factory for obtaining NoPassivationCache instances
- * 
- * @author <a href="mailto:andrew.rubinger@redhat.com">ALR</a>
- * @version $Revision: $
+ * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class NoPassivationCacheFactory implements Ejb3CacheFactory
+@Deprecated
+public abstract class AbstractLegacyCache implements StatefulCache
 {
-   public StatefulCache createCache()
+   private StatefulObjectFactory<StatefulBeanContext> factory;
+
+   @Override
+   public StatefulBeanContext create()
    {
-      return new NoPassivationCache();
+      return create(null, null);
    }
 
+   @Override
+   public void discard(Serializable key)
+   {
+      remove(key);
+   }
+
+   @Override
+   public StatefulBeanContext get(Serializable key) throws NoSuchEJBException
+   {
+      return get((Object) key);
+   }
+
+   protected abstract void remove(Object key);
+
+   @Override
+   public void remove(Serializable key)
+   {
+      remove((Object) key);
+   }
+
+   @Override
+   public void setStatefulObjectFactory(StatefulObjectFactory<StatefulBeanContext> factory)
+   {
+      this.factory = factory;
+   }
 }

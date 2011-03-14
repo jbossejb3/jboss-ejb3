@@ -21,12 +21,13 @@
  */
 package org.jboss.ejb3.cache.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.jboss.ejb3.cache.grouped.PassivationGroup;
 import org.jboss.logging.Logger;
 import org.jboss.util.id.GUID;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Comment
@@ -39,13 +40,13 @@ public class PassivationGroupImpl implements PassivationGroup
    private static final Logger log = Logger.getLogger(PassivationGroupImpl.class);
    private static final long serialVersionUID = 1L;
 
-   private Object id = new GUID();
-   private Map<Object, Object> members = new HashMap<Object, Object>();
-   private transient Map<Object, GroupedPassivatingCacheImpl.Entry> active = new HashMap<Object, GroupedPassivatingCacheImpl.Entry>();
+   private final Serializable id = new GUID();
+   private final Map<Object, Object> members = new HashMap<Object, Object>();
+   private final transient Map<Object, GroupedPassivatingCacheImpl.Entry> active = new HashMap<Object, GroupedPassivatingCacheImpl.Entry>();
    
 //   protected PassivationGroup()
 //   {
-//      
+//
 //   }
    
    void addMember(Object key, GroupedPassivatingCacheImpl.Entry entry)
@@ -55,7 +56,8 @@ public class PassivationGroupImpl implements PassivationGroup
       active.put(key, entry);
    }
    
-   public Object getId()
+   @Override
+   public Serializable getId()
    {
       return id;
    }
