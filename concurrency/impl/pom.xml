@@ -1,0 +1,63 @@
+<!--
+  vi:ts=2:sw=2:expandtab:
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+      <!-- Parent -->
+    <parent>
+		<groupId>org.jboss.ejb3.concurrency</groupId>
+		<artifactId>jboss-ejb3-concurrency</artifactId>
+        <version>1.0.0-alpha-5-SNAPSHOT</version>
+    </parent>
+
+    <!-- Model Version -->
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Artifact Configuration -->
+    <groupId>org.jboss.ejb3.concurrency</groupId>
+    <artifactId>jboss-ejb3-concurrency-impl</artifactId>
+	<name>JBoss EJB 3.x Concurrency Implementation</name>
+	<description>
+	Implementation of JBoss EJB 3.x Concurrency 
+	</description>
+	<url>http://labs.jboss.com/jbossejb3/</url>
+	
+	<!-- Properties -->
+    <properties>
+
+        <!-- Versioning -->
+    </properties>
+
+
+
+        <dependencies>
+        
+            <dependency>
+                <groupId>org.jboss.spec.javax.ejb</groupId>
+                <artifactId>jboss-ejb-api_3.1_spec</artifactId>
+            </dependency>
+        
+
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${version.junit_junit}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.logging</groupId>
+                <artifactId>jboss-logging-log4j</artifactId>
+                <version>${version.jboss.logging.log4j}</version>
+                <scope>runtime</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.logging</groupId>
+                <artifactId>jboss-logging-spi</artifactId>
+                <version>${version.jboss.logging.spi}</version>
+            </dependency>
+
+
+        </dependencies>
+</project>
