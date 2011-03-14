@@ -159,6 +159,7 @@
    <modules>
       <!-- here be modules -->
       <module>cache</module>
+      <module>concurrency</module>
       <module>context</module>
       <module>effigy</module>
       <module>endpoint</module>

@@ -1,55 +1,54 @@
 <!--
   vi:ts=2:sw=2:expandtab:
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-      <!-- Parent -->
-    <parent>
-		<groupId>org.jboss.ejb3.concurrency</groupId>
-		<artifactId>jboss-ejb3-concurrency</artifactId>
-        <version>1.0.0-alpha-5-SNAPSHOT</version>
-    </parent>
+   <!-- Parent -->
+   <parent>
+      <groupId>org.jboss.ejb3.concurrency</groupId>
+      <artifactId>jboss-ejb3-concurrency</artifactId>
+      <version>2.0.0-alpha-2-SNAPSHOT</version>
+   </parent>
 
-    <!-- Model Version -->
-    <modelVersion>4.0.0</modelVersion>
+   <!-- Model Version -->
+   <modelVersion>4.0.0</modelVersion>
 
-    <!-- Artifact Configuration -->
-    <groupId>org.jboss.ejb3.concurrency</groupId>
-    <artifactId>jboss-ejb3-concurrency-aop</artifactId>
-	<name>JBoss AOP based JBoss EJB 3.x Concurrency Implementation</name>
-	<description>
-	JBoss AOP based implementation for JBoss EJB3.x concurrency 
-	</description>
-	<url>http://labs.jboss.com/jbossejb3/</url>
-	
-	<!-- Properties -->
-    <properties>
+   <!-- Artifact Configuration -->
+   <groupId>org.jboss.ejb3.concurrency</groupId>
+   <artifactId>jboss-ejb3-concurrency-aop</artifactId>
+   <name>JBoss AOP based JBoss EJB 3.x Concurrency Implementation</name>
+   <description>
+      JBoss AOP based implementation for JBoss EJB3.x concurrency
+   </description>
+   <url>http://labs.jboss.com/jbossejb3/</url>
+
+   <!-- Properties -->
+   <properties>
 
       <version.org.jboss.ejb3.effigy>0.2.0</version.org.jboss.ejb3.effigy>
-      
-        <!-- Versioning -->
-        <version.jboss.ejb3.interceptors>1.0.6</version.jboss.ejb3.interceptors>
-        
-         <version.org.jboss.aop>2.1.0.CR3</version.org.jboss.aop>
-        
-    </properties>
+
+      <!-- Versioning -->
+      <version.jboss.ejb3.interceptors>1.0.6</version.jboss.ejb3.interceptors>
+
+      <version.org.jboss.aop>2.1.0.CR3</version.org.jboss.aop>
+
+   </properties>
 
 
-       
+   <dependencies>
 
-        <dependencies>
+      <dependency>
+         <groupId>org.jboss.logging</groupId>
+         <artifactId>jboss-logging-spi</artifactId>
+         <version>${version.jboss.logging.spi}</version>
+      </dependency>
 
-            <dependency>
-                <groupId>org.jboss.logging</groupId>
-                <artifactId>jboss-logging-spi</artifactId>
-                <version>${version.jboss.logging.spi}</version>
-            </dependency>
-            
-            <dependency>
-                <groupId>org.jboss.ejb3.concurrency</groupId>
-                <artifactId>jboss-ejb3-concurrency-impl</artifactId>
-                <version>${project.version}</version>
-            </dependency>
+      <dependency>
+         <groupId>org.jboss.ejb3.concurrency</groupId>
+         <artifactId>jboss-ejb3-concurrency-impl</artifactId>
+         <version>${project.version}</version>
+      </dependency>
 
       <dependency>
          <groupId>org.jboss.ejb3.effigy</groupId>
@@ -57,36 +56,36 @@
          <version>${version.org.jboss.ejb3.effigy}</version>
       </dependency>
 
-            <dependency>
-                <groupId>org.jboss.spec.javax.ejb</groupId>
-                <artifactId>jboss-ejb-api_3.1_spec</artifactId>
-            </dependency>
-            
-            <dependency>
-                <groupId>org.jboss.ejb3</groupId>
-                <artifactId>jboss-ejb3-interceptors</artifactId>
-                <version>${version.jboss.ejb3.interceptors}</version>
-                <exclusions>
-                   <exclusion>
-                      <groupId>org.jboss.metadata</groupId>
-                      <artifactId>jboss-metadata</artifactId>
-                   </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.microcontainer</groupId>
-                        <artifactId>jboss-kernel</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
+      <dependency>
+         <groupId>org.jboss.spec.javax.ejb</groupId>
+         <artifactId>jboss-ejb-api_3.1_spec</artifactId>
+      </dependency>
 
-            <!-- ******************* -->
-            <!-- Test dependencies -->
-            <!-- ******************* -->
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${version.junit_junit}</version>
-                <scope>test</scope>
-            </dependency>
+      <dependency>
+         <groupId>org.jboss.ejb3</groupId>
+         <artifactId>jboss-ejb3-interceptors</artifactId>
+         <version>${version.jboss.ejb3.interceptors}</version>
+         <exclusions>
+            <exclusion>
+               <groupId>org.jboss.metadata</groupId>
+               <artifactId>jboss-metadata</artifactId>
+            </exclusion>
+            <exclusion>
+               <groupId>org.jboss.microcontainer</groupId>
+               <artifactId>jboss-kernel</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+
+      <!-- ******************* -->
+      <!-- Test dependencies -->
+      <!-- ******************* -->
+      <dependency>
+         <groupId>junit</groupId>
+         <artifactId>junit</artifactId>
+         <version>${version.junit_junit}</version>
+         <scope>test</scope>
+      </dependency>
 
       <dependency>
          <groupId>org.jboss.ejb3.effigy</groupId>
@@ -95,50 +94,50 @@
          <scope>test</scope>
       </dependency>
 
-            <dependency>
-                <groupId>org.jboss.logging</groupId>
-                <artifactId>jboss-logging-log4j</artifactId>
-                <version>${version.jboss.logging.log4j}</version>
-                <scope>runtime</scope>
-            </dependency>
-            
-           
+      <dependency>
+         <groupId>org.jboss.logging</groupId>
+         <artifactId>jboss-logging-log4j</artifactId>
+         <version>${version.jboss.logging.log4j}</version>
+         <scope>runtime</scope>
+      </dependency>
+
+
       <dependency>
          <groupId>org.jboss.metadata</groupId>
          <artifactId>jboss-metadata-ejb</artifactId>
          <version>2.0.0-alpha-26</version>
          <scope>test</scope>
       </dependency>
-           
-            <dependency>
-              <groupId>org.jboss.bootstrap</groupId>
-              <artifactId>jboss-bootstrap</artifactId>
-              <version>1.0.1</version>
-              <scope>test</scope>
-            </dependency>
-            
-            <dependency>
-              <groupId>org.jboss.aop</groupId>
-              <artifactId>jboss-aop-deployers</artifactId>
-              <version>${version.org.jboss.aop}</version>
-              <scope>test</scope>
-            </dependency>            
-            
-            <dependency>
-              <groupId>org.jboss.aop</groupId>
-              <artifactId>jboss-aop</artifactId>
-              <version>${version.org.jboss.aop}</version>
-            </dependency>            
-            
-            
-            <dependency>
-              <groupId>org.jboss.deployers</groupId>
-              <artifactId>jboss-deployers-vfs</artifactId>
-              <version>2.0.5.GA</version>
-              <scope>test</scope>
-            </dependency>
 
-        </dependencies>
+      <dependency>
+         <groupId>org.jboss.bootstrap</groupId>
+         <artifactId>jboss-bootstrap</artifactId>
+         <version>1.0.1</version>
+         <scope>test</scope>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jboss.aop</groupId>
+         <artifactId>jboss-aop-deployers</artifactId>
+         <version>${version.org.jboss.aop}</version>
+         <scope>test</scope>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jboss.aop</groupId>
+         <artifactId>jboss-aop</artifactId>
+         <version>${version.org.jboss.aop}</version>
+      </dependency>
+
+
+      <dependency>
+         <groupId>org.jboss.deployers</groupId>
+         <artifactId>jboss-deployers-vfs</artifactId>
+         <version>2.0.5.GA</version>
+         <scope>test</scope>
+      </dependency>
+
+   </dependencies>
 
    <dependencyManagement>
       <dependencies>
