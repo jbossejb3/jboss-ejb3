@@ -35,7 +35,7 @@
 
       <dependency>
          <groupId>org.jboss.logging</groupId>
-         <artifactId>jboss-logging-spi</artifactId>
+         <artifactId>jboss-logging</artifactId>
       </dependency>
    </dependencies>
 </project>

@@ -69,13 +69,6 @@
          <artifactId>jboss-ejb3-effigy-api</artifactId>
       </dependency>
 
-      <!-- JBoss Common Logging -->
-      <dependency>
-         <groupId>org.jboss.logging</groupId>
-         <artifactId>jboss-logging-log4j</artifactId>
-         <scope>runtime</scope>
-      </dependency>
-
       <!-- JBoss Serialization -->
       <dependency>
          <groupId>jboss</groupId>
