@@ -41,7 +41,6 @@
       <dependency>
          <groupId>org.jboss.logging</groupId>
          <artifactId>jboss-logging-spi</artifactId>
-         <version>${version.jboss.logging.spi}</version>
       </dependency>
 
       <dependency>
@@ -92,13 +91,6 @@
          <artifactId>jboss-ejb3-effigy-int2</artifactId>
          <version>${version.org.jboss.ejb3.effigy}</version>
          <scope>test</scope>
-      </dependency>
-
-      <dependency>
-         <groupId>org.jboss.logging</groupId>
-         <artifactId>jboss-logging-log4j</artifactId>
-         <version>${version.jboss.logging.log4j}</version>
-         <scope>runtime</scope>
       </dependency>
 
 

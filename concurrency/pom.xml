@@ -31,8 +31,6 @@
 
       <!-- Versioning -->
       <version.junit_junit>4.6</version.junit_junit>
-      <version.jboss.logging.spi>2.0.5.GA</version.jboss.logging.spi>
-      <version.jboss.logging.log4j>2.0.5.GA</version.jboss.logging.log4j>
       <version.ejb.spec.api>1.0.0.Beta1</version.ejb.spec.api>
    </properties>
 
@@ -127,18 +125,6 @@
             <groupId>org.jboss.spec.javax.ejb</groupId>
             <artifactId>jboss-ejb-api_3.1_spec</artifactId>
             <version>${version.ejb.spec.api}</version>
-         </dependency>
-         <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging-log4j</artifactId>
-            <version>${version.jboss.logging.log4j}</version>
-            <scope>runtime</scope>
-         </dependency>
-
-         <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging-spi</artifactId>
-            <version>${version.jboss.logging.spi}</version>
          </dependency>
 
          <dependency>
