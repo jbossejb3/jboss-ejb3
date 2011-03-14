@@ -38,6 +38,7 @@
 
 
    <modules>
+      <module>spi</module>
       <module>impl</module>
       <module>aop</module>
    </modules>
