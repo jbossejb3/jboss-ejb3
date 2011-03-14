@@ -8,7 +8,7 @@
    <parent>
       <groupId>org.jboss.ejb3</groupId>
       <artifactId>jboss-ejb3-aggregator</artifactId>
-      <version>2.0.0-alpha-2</version>
+      <version>2.0.0-alpha-3-SNAPSHOT</version>
    </parent>
 
    <!-- POM Model Version -->
