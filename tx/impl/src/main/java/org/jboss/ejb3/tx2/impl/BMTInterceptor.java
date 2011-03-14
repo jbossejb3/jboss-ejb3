@@ -21,7 +21,6 @@
  */
 package org.jboss.ejb3.tx2.impl;
 
-import org.jboss.ejb3.tx2.spi.TransactionalComponent;
 import org.jboss.logging.Logger;
 
 import javax.interceptor.AroundInvoke;
@@ -39,13 +38,6 @@ import javax.transaction.TransactionManager;
 public abstract class BMTInterceptor
 {
    private static final Logger log = Logger.getLogger(BMTInterceptor.class);
-
-
-   /**
-    * Returns the {@link TransactionalComponent} applicable for this interceptor
-    * @return
-    */
-   protected abstract TransactionalComponent getTransactionalComponent();
 
    protected abstract Object handleInvocation(InvocationContext invocation) throws Exception;
 
@@ -67,8 +59,5 @@ public abstract class BMTInterceptor
       }
    }
 
-   protected TransactionManager getTransactionManager()
-   {
-      return this.getTransactionalComponent().getTransactionManager();
-   }
+   protected abstract TransactionManager getTransactionManager();
 }

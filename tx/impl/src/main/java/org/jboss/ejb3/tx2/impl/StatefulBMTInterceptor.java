@@ -21,7 +21,6 @@
  */
 package org.jboss.ejb3.tx2.impl;
 
-import org.jboss.ejb3.tx2.spi.StatefulContext;
 import org.jboss.logging.Logger;
 
 import javax.interceptor.InvocationContext;
@@ -33,6 +32,8 @@ import javax.transaction.TransactionManager;
 import static org.jboss.ejb3.tx2.impl.util.StatusHelper.statusAsString;
 
 /**
+ * A per instance interceptor that keeps an association with the outcoming transaction.
+ * 
  * EJB 3 13.6.1:
  * In the case of a stateful session bean, it is possible that the business method that started a transaction
  * completes without committing or rolling back the transaction. In such a case, the container must retain
@@ -47,7 +48,12 @@ public abstract class StatefulBMTInterceptor extends BMTInterceptor
 {
    private static final Logger log = Logger.getLogger(StatefulBMTInterceptor.class);
 
-   private void checkBadStateful(String ejbName)
+   /**
+    * The transaction associated with the current instance.
+    */
+   private volatile Transaction transaction;
+
+   private void checkBadStateful()
    {
       int status = Status.STATUS_NO_TRANSACTION;
       TransactionManager tm = this.getTransactionManager();
@@ -74,35 +80,30 @@ public abstract class StatefulBMTInterceptor extends BMTInterceptor
             {
                log.error("Failed to rollback", ex);
             }
-            String msg = "BMT stateful bean '" + ejbName
+            String msg = "BMT stateful bean '" + getComponentName()
                     + "' did not complete user transaction properly status=" + statusAsString(status);
             log.error(msg);
       }
    }
 
+   protected abstract String getComponentName();
+
+   Transaction getTransaction()
+   {
+      return transaction;
+   }
+   
    @Override
    protected Object handleInvocation(InvocationContext invocation) throws Exception
-   {
-      if (!(invocation instanceof org.jboss.ejb3.context.spi.InvocationContext))
-      {
-         throw new IllegalArgumentException("Cannot handle invocation context of type: " + invocation.getClass());
-      }
-      return this.handleInvocation((org.jboss.ejb3.context.spi.InvocationContext) invocation);
-   }
-
-   protected Object handleInvocation(org.jboss.ejb3.context.spi.InvocationContext invocation) throws Exception
    {
       TransactionManager tm = this.getTransactionManager();
       assert tm.getTransaction() == null : "can't handle BMT transaction, there is a transaction active";
 
-      StatefulContext ctx = (StatefulContext) invocation.getEJBContext();
-      String ejbName = ctx.getComponent().toString();
-
       // Is the instance already associated with a transaction?
-      Transaction tx = ctx.getTransaction();
+      Transaction tx = transaction;
       if (tx != null)
       {
-         ctx.setTransaction(null);
+         transaction = null;
          // then resume that transaction.
          tm.resume(tx);
       }
@@ -112,20 +113,20 @@ public abstract class StatefulBMTInterceptor extends BMTInterceptor
       }
       finally
       {
-         checkBadStateful(ejbName);
+         checkBadStateful();
          // Is the instance finished with the transaction?
          Transaction newTx = tm.getTransaction();
          if (newTx != null)
          {
             // remember the association
-            ctx.setTransaction(newTx);
+            transaction = newTx;
             // and suspend it.
             tm.suspend();
          }
          else
          {
             // forget any previous associated transaction
-            ctx.setTransaction(null);
+            transaction = null;
          }
       }
    }
