@@ -80,7 +80,7 @@ public abstract class StatefulBMTInterceptor extends BMTInterceptor
             {
                log.error("Failed to rollback", ex);
             }
-            String msg = "BMT stateful bean '" + getComponentName()
+            String msg = "BMT stateful bean '" + this.getTransactionalComponent().getComponentName()
                     + "' did not complete user transaction properly status=" + statusAsString(status);
             log.error(msg);
       }
@@ -109,6 +109,10 @@ public abstract class StatefulBMTInterceptor extends BMTInterceptor
       {
          return invocation.proceed();
       }
+      catch (Exception e)
+      {
+         this.handleException(e);
+      }
       finally
       {
          checkBadStateful();
@@ -127,5 +131,6 @@ public abstract class StatefulBMTInterceptor extends BMTInterceptor
             transaction = null;
          }
       }
+      throw new Exception("Unreachable!!!");
    }
 }

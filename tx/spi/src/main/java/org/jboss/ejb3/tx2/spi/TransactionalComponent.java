@@ -37,6 +37,12 @@ public interface TransactionalComponent
 {
 
    /**
+    * The name of the transactional component
+    * @return
+    */
+   String getComponentName();
+
+   /**
     * Returns the {@link TransactionAttributeType} applicable to the passed <code>method</code>.
     * If the passed <code>method</method> is null, then the {@link TransactionAttributeType} applicable for lifecycle
     * callback invocations on this {@link TransactionalComponent} will be returned.

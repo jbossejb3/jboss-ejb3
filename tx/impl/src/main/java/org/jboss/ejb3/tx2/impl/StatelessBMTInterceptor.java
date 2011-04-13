@@ -41,7 +41,7 @@ public abstract class StatelessBMTInterceptor extends BMTInterceptor
 {
    private static final Logger log = Logger.getLogger(StatelessBMTInterceptor.class);
 
-   private void checkStatelessDone(String ejbName, Exception ex)
+   private void checkStatelessDone(String ejbName, Exception ex) throws Exception
    {
       int status = Status.STATUS_NO_TRANSACTION;
 
@@ -57,11 +57,11 @@ public abstract class StatelessBMTInterceptor extends BMTInterceptor
 
       switch (status)
       {
-         case Status.STATUS_ACTIVE :
-         case Status.STATUS_COMMITTING :
-         case Status.STATUS_MARKED_ROLLBACK :
-         case Status.STATUS_PREPARING :
-         case Status.STATUS_ROLLING_BACK :
+         case Status.STATUS_ACTIVE:
+         case Status.STATUS_COMMITTING:
+         case Status.STATUS_MARKED_ROLLBACK:
+         case Status.STATUS_PREPARING:
+         case Status.STATUS_ROLLING_BACK:
             try
             {
                tm.rollback();
@@ -70,22 +70,15 @@ public abstract class StatelessBMTInterceptor extends BMTInterceptor
             {
                log.error("Failed to rollback", sex);
             }
-         // fall through...
-         case Status.STATUS_PREPARED :
+            // fall through...
+         case Status.STATUS_PREPARED:
             String msg = "Application error: BMT stateless bean " + ejbName
-                         + " should complete transactions before" + " returning (ejb1.1 spec, 11.6.1)";
+                    + " should complete transactions before" + " returning (ejb1.1 spec, 11.6.1)";
             log.error(msg);
-
-            // the instance interceptor will discard the instance
-            if (ex != null)
-            {
-               if (ex instanceof EJBException)
-                  throw (EJBException)ex;
-               else
-                  throw new EJBException(msg, ex);
-            }
-            else throw new EJBException(msg);
+            throw new EJBException(msg);
       }
+      // the instance interceptor will discard the instance
+      this.handleException(ex);
    }
 
    @Override
@@ -94,7 +87,7 @@ public abstract class StatelessBMTInterceptor extends BMTInterceptor
       TransactionManager tm = this.getTransactionManager();
       assert tm.getTransaction() == null : "can't handle BMT transaction, there is a transaction active";
 
-      String ejbName = getComponentName();
+      String ejbName = this.getTransactionalComponent().getComponentName();
       boolean exceptionThrown = false;
       try
       {
@@ -110,7 +103,10 @@ public abstract class StatelessBMTInterceptor extends BMTInterceptor
       {
          try
          {
-            if (!exceptionThrown) checkStatelessDone(ejbName, null);
+            if (!exceptionThrown)
+            {
+               checkStatelessDone(ejbName, null);
+            }
          }
          finally
          {

@@ -21,8 +21,11 @@
  */
 package org.jboss.ejb3.tx2.impl;
 
+import org.jboss.ejb3.tx2.spi.TransactionalComponent;
 import org.jboss.logging.Logger;
 
+import javax.ejb.ApplicationException;
+import javax.ejb.EJBException;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.InvocationContext;
 import javax.transaction.Transaction;
@@ -39,7 +42,7 @@ public abstract class BMTInterceptor
 {
    private static final Logger log = Logger.getLogger(BMTInterceptor.class);
 
-   protected abstract String getComponentName();
+   protected abstract TransactionalComponent getTransactionalComponent();
 
    protected abstract Object handleInvocation(InvocationContext invocation) throws Exception;
 
@@ -62,4 +65,33 @@ public abstract class BMTInterceptor
    }
 
    protected abstract TransactionManager getTransactionManager();
+
+   /**
+    * Checks if the passed exception is an application exception. If yes, then throws back the
+    * exception as-is. Else, wraps the exception in a {@link EJBException} and throws the EJBException
+    *
+    * @param ex The exception to handle
+    * @throws Exception Either the passed exception or an EJBException
+    */
+   protected void handleException(Exception ex) throws Exception
+   {
+      if (ex == null)
+      {
+         return;
+      }
+      ApplicationException ae = this.getTransactionalComponent().getApplicationException(ex.getClass());
+      // it's an application exception, so just throw it back as-is
+      if (ae != null)
+      {
+         throw ex;
+      }
+      if (ex instanceof EJBException)
+      {
+         throw (EJBException) ex;
+      }
+      else
+      {
+         throw new EJBException(ex);
+      }
+   }
 }
