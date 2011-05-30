@@ -50,6 +50,14 @@ public abstract class BaseSessionInvocationContext extends BaseInvocationContext
       this.invokedBusinessInterface = invokedBusinessInterface;
    }
 
+   public BaseSessionInvocationContext(boolean lifecycleCallback, Class<?> invokedBusinessInterface, Method method, Object parameters[])
+   {
+      super(lifecycleCallback, method, parameters);
+
+      // might be null for non-EJB3 invocations & lifecycle callbacks
+      this.invokedBusinessInterface = invokedBusinessInterface;
+   }
+
    public <T> T getBusinessObject(Class<T> businessInterface) throws IllegalStateException
    {
       // we need an instance attached
