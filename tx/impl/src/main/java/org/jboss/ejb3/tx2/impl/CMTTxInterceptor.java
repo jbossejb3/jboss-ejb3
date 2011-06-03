@@ -63,7 +63,6 @@ public abstract class CMTTxInterceptor
 
    /**
     * Returns the {@link TransactionalComponent} applicable for this interceptor
-    *
     * @return
     */
    protected abstract TransactionalComponent getTransactionalComponent();
@@ -148,13 +147,6 @@ public abstract class CMTTxInterceptor
          throw (Exception) t;
       }
 
-      // if it's part of throws clause, then treat it as an application exception (section 14.2.1 of EJB3.1 spec)
-      Method invokedMethod = invocation.getMethod();
-      if (invokedMethod != null && this.isPartOfThrowsClause(invokedMethod, t))
-      {
-         throw (Exception) t;
-      }
-
       // if it's not EJBTransactionRolledbackException
       if (!(t instanceof EJBTransactionRolledbackException))
       {
@@ -186,7 +178,7 @@ public abstract class CMTTxInterceptor
       throw (Exception) t;
    }
 
-   protected void handleExceptionInOurTx(InvocationContext invocation, Throwable t, Transaction tx) throws Exception
+   public void handleExceptionInOurTx(InvocationContext invocation, Throwable t, Transaction tx) throws Exception
    {
       ApplicationException ae = this.getApplicationException(t.getClass());
       if (ae != null)
@@ -195,13 +187,6 @@ public abstract class CMTTxInterceptor
          {
             setRollbackOnly(tx);
          }
-         throw (Exception) t;
-      }
-
-      // if it's part of throws clause, then treat it as an application exception (section 14.2.1 of EJB3.1 spec)
-      Method invokedMethod = invocation.getMethod();
-      if (invokedMethod != null && this.isPartOfThrowsClause(invokedMethod, t))
-      {
          throw (Exception) t;
       }
 
@@ -491,26 +476,5 @@ public abstract class CMTTxInterceptor
    {
       TransactionalComponent txComponent = this.getTransactionalComponent();
       return txComponent.getApplicationException(exceptionClass);
-   }
-
-   /**
-    * Returns true if the passed {@link Throwable} is part of the throws clause of the passed {@link Method}.
-    * Else, returns false.
-    *
-    * @param m The method whose throws clause will be checked
-    * @param t The Throwable which will be compared against the throws clause of the passed method
-    * @return
-    */
-   private boolean isPartOfThrowsClause(Method m, Throwable t)
-   {
-      Class<?>[] exceptionTypes = m.getExceptionTypes();
-      for (Class<?> exceptionType : exceptionTypes)
-      {
-         if (exceptionType.equals(t.getClass()))
-         {
-            return true;
-         }
-      }
-      return false;
    }
 }
