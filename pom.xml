@@ -20,7 +20,7 @@
 
    <build>
       <!-- make it easier to copy it around -->
-      <finalName>${artifactId}</finalName>
+      <finalName>${project.artifactId}</finalName>
 
       <plugins>
          <plugin>

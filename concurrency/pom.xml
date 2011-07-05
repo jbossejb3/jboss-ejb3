@@ -41,9 +41,6 @@
 
    <!-- Build -->
    <build>
-      <!-- make it easier to copy it around -->
-      <finalName>${artifactId}</finalName>
-
       <plugins>
 
          <!-- Compiler / JDK6 required for EJB 3.1 -->
