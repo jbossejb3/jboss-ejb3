@@ -21,9 +21,9 @@
  */
 package org.jboss.ejb3.tx2.impl;
 
+import org.jboss.ejb3.tx2.spi.TransactionalInvocationContext;
 import org.jboss.logging.Logger;
 
-import javax.interceptor.InvocationContext;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
@@ -68,10 +68,10 @@ public abstract class StatefulBMTInterceptor extends BMTInterceptor
 
       switch (status)
       {
-         case Status.STATUS_COMMITTING:
-         case Status.STATUS_MARKED_ROLLBACK:
-         case Status.STATUS_PREPARING:
-         case Status.STATUS_ROLLING_BACK:
+         case Status.STATUS_COMMITTING :
+         case Status.STATUS_MARKED_ROLLBACK :
+         case Status.STATUS_PREPARING :
+         case Status.STATUS_ROLLING_BACK :
             try
             {
                tm.rollback();
@@ -80,7 +80,7 @@ public abstract class StatefulBMTInterceptor extends BMTInterceptor
             {
                log.error("Failed to rollback", ex);
             }
-            String msg = "BMT stateful bean '" + this.getTransactionalComponent().getComponentName()
+            String msg = "BMT stateful bean '" + getComponentName()
                     + "' did not complete user transaction properly status=" + statusAsString(status);
             log.error(msg);
       }
@@ -92,7 +92,7 @@ public abstract class StatefulBMTInterceptor extends BMTInterceptor
    }
    
    @Override
-   protected Object handleInvocation(InvocationContext invocation) throws Exception
+   protected Object handleInvocation(TransactionalInvocationContext invocation) throws Exception
    {
       TransactionManager tm = this.getTransactionManager();
       assert tm.getTransaction() == null : "can't handle BMT transaction, there is a transaction active";
@@ -111,7 +111,7 @@ public abstract class StatefulBMTInterceptor extends BMTInterceptor
       }
       catch (Exception e)
       {
-         this.handleException(e);
+         throw this.handleException(invocation, e);
       }
       finally
       {
@@ -131,6 +131,5 @@ public abstract class StatefulBMTInterceptor extends BMTInterceptor
             transaction = null;
          }
       }
-      throw new Exception("Unreachable!!!");
    }
 }

@@ -21,10 +21,10 @@
  */
 package org.jboss.ejb3.tx2.impl;
 
+import org.jboss.ejb3.tx2.spi.TransactionalInvocationContext;
 import org.jboss.logging.Logger;
 
 import javax.ejb.EJBException;
-import javax.interceptor.InvocationContext;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
@@ -41,7 +41,7 @@ public abstract class StatelessBMTInterceptor extends BMTInterceptor
 {
    private static final Logger log = Logger.getLogger(StatelessBMTInterceptor.class);
 
-   private void checkStatelessDone(String ejbName, Exception ex) throws Exception
+   private void checkStatelessDone(TransactionalInvocationContext invocation, Exception ex) throws Exception
    {
       int status = Status.STATUS_NO_TRANSACTION;
 
@@ -72,22 +72,22 @@ public abstract class StatelessBMTInterceptor extends BMTInterceptor
             }
             // fall through...
          case Status.STATUS_PREPARED:
-            String msg = "Application error: BMT stateless bean " + ejbName
+            String msg = "Application error: BMT stateless bean " + getComponentName()
                     + " should complete transactions before" + " returning (ejb1.1 spec, 11.6.1)";
             log.error(msg);
             throw new EJBException(msg);
       }
       // the instance interceptor will discard the instance
-      this.handleException(ex);
+      if (ex != null)
+         throw this.handleException(invocation, ex);
    }
 
    @Override
-   public Object handleInvocation(InvocationContext invocation) throws Exception
+   public Object handleInvocation(TransactionalInvocationContext invocation) throws Exception
    {
       TransactionManager tm = this.getTransactionManager();
       assert tm.getTransaction() == null : "can't handle BMT transaction, there is a transaction active";
 
-      String ejbName = this.getTransactionalComponent().getComponentName();
       boolean exceptionThrown = false;
       try
       {
@@ -96,17 +96,14 @@ public abstract class StatelessBMTInterceptor extends BMTInterceptor
       catch (Exception ex)
       {
          exceptionThrown = true;
-         checkStatelessDone(ejbName, ex);
+         checkStatelessDone(invocation, ex);
          throw ex;
       }
       finally
       {
          try
          {
-            if (!exceptionThrown)
-            {
-               checkStatelessDone(ejbName, null);
-            }
+            if (!exceptionThrown) checkStatelessDone(invocation, null);
          }
          finally
          {

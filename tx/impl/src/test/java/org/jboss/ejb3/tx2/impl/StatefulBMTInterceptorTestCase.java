@@ -21,26 +21,19 @@
  */
 package org.jboss.ejb3.tx2.impl;
 
-import org.jboss.ejb3.tx2.spi.TransactionalComponent;
+import org.jboss.ejb3.tx2.spi.TransactionalInvocationContext;
 import org.jboss.logging.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import javax.ejb.ApplicationException;
 import javax.ejb.EJBException;
-import javax.ejb.TransactionAttributeType;
-import javax.interceptor.InvocationContext;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
-
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
@@ -70,9 +63,8 @@ public class StatefulBMTInterceptorTestCase
       StatefulBMTInterceptor interceptor = new StatefulBMTInterceptor()
       {
          @Override
-         protected TransactionalComponent getTransactionalComponent()
-         {
-            return new DummyTransactionalComponent(componentName);
+         protected String getComponentName() {
+            return componentName;
          }
 
          @Override
@@ -82,7 +74,7 @@ public class StatefulBMTInterceptorTestCase
          }
       };
 
-      InvocationContext invocation = mock(InvocationContext.class);
+      TransactionalInvocationContext invocation = mock(TransactionalInvocationContext.class);
       when(invocation.proceed()).thenAnswer(new Answer<Object>()
       {
          @Override
@@ -101,8 +93,6 @@ public class StatefulBMTInterceptorTestCase
    @Test
    public void testApplicationException() throws Exception
    {
-      // create a application exceptions map
-      final Map<Class<?>, ApplicationException> appExceptions = new HashMap();
       ApplicationException ae = new ApplicationException()
       {
          @Override
@@ -117,15 +107,12 @@ public class StatefulBMTInterceptorTestCase
             return ApplicationException.class;
          }
       };
-      appExceptions.put(SimpleApplicationException.class, ae);
 
       StatefulBMTInterceptor statefulBMTInterceptor = new StatefulBMTInterceptor()
       {
          @Override
-         protected TransactionalComponent getTransactionalComponent()
-         {
-            // create the transactional component and pass it the application exceptions map
-            return new DummyTransactionalComponent("appexception-test", appExceptions);
+         protected String getComponentName() {
+            return "appexception-test";
          }
 
          @Override
@@ -134,7 +121,8 @@ public class StatefulBMTInterceptorTestCase
             return transactionManager;
          }
       };
-      InvocationContext invocation = mock(InvocationContext.class);
+      TransactionalInvocationContext invocation = mock(TransactionalInvocationContext.class);
+      when(invocation.getApplicationException(SimpleApplicationException.class)).thenReturn(ae);
       when(invocation.proceed()).thenAnswer(new Answer<Object>()
       {
          @Override
@@ -164,9 +152,8 @@ public class StatefulBMTInterceptorTestCase
       StatefulBMTInterceptor statefulBMTInterceptor = new StatefulBMTInterceptor()
       {
          @Override
-         protected TransactionalComponent getTransactionalComponent()
-         {
-            return new DummyTransactionalComponent("appexception-test");
+         protected String getComponentName() {
+            return "appexception-test";
          }
 
          @Override
@@ -175,7 +162,7 @@ public class StatefulBMTInterceptorTestCase
             return transactionManager;
          }
       };
-      InvocationContext invocation = mock(InvocationContext.class);
+      TransactionalInvocationContext invocation = mock(TransactionalInvocationContext.class);
       when(invocation.proceed()).thenAnswer(new Answer<Object>()
       {
          @Override
@@ -201,66 +188,13 @@ public class StatefulBMTInterceptorTestCase
 
    }
 
-   private class DummyTransactionalComponent implements TransactionalComponent
-   {
-
-      private String componentName;
-
-      private Map<Class<?>, ApplicationException> applicationExceptions;
-
-      DummyTransactionalComponent(String componentName)
-      {
-         this.componentName = componentName;
-      }
-
-      DummyTransactionalComponent(String componentName, Map<Class<?>, ApplicationException> appExceptions)
-      {
-         this.componentName = componentName;
-         this.applicationExceptions = appExceptions;
-      }
-
-      @Override
-      public String getComponentName()
-      {
-         return componentName;
-      }
-
-      @Override
-      public TransactionAttributeType getTransactionAttributeType(Method method)
-      {
-         return TransactionAttributeType.REQUIRED;
-      }
-
-      @Override
-      public ApplicationException getApplicationException(Class<?> exceptionClass)
-      {
-         if (this.applicationExceptions == null)
-         {
-            return null;
-         }
-         return this.applicationExceptions.get(exceptionClass);
-      }
-
-      @Override
-      public int getTransactionTimeout(Method method)
-      {
-         return 0;
-      }
-
-      @Override
-      public TransactionManager getTransactionManager()
-      {
-         return StatefulBMTInterceptorTestCase.this.transactionManager;
-      }
-   }
-
    private class SimpleApplicationException extends Exception
    {
-
+      private static final long serialVersionUID = 1L;
    }
 
    private class SimpleSystemException extends Exception
    {
-
+      private static final long serialVersionUID = 1L;
    }
 }

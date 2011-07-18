@@ -21,19 +21,18 @@
  */
 package org.jboss.ejb3.tx2.impl;
 
-import org.jboss.ejb3.tx2.spi.TransactionalComponent;
+import org.jboss.ejb3.tx2.spi.TransactionalInvocationContext;
 import org.jboss.logging.Logger;
 
 import javax.ejb.ApplicationException;
 import javax.ejb.EJBException;
 import javax.interceptor.AroundInvoke;
-import javax.interceptor.InvocationContext;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 /**
  * Suspend an incoming tx.
- *
+ * 
  * @author <a href="mailto:bill@jboss.org">Bill Burke</a>
  * @author <a href="mailto:osh@sparre.dk">Ole Husgaard</a>
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
@@ -42,12 +41,12 @@ public abstract class BMTInterceptor
 {
    private static final Logger log = Logger.getLogger(BMTInterceptor.class);
 
-   protected abstract TransactionalComponent getTransactionalComponent();
+   protected abstract String getComponentName();
 
-   protected abstract Object handleInvocation(InvocationContext invocation) throws Exception;
+   protected abstract Object handleInvocation(TransactionalInvocationContext invocation) throws Exception;
 
    @AroundInvoke
-   public Object invoke(InvocationContext invocation) throws Exception
+   public Object invoke(TransactionalInvocationContext invocation) throws Exception
    {
       TransactionManager tm = this.getTransactionManager();
       Transaction oldTx = tm.suspend();
@@ -57,10 +56,7 @@ public abstract class BMTInterceptor
       }
       finally
       {
-         if (oldTx != null)
-         {
-            tm.resume(oldTx);
-         }
+         if (oldTx != null) tm.resume(oldTx);
       }
    }
 
@@ -73,13 +69,9 @@ public abstract class BMTInterceptor
     * @param ex The exception to handle
     * @throws Exception Either the passed exception or an EJBException
     */
-   protected void handleException(Exception ex) throws Exception
+   protected Exception handleException(TransactionalInvocationContext invocation, Exception ex) throws Exception
    {
-      if (ex == null)
-      {
-         return;
-      }
-      ApplicationException ae = this.getTransactionalComponent().getApplicationException(ex.getClass());
+      ApplicationException ae = invocation.getApplicationException(ex.getClass());
       // it's an application exception, so just throw it back as-is
       if (ae != null)
       {
