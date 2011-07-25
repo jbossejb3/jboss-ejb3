@@ -29,25 +29,21 @@ import javax.ejb.ScheduleExpression;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class SingleValue implements ScheduleValue
-{
+public class SingleValue implements ScheduleValue {
 
-   /**
-    * The value 
-    */
-   private String value;
-   
-   /**
-    * 
-    * @param val
-    */
-   public SingleValue(String val)
-   {
-      this.value = val.trim();
-   }
-   
-   public String getValue()
-   {
-      return this.value;
-   }
+    /**
+     * The value
+     */
+    private String value;
+
+    /**
+     * @param val
+     */
+    public SingleValue(String val) {
+        this.value = val.trim();
+    }
+
+    public String getValue() {
+        return this.value;
+    }
 }

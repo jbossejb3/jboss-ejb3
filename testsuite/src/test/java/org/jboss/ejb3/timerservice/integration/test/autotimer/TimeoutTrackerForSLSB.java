@@ -21,14 +21,12 @@
  */
 package org.jboss.ejb3.timerservice.integration.test.autotimer;
 
+import javax.ejb.Singleton;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.ejb.Singleton;
-import javax.ejb.Timer;
 
 /**
  * TimeoutTrackerForSLSB
@@ -37,37 +35,32 @@ import javax.ejb.Timer;
  * @version $Revision: $
  */
 @Singleton
-public class TimeoutTrackerForSLSB
-{
-   private Map<String, Integer> numTimeouts = new HashMap<String, Integer>();;
+public class TimeoutTrackerForSLSB {
+    private Map<String, Integer> numTimeouts = new HashMap<String, Integer>();
+    ;
 
-   private Map<String, List<Date>> timeouts = new HashMap<String, List<Date>>();
+    private Map<String, List<Date>> timeouts = new HashMap<String, List<Date>>();
 
-   public int getNumberOfTimeouts(String timeoutMethodName)
-   {
-      return this.numTimeouts.get(timeoutMethodName);
-   }
+    public int getNumberOfTimeouts(String timeoutMethodName) {
+        return this.numTimeouts.get(timeoutMethodName);
+    }
 
-   public List<Date> getTimeouts(String methodName)
-   {
-      return this.timeouts.get(methodName);
-   }
+    public List<Date> getTimeouts(String methodName) {
+        return this.timeouts.get(methodName);
+    }
 
-   public void trackTimeout(String methodName, Date when)
-   {
-      List<Date> timeoutsForMethod = this.timeouts.get(methodName);
-      if (timeoutsForMethod == null)
-      {
-         timeoutsForMethod = new ArrayList<Date>();
-      }
-      timeoutsForMethod.add(when);
+    public void trackTimeout(String methodName, Date when) {
+        List<Date> timeoutsForMethod = this.timeouts.get(methodName);
+        if (timeoutsForMethod == null) {
+            timeoutsForMethod = new ArrayList<Date>();
+        }
+        timeoutsForMethod.add(when);
 
-      Integer numTimeoutForMethod = this.numTimeouts.get(methodName);
-      if (numTimeoutForMethod == null)
-      {
-         numTimeoutForMethod = 0;
-      }
-      this.numTimeouts.put(methodName, numTimeoutForMethod + 1);
-   }
+        Integer numTimeoutForMethod = this.numTimeouts.get(methodName);
+        if (numTimeoutForMethod == null) {
+            numTimeoutForMethod = 0;
+        }
+        this.numTimeouts.put(methodName, numTimeoutForMethod + 1);
+    }
 
 }

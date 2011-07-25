@@ -29,10 +29,9 @@ import java.util.Date;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public interface TimerUtil
-{
-   void createTimer(Date firstExpiration, long interval, int maxTimeouts);
+public interface TimerUtil {
+    void createTimer(Date firstExpiration, long interval, int maxTimeouts);
 
-   TimeoutTracker getTimeoutTracker();
+    TimeoutTracker getTimeoutTracker();
 
 }

@@ -29,48 +29,39 @@ import java.io.Serializable;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class CustomTimerInfo implements Serializable
-{
+public class CustomTimerInfo implements Serializable {
 
-   private String name;
+    private String name;
 
-   public CustomTimerInfo(String name)
-   {
-      if (name == null)
-      {
-         throw new IllegalArgumentException("Name cannot be null for " + this.getClass().getName());
-      }
-      this.name = name;
-   }
+    public CustomTimerInfo(String name) {
+        if (name == null) {
+            throw new IllegalArgumentException("Name cannot be null for " + this.getClass().getName());
+        }
+        this.name = name;
+    }
 
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (obj == null)
-      {
-         return false;
-      }
-      if (this == obj)
-      {
-         return true;
-      }
-      if (obj instanceof CustomTimerInfo == false)
-      {
-         return false;
-      }
-      CustomTimerInfo other = (CustomTimerInfo) obj;
-      return this.name.equals(other.name);
-   }
-   
-   @Override
-   public int hashCode()
-   {
-      return this.name.hashCode();
-   }
-   
-   @Override
-   public String toString()
-   {
-      return this.getClass().getName() + " name : " + this.name;
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof CustomTimerInfo == false) {
+            return false;
+        }
+        CustomTimerInfo other = (CustomTimerInfo) obj;
+        return this.name.equals(other.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.name.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getName() + " name : " + this.name;
+    }
 }

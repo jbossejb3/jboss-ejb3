@@ -21,10 +21,9 @@
  */
 package org.jboss.ejb3.timerservice.extension;
 
-import java.lang.reflect.Method;
-
 import javax.ejb.ScheduleExpression;
 import javax.ejb.TimerConfig;
+import java.lang.reflect.Method;
 
 /**
  * TimerService
@@ -32,11 +31,10 @@ import javax.ejb.TimerConfig;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public interface TimerService extends javax.ejb.TimerService
-{
+public interface TimerService extends javax.ejb.TimerService {
 
-   Timer getAutoTimer(ScheduleExpression schedule, Method timeoutMethod);
-   
-   Timer getAutoTimer(ScheduleExpression schedule, TimerConfig timerConfig, Method timeoutMethod);
+    Timer getAutoTimer(ScheduleExpression schedule, Method timeoutMethod);
+
+    Timer getAutoTimer(ScheduleExpression schedule, TimerConfig timerConfig, Method timeoutMethod);
 }
 

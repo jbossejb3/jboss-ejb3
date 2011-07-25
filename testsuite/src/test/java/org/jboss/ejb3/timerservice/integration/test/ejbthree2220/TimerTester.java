@@ -30,10 +30,9 @@ import java.util.Date;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public interface TimerTester
-{
+public interface TimerTester {
 
-   void createIntervalTimer(long initialDuration, long intervalDuration, Serializable info);
-   
-   Date getFirstTimeout();
+    void createIntervalTimer(long initialDuration, long intervalDuration, Serializable info);
+
+    Date getFirstTimeout();
 }

@@ -21,11 +21,6 @@
  */
 package org.jboss.ejb3.timerservice.mk2.persistence;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -34,6 +29,10 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * TimeoutMethod
@@ -42,94 +41,79 @@ import javax.validation.constraints.NotNull;
  * @version $Revision: $
  */
 @Entity
-@Table (name = "timeout_method")
-public class TimeoutMethod implements Serializable
-{
+@Table(name = "timeout_method")
+public class TimeoutMethod implements Serializable {
 
-   @Id
-   @GeneratedValue(strategy = GenerationType.AUTO)
-   private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 
-   @NotNull (message = "Declaring class for timeout method cannot be null")
-   private String declaringClass;
-   
-   @NotNull (message = "Method name for timeout method cannot be null")
-   private String methodName;
+    @NotNull(message = "Declaring class for timeout method cannot be null")
+    private String declaringClass;
 
-   // TODO: Ordering of method params is *not* considered right now
-   // (mainly because we expect atmost one param for a timeout method)
-   @ElementCollection
-   private List<String> methodParams;
-   
-   @Transient
-   private String cachedToString;
+    @NotNull(message = "Method name for timeout method cannot be null")
+    private String methodName;
 
-   public TimeoutMethod()
-   {
+    // TODO: Ordering of method params is *not* considered right now
+    // (mainly because we expect atmost one param for a timeout method)
+    @ElementCollection
+    private List<String> methodParams;
 
-   }
+    @Transient
+    private String cachedToString;
 
-   public TimeoutMethod(String declaringClass, String methodName, String[] methodParams)
-   {
-      this.declaringClass = declaringClass;
-      this.methodName = methodName;
-      if (methodParams != null)
-      {
-         this.methodParams = new ArrayList<String>(Arrays.asList(methodParams));
-      }
-   }
+    public TimeoutMethod() {
 
-   public Long getId()
-   {
-      return id;
-   }
+    }
 
-   public String getMethodName()
-   {
-      return methodName;
-   }
+    public TimeoutMethod(String declaringClass, String methodName, String[] methodParams) {
+        this.declaringClass = declaringClass;
+        this.methodName = methodName;
+        if (methodParams != null) {
+            this.methodParams = new ArrayList<String>(Arrays.asList(methodParams));
+        }
+    }
 
-   
+    public Long getId() {
+        return id;
+    }
 
-   public String[] getMethodParams()
-   {
-      if (this.methodParams == null)
-      {
-         return null;
-      }
-      return methodParams.toArray(new String[]{});
-   }
+    public String getMethodName() {
+        return methodName;
+    }
 
-   public String getDeclaringClass()
-   {
-      return declaringClass;
-   }
-   
-   @Override
-   public String toString()
-   {
-      if (this.cachedToString == null)
-      {
-         StringBuilder sb = new StringBuilder();
-         sb.append(this.declaringClass);
-         sb.append(".");
-         sb.append(this.methodName);
-         sb.append("(");
-         if (this.methodParams != null)
-         {
-            for (int i = 0; i < this.methodParams.size(); i++)
-            {
-               sb.append(this.methodParams.get(i));
-               if (i != this.methodParams.size() -1)
-               {
-                  sb.append(",");
-               }
+
+    public String[] getMethodParams() {
+        if (this.methodParams == null) {
+            return null;
+        }
+        return methodParams.toArray(new String[]{});
+    }
+
+    public String getDeclaringClass() {
+        return declaringClass;
+    }
+
+    @Override
+    public String toString() {
+        if (this.cachedToString == null) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(this.declaringClass);
+            sb.append(".");
+            sb.append(this.methodName);
+            sb.append("(");
+            if (this.methodParams != null) {
+                for (int i = 0; i < this.methodParams.size(); i++) {
+                    sb.append(this.methodParams.get(i));
+                    if (i != this.methodParams.size() - 1) {
+                        sb.append(",");
+                    }
+                }
             }
-         }
-         sb.append(")");
-         this.cachedToString = sb.toString();
-      }
-      return this.cachedToString;
-   }
+            sb.append(")");
+            this.cachedToString = sb.toString();
+        }
+        return this.cachedToString;
+    }
 
 }

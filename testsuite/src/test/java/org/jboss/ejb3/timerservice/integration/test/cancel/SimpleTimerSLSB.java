@@ -21,7 +21,8 @@
  */
 package org.jboss.ejb3.timerservice.integration.test.cancel;
 
-import java.util.Collection;
+import org.jboss.ejb3.annotation.RemoteBinding;
+import org.jboss.logging.Logger;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -30,9 +31,7 @@ import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
-
-import org.jboss.ejb3.annotation.RemoteBinding;
-import org.jboss.logging.Logger;
+import java.util.Collection;
 
 /**
  * SimpleTimerSLSB
@@ -43,67 +42,59 @@ import org.jboss.logging.Logger;
 @Stateless
 @Remote(SimpleTimer.class)
 @RemoteBinding(jndiBinding = SimpleTimerSLSB.JNDI_NAME)
-public class SimpleTimerSLSB implements SimpleTimer
-{
+public class SimpleTimerSLSB implements SimpleTimer {
 
-   private static Logger logger = Logger.getLogger(SimpleTimerSLSB.class);
+    private static Logger logger = Logger.getLogger(SimpleTimerSLSB.class);
 
-   public static final String JNDI_NAME = "CancelTimerTestCaseBean";
+    public static final String JNDI_NAME = "CancelTimerTestCaseBean";
 
-   @Resource
-   private TimerService timerService;
+    @Resource
+    private TimerService timerService;
 
-   @EJB
-   private TimeoutTracker timeoutTracker;
+    @EJB
+    private TimeoutTracker timeoutTracker;
 
-   @Override
-   public void createTimer(long intialDuration, long intervalDurationMillis)
-   {
-      // cancel existing timers
-      cancelTimers();
-      logger.info("Creating timer starting at " + intialDuration
-            + " milli. sec from now and with a recurring duration  of " + intervalDurationMillis + " milli. sec");
-      timerService.createTimer(intialDuration, intervalDurationMillis, "Test Timer");
+    @Override
+    public void createTimer(long intialDuration, long intervalDurationMillis) {
+        // cancel existing timers
+        cancelTimers();
+        logger.info("Creating timer starting at " + intialDuration
+                + " milli. sec from now and with a recurring duration  of " + intervalDurationMillis + " milli. sec");
+        timerService.createTimer(intialDuration, intervalDurationMillis, "Test Timer");
 
-   }
+    }
 
-   @Override
-   public void stopTimers()
-   {
-      cancelTimers();
-   }
+    @Override
+    public void stopTimers() {
+        cancelTimers();
+    }
 
-   @Override
-   public boolean timersCreated()
-   {
-      Collection<Timer> timers = timerService.getTimers();
-      logger.info("Number of timers for bean: " + this.getClass().getSimpleName() + " =  " + timers.size());
-      return (timers.size() > 0);
-   }
+    @Override
+    public boolean timersCreated() {
+        Collection<Timer> timers = timerService.getTimers();
+        logger.info("Number of timers for bean: " + this.getClass().getSimpleName() + " =  " + timers.size());
+        return (timers.size() > 0);
+    }
 
-   @Override
-   public int getTimeoutCount()
-   {
-      return this.timeoutTracker.getTimeoutCount();
-   }
+    @Override
+    public int getTimeoutCount() {
+        return this.timeoutTracker.getTimeoutCount();
+    }
 
-   private void cancelTimers()
-   {
-      logger.info("Canceling all existing timers: ");
-      Collection<Timer> timers = timerService.getTimers();
-      for (Timer timer : timers)
-      {
-         logger.info("Canceling timer: " + timer);
-         timer.cancel();
+    private void cancelTimers() {
+        logger.info("Canceling all existing timers: ");
+        Collection<Timer> timers = timerService.getTimers();
+        for (Timer timer : timers) {
+            logger.info("Canceling timer: " + timer);
+            timer.cancel();
 
-      }
-   }
+        }
+    }
 
-   @Timeout
-   public void handleTimeout(Timer timer)
-   {
-      logger.info("Timeout called on bean: " + this.getClass().getSimpleName() + " for timer " + timer);
-      this.timeoutTracker.trackTimeout(timer);
-   }
+    @Timeout
+    public void handleTimeout(Timer timer) {
+        logger.info("Timeout called on bean: " + this.getClass().getSimpleName() + " for timer " + timer);
+        this.timeoutTracker.trackTimeout(timer);
+    }
 
 }

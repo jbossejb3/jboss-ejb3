@@ -21,8 +21,6 @@
  */
 package org.jboss.ejb3.timerservice.integration.test.ejbthree2209.unit;
 
-import java.io.File;
-
 import org.jboss.deployers.spi.DeploymentException;
 import org.jboss.ejb3.timerservice.integration.test.common.AbstractTimerServiceTestCase;
 import org.jboss.ejb3.timerservice.integration.test.ejbthree2209.bad.BadMDB;
@@ -31,56 +29,48 @@ import org.jboss.logging.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
+
 /**
- * Tests that a redeployment of a previously failed deployment doesn't 
+ * Tests that a redeployment of a previously failed deployment doesn't
  * result in "TimerService already registered" error.
- * 
- * @see https://issues.jboss.org/browse/EJBTHREE-2209
  *
  * @author Jaikiran Pai
  * @version $Revision: $
+ * @see https://issues.jboss.org/browse/EJBTHREE-2209
  */
-public class RedeploymentTestCase extends AbstractTimerServiceTestCase
-{
+public class RedeploymentTestCase extends AbstractTimerServiceTestCase {
 
-   private static Logger logger = Logger.getLogger(RedeploymentTestCase.class);
-   
-   private static final String JAR_NAME = "ejbthree-2209.jar";
-   
-   /**
-    * First deploys a jar containing the MDB which has an incorrect configuration and expects 
-    * the deployment to fail. Then deploys another jar with the same name containing a good MDB (but with the same
-    * name as the previous MDB) and expects the deployment of this new good jar to succeed.
-    * 
-    * @see https://issues.jboss.org/browse/EJBTHREE-2209
-    * 
-    * @throws Exception
-    */
-   @Test
-   public void testRedeployment() throws Exception
-   {
-      File badJar = buildSimpleJar(JAR_NAME, BadMDB.class.getPackage());
-      // deploy the bad jar
-      try
-      {
-         this.redeploy(badJar.toURI().toURL());
-         Assert.fail("Bad jar deployment was expected to fail");
-      }
-      catch (DeploymentException de)
-      {
-         logger.info("Got the expected deployment exception while deploying bad jar");
-      }
-      // now deploy the good jar
-      File goodJar = buildSimpleJar(JAR_NAME, GoodMDB.class.getPackage());
-      try
-      {
-         this.redeploy(goodJar.toURI().toURL());
-         logger.info("Successfully deployed the good jar");
-      }
-      finally
-      {
-         this.undeploy(goodJar.toURI().toURL());
-      }
-      
-   }
+    private static Logger logger = Logger.getLogger(RedeploymentTestCase.class);
+
+    private static final String JAR_NAME = "ejbthree-2209.jar";
+
+    /**
+     * First deploys a jar containing the MDB which has an incorrect configuration and expects
+     * the deployment to fail. Then deploys another jar with the same name containing a good MDB (but with the same
+     * name as the previous MDB) and expects the deployment of this new good jar to succeed.
+     *
+     * @throws Exception
+     * @see https://issues.jboss.org/browse/EJBTHREE-2209
+     */
+    @Test
+    public void testRedeployment() throws Exception {
+        File badJar = buildSimpleJar(JAR_NAME, BadMDB.class.getPackage());
+        // deploy the bad jar
+        try {
+            this.redeploy(badJar.toURI().toURL());
+            Assert.fail("Bad jar deployment was expected to fail");
+        } catch (DeploymentException de) {
+            logger.info("Got the expected deployment exception while deploying bad jar");
+        }
+        // now deploy the good jar
+        File goodJar = buildSimpleJar(JAR_NAME, GoodMDB.class.getPackage());
+        try {
+            this.redeploy(goodJar.toURI().toURL());
+            logger.info("Successfully deployed the good jar");
+        } finally {
+            this.undeploy(goodJar.toURI().toURL());
+        }
+
+    }
 }

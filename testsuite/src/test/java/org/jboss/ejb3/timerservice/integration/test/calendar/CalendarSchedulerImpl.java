@@ -21,8 +21,8 @@
  */
 package org.jboss.ejb3.timerservice.integration.test.calendar;
 
-import java.util.Date;
-import java.util.List;
+import org.jboss.ejb3.annotation.RemoteBinding;
+import org.jboss.logging.Logger;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -33,9 +33,8 @@ import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerConfig;
 import javax.ejb.TimerService;
-
-import org.jboss.ejb3.annotation.RemoteBinding;
-import org.jboss.logging.Logger;
+import java.util.Date;
+import java.util.List;
 
 /**
  * CalendarSchedulerImpl
@@ -45,65 +44,58 @@ import org.jboss.logging.Logger;
  */
 @Stateless
 @Remote(CalendarScheduler.class)
-@RemoteBinding (jndiBinding = CalendarSchedulerImpl.JNDI_NAME)
-public class CalendarSchedulerImpl implements CalendarScheduler
-{
+@RemoteBinding(jndiBinding = CalendarSchedulerImpl.JNDI_NAME)
+public class CalendarSchedulerImpl implements CalendarScheduler {
 
-   private static Logger logger = Logger.getLogger(CalendarSchedulerImpl.class);
+    private static Logger logger = Logger.getLogger(CalendarSchedulerImpl.class);
 
-   public static final String JNDI_NAME = "CalendarSchedulerTestBean";
+    public static final String JNDI_NAME = "CalendarSchedulerTestBean";
 
-   @Resource
-   private TimerService timerService;
+    @Resource
+    private TimerService timerService;
 
-   @EJB
-   private TimeoutTracker timeoutTracker;
+    @EJB
+    private TimeoutTracker timeoutTracker;
 
-   @Override
-   public void schedule(ScheduleExpression schedule)
-   {
-      this.timerService.createCalendarTimer(schedule);
+    @Override
+    public void schedule(ScheduleExpression schedule) {
+        this.timerService.createCalendarTimer(schedule);
 
-   }
+    }
 
-   @Override
-   public void schedule(ScheduleExpression schedule, int maxTimeouts)
-   {
-      TimerConfig timerConfig = new TimerConfig();
-      timerConfig.setInfo(maxTimeouts);
-      timerConfig.setPersistent(true);
-      this.timerService.createCalendarTimer(schedule, timerConfig);
+    @Override
+    public void schedule(ScheduleExpression schedule, int maxTimeouts) {
+        TimerConfig timerConfig = new TimerConfig();
+        timerConfig.setInfo(maxTimeouts);
+        timerConfig.setPersistent(true);
+        this.timerService.createCalendarTimer(schedule, timerConfig);
 
-   }
+    }
 
-   @Timeout
-   public void timeout(Timer timer)
-   {
-      Date now = new Date();
-      logger.info("Timeout called on bean " + this + " for timer " + timer + " at " + now);
-      this.timeoutTracker.trackTimeout(timer, now);
+    @Timeout
+    public void timeout(Timer timer) {
+        Date now = new Date();
+        logger.info("Timeout called on bean " + this + " for timer " + timer + " at " + now);
+        this.timeoutTracker.trackTimeout(timer, now);
 
-      int numberOfTimeouts = this.timeoutTracker.getTimeoutCount();
-      Integer maxTimeouts = (Integer) timer.getInfo();
-      logger.debug("Number of timeouts for timer " + timer + " on bean " + this + " is " + numberOfTimeouts
-            + ", max allowed = " + maxTimeouts);
-      if (maxTimeouts != null && numberOfTimeouts == maxTimeouts)
-      {
-         logger.info("Cancelling timer " + timer + " on bean " + this);
-         timer.cancel();
-      }
-   }
-   
-   @Override
-   public int getTimeoutCount()
-   {
-      return this.timeoutTracker.getTimeoutCount();
-   }
-   
-   @Override
-   public List<Date> getTimeouts()
-   {
-      return this.timeoutTracker.getTimeouts();
-   }
+        int numberOfTimeouts = this.timeoutTracker.getTimeoutCount();
+        Integer maxTimeouts = (Integer) timer.getInfo();
+        logger.debug("Number of timeouts for timer " + timer + " on bean " + this + " is " + numberOfTimeouts
+                + ", max allowed = " + maxTimeouts);
+        if (maxTimeouts != null && numberOfTimeouts == maxTimeouts) {
+            logger.info("Cancelling timer " + timer + " on bean " + this);
+            timer.cancel();
+        }
+    }
+
+    @Override
+    public int getTimeoutCount() {
+        return this.timeoutTracker.getTimeoutCount();
+    }
+
+    @Override
+    public List<Date> getTimeouts() {
+        return this.timeoutTracker.getTimeouts();
+    }
 
 }

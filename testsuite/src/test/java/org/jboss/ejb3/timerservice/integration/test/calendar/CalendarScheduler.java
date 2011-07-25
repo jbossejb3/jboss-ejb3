@@ -21,10 +21,9 @@
  */
 package org.jboss.ejb3.timerservice.integration.test.calendar;
 
+import javax.ejb.ScheduleExpression;
 import java.util.Date;
 import java.util.List;
-
-import javax.ejb.ScheduleExpression;
 
 /**
  * CalendarScheduler
@@ -32,14 +31,13 @@ import javax.ejb.ScheduleExpression;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public interface CalendarScheduler
-{
+public interface CalendarScheduler {
 
-   void schedule(ScheduleExpression schedule);
-   
-   void schedule(ScheduleExpression schedule, int maxTimeouts);
- 
-   int getTimeoutCount();
-   
-   List<Date> getTimeouts();
+    void schedule(ScheduleExpression schedule);
+
+    void schedule(ScheduleExpression schedule, int maxTimeouts);
+
+    int getTimeoutCount();
+
+    List<Date> getTimeouts();
 }

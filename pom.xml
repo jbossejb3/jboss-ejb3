@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <parent>
         <groupId>org.jboss</groupId>
@@ -20,17 +21,17 @@
     <properties>
         <version.junit_junit>4.7</version.junit_junit>
         <version.jboss.logging>3.0.0.GA</version.jboss.logging>
-		<version.org.jboss.ejb3.context>0.2.0</version.org.jboss.ejb3.context>
+        <version.org.jboss.ejb3.context>0.2.0</version.org.jboss.ejb3.context>
         <version.jboss.ejb.metadata>7.0.0.Beta5</version.jboss.ejb.metadata>
         <version.jboss-ejb-api_3.1_spec>1.0.1.Final</version.jboss-ejb-api_3.1_spec>
     </properties>
 
     <modules>
-		<module>ejb31-calendar-expr-parser</module>
+        <module>ejb31-calendar-expr-parser</module>
         <module>timerservice-mk2</module>
         <module>timerservice-extension</module>
     </modules>
-    
+
     <profiles>
         <profile>
             <id>integration</id>
@@ -73,10 +74,10 @@
                     <printSummary>true</printSummary>
                     <forkMode>always</forkMode>
                     <testFailureIgnore>false</testFailureIgnore>
- 					<includes>
-            			<include>**/*TestCase.java</include>
-            			<include>**/*TestSuite.java</include>
-          			</includes>                    
+                    <includes>
+                        <include>**/*TestCase.java</include>
+                        <include>**/*TestSuite.java</include>
+                    </includes>
                 </configuration>
             </plugin>
 
@@ -93,7 +94,8 @@
                 <configuration>
                     <rules>
                         <requireJavaVersion>
-                            <version>1.6</version> <!-- Must be JDK6 -->
+                            <version>1.6</version>
+                            <!-- Must be JDK6 -->
                         </requireJavaVersion>
                         <requireProperty>
                             <property>env.JAVA_HOME</property>
@@ -102,17 +104,17 @@
                     </rules>
                 </configuration>
             </plugin>
-            
+
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>2.3</version>
                 <configuration>
-                  <archive>
-                    <!--  We don't want .jar/META-INF/maven/* folder/files in the generated jar -->
-                    <addMavenDescriptor>false</addMavenDescriptor>
-                  </archive>
+                    <archive>
+                        <!--  We don't want .jar/META-INF/maven/* folder/files in the generated jar -->
+                        <addMavenDescriptor>false</addMavenDescriptor>
+                    </archive>
                 </configuration>
-          </plugin>
+            </plugin>
 
             <!-- Maven Release Plugin Configuration -->
             <plugin>
@@ -122,8 +124,8 @@
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                 </configuration>
             </plugin>
-          
-            
+
+
         </plugins>
 
     </build>
@@ -151,9 +153,9 @@
             </dependency>
 
             <dependency>
-              <groupId>org.jboss.ejb3.context</groupId>
-              <artifactId>jboss-ejb3-context-base</artifactId>
-              <version>${version.org.jboss.ejb3.context}</version>
+                <groupId>org.jboss.ejb3.context</groupId>
+                <artifactId>jboss-ejb3-context-base</artifactId>
+                <version>${version.org.jboss.ejb3.context}</version>
             </dependency>
 
             <dependency>
@@ -214,10 +216,10 @@
         </plugins>
     </reporting>
 
-   <scm>
-      <connection>scm:git:git://github.com:jbossejb3/jboss-ejb3-timerservice.git</connection>
-      <developerConnection>scm:git:git@github.com:jbossejb3/jboss-ejb3-timerservice.git</developerConnection>
-      <url>http://github.com/jbossejb3/jboss-ejb3-timerservice</url>
-   </scm>
+    <scm>
+        <connection>scm:git:git://github.com:jbossejb3/jboss-ejb3-timerservice.git</connection>
+        <developerConnection>scm:git:git@github.com:jbossejb3/jboss-ejb3-timerservice.git</developerConnection>
+        <url>http://github.com/jbossejb3/jboss-ejb3-timerservice</url>
+    </scm>
 
 </project>

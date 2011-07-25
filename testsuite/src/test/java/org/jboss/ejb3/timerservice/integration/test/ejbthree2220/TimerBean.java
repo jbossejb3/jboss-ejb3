@@ -21,10 +21,8 @@
  */
 package org.jboss.ejb3.timerservice.integration.test.ejbthree2220;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import org.jboss.ejb3.annotation.RemoteBinding;
+import org.jboss.logging.Logger;
 
 import javax.annotation.Resource;
 import javax.ejb.Remote;
@@ -32,9 +30,10 @@ import javax.ejb.Singleton;
 import javax.ejb.Timeout;
 import javax.ejb.TimerConfig;
 import javax.ejb.TimerService;
-
-import org.jboss.ejb3.annotation.RemoteBinding;
-import org.jboss.logging.Logger;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * TimerBean
@@ -43,46 +42,41 @@ import org.jboss.logging.Logger;
  * @version $Revision: $
  */
 @Singleton
-@Remote (TimerTester.class)
-@RemoteBinding (jndiBinding = TimerBean.JNDI_NAME)
-public class TimerBean implements TimerTester
-{
+@Remote(TimerTester.class)
+@RemoteBinding(jndiBinding = TimerBean.JNDI_NAME)
+public class TimerBean implements TimerTester {
 
-   private static Logger logger = Logger.getLogger(TimerBean.class);
-   
-   public static final String JNDI_NAME = "ejbthree-2220-timer-bean-remote";
-   
-   @Resource
-   private TimerService timerService;
-   
-   private int numTimeouts;
-   
-   private List<Date> timeouts = new ArrayList<Date>();
-   
-   @Override
-   public void createIntervalTimer(long initialDuration, long intervalDuration, Serializable info)
-   {
-      TimerConfig config = new TimerConfig();
-      config.setPersistent(false);
-      config.setInfo(info);
-      logger.info("Creating interval timer with initialDuration = "  + initialDuration + " interval duration = " + intervalDuration + " and info = " + info);
-      this.timerService.createIntervalTimer(initialDuration, intervalDuration, config);
-   }
-   
-   @Timeout
-   public void onTimeout()
-   {
-      this.timeouts.add(new Date());
-      this.numTimeouts ++;
-   }
+    private static Logger logger = Logger.getLogger(TimerBean.class);
 
-   @Override
-   public Date getFirstTimeout()
-   {
-      if (this.timeouts.isEmpty())
-      {
-         return null;
-      }
-      return this.timeouts.get(0);
-   }
+    public static final String JNDI_NAME = "ejbthree-2220-timer-bean-remote";
+
+    @Resource
+    private TimerService timerService;
+
+    private int numTimeouts;
+
+    private List<Date> timeouts = new ArrayList<Date>();
+
+    @Override
+    public void createIntervalTimer(long initialDuration, long intervalDuration, Serializable info) {
+        TimerConfig config = new TimerConfig();
+        config.setPersistent(false);
+        config.setInfo(info);
+        logger.info("Creating interval timer with initialDuration = " + initialDuration + " interval duration = " + intervalDuration + " and info = " + info);
+        this.timerService.createIntervalTimer(initialDuration, intervalDuration, config);
+    }
+
+    @Timeout
+    public void onTimeout() {
+        this.timeouts.add(new Date());
+        this.numTimeouts++;
+    }
+
+    @Override
+    public Date getFirstTimeout() {
+        if (this.timeouts.isEmpty()) {
+            return null;
+        }
+        return this.timeouts.get(0);
+    }
 }

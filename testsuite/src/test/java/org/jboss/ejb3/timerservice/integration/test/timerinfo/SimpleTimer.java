@@ -30,10 +30,9 @@ import java.util.Date;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public interface SimpleTimer
-{
+public interface SimpleTimer {
 
-   public void createTimer(Date timeoutDate, Serializable info);
-   
-   public Serializable getInfoFromTimer();
+    public void createTimer(Date timeoutDate, Serializable info);
+
+    public Serializable getInfoFromTimer();
 }

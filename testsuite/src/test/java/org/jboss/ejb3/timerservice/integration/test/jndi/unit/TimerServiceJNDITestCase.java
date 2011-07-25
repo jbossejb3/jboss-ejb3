@@ -21,9 +21,6 @@
  */
 package org.jboss.ejb3.timerservice.integration.test.jndi.unit;
 
-import java.io.File;
-import java.net.URL;
-
 import org.jboss.ejb3.timerservice.integration.test.common.AbstractTimerServiceTestCase;
 import org.jboss.ejb3.timerservice.integration.test.jndi.SimpleSingleton;
 import org.jboss.ejb3.timerservice.integration.test.jndi.TimerServiceJNDIAccessTester;
@@ -33,76 +30,70 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
+import java.net.URL;
+
 /**
  * TimerServiceJNDITestCase
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class TimerServiceJNDITestCase extends AbstractTimerServiceTestCase
-{
-   private static Logger logger = Logger.getLogger(TimerServiceJNDITestCase.class);
+public class TimerServiceJNDITestCase extends AbstractTimerServiceTestCase {
+    private static Logger logger = Logger.getLogger(TimerServiceJNDITestCase.class);
 
-   private URL deployment;
+    private URL deployment;
 
-   /**
-    * 
-    * @return
-    * @throws Exception
-    */
-   @Before
-   public void before() throws Exception
-   {
-      String jarName = "timerservice-jndi-test.jar";
-      File jar = buildSimpleJar(jarName, TimerServiceJNDIAccessTester.class.getPackage());
-      this.deployment = jar.toURI().toURL();
-      this.redeploy(deployment);
-   }
+    /**
+     * @return
+     * @throws Exception
+     */
+    @Before
+    public void before() throws Exception {
+        String jarName = "timerservice-jndi-test.jar";
+        File jar = buildSimpleJar(jarName, TimerServiceJNDIAccessTester.class.getPackage());
+        this.deployment = jar.toURI().toURL();
+        this.redeploy(deployment);
+    }
 
-   @After
-   public void after() throws Exception
-   {
-      if (this.deployment != null)
-      {
-         this.undeploy(deployment);
-      }
-   }
+    @After
+    public void after() throws Exception {
+        if (this.deployment != null) {
+            this.undeploy(deployment);
+        }
+    }
 
-   @Test
-   public void testTimerServiceAvailibilityInPostConstruct() throws Exception
-   {
-      TimerServiceJNDIAccessTester bean = (TimerServiceJNDIAccessTester) this.getInitialContext().lookup(
-            SimpleSingleton.JNDI_NAME);
-      Assert.assertTrue("Timer service was not available in postconstruct of " + SimpleSingleton.class.getName()
-            + " bean ", bean.wasTimerServiceAvailableInPostConstruct());
-   }
+    @Test
+    public void testTimerServiceAvailibilityInPostConstruct() throws Exception {
+        TimerServiceJNDIAccessTester bean = (TimerServiceJNDIAccessTester) this.getInitialContext().lookup(
+                SimpleSingleton.JNDI_NAME);
+        Assert.assertTrue("Timer service was not available in postconstruct of " + SimpleSingleton.class.getName()
+                + " bean ", bean.wasTimerServiceAvailableInPostConstruct());
+    }
 
-   @Test
-   public void testTimerServiceInjection() throws Exception
-   {
-      TimerServiceJNDIAccessTester bean = (TimerServiceJNDIAccessTester) this.getInitialContext().lookup(
-            SimpleSingleton.JNDI_NAME);
-      Assert.assertTrue("Timer service was not injected in " + SimpleSingleton.class.getName() + " bean ", bean
-            .isTimerServiceInjected());
+    @Test
+    public void testTimerServiceInjection() throws Exception {
+        TimerServiceJNDIAccessTester bean = (TimerServiceJNDIAccessTester) this.getInitialContext().lookup(
+                SimpleSingleton.JNDI_NAME);
+        Assert.assertTrue("Timer service was not injected in " + SimpleSingleton.class.getName() + " bean ", bean
+                .isTimerServiceInjected());
 
-   }
+    }
 
-   @Test
-   public void testTimerServiceAvailibilityThroughEJBContext() throws Exception
-   {
-      TimerServiceJNDIAccessTester bean = (TimerServiceJNDIAccessTester) this.getInitialContext().lookup(
-            SimpleSingleton.JNDI_NAME);
-      Assert.assertTrue("Timer service was not available through EJBContext of " + SimpleSingleton.class.getName()
-            + " bean ", bean.isTimerServiceAvailableThroughEJBContext());
-   }
+    @Test
+    public void testTimerServiceAvailibilityThroughEJBContext() throws Exception {
+        TimerServiceJNDIAccessTester bean = (TimerServiceJNDIAccessTester) this.getInitialContext().lookup(
+                SimpleSingleton.JNDI_NAME);
+        Assert.assertTrue("Timer service was not available through EJBContext of " + SimpleSingleton.class.getName()
+                + " bean ", bean.isTimerServiceAvailableThroughEJBContext());
+    }
 
-   @Test
-   public void testTimerServiceAvailibilityAtCustomENCName() throws Exception
-   {
-      TimerServiceJNDIAccessTester bean = (TimerServiceJNDIAccessTester) this.getInitialContext().lookup(
-            SimpleSingleton.JNDI_NAME);
-      Assert.assertTrue("Timer service was not bound to custom ENC name for bean " + SimpleSingleton.class.getName()
-            + " bean ", bean.isTimerServiceAvailableInENCAtCustomName());
-   }
+    @Test
+    public void testTimerServiceAvailibilityAtCustomENCName() throws Exception {
+        TimerServiceJNDIAccessTester bean = (TimerServiceJNDIAccessTester) this.getInitialContext().lookup(
+                SimpleSingleton.JNDI_NAME);
+        Assert.assertTrue("Timer service was not bound to custom ENC name for bean " + SimpleSingleton.class.getName()
+                + " bean ", bean.isTimerServiceAvailableInENCAtCustomName());
+    }
 
 }

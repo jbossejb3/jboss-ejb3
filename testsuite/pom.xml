@@ -1,137 +1,139 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 
-	<parent>
-		<groupId>org.jboss.ejb3.timerservice</groupId>
-		<artifactId>jboss-ejb3-timerservice-parent</artifactId>
-		<version>1.0.0-alpha-11-SNAPSHOT</version>
-		<relativePath>../pom.xml</relativePath>
-	</parent>
+    <parent>
+        <groupId>org.jboss.ejb3.timerservice</groupId>
+        <artifactId>jboss-ejb3-timerservice-parent</artifactId>
+        <version>1.0.0-alpha-11-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-	<modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.jboss.ejb3.timerservice</groupId>
-	<artifactId>jboss-ejb3-timerservice-testsuite</artifactId>
+    <groupId>org.jboss.ejb3.timerservice</groupId>
+    <artifactId>jboss-ejb3-timerservice-testsuite</artifactId>
 
 
-	<name>JBoss EJB3.1 timerservice component Testsuite</name>
-	<description>Testsuite for JBoss EJB3.1 timerservice component</description>
+    <name>JBoss EJB3.1 timerservice component Testsuite</name>
+    <description>Testsuite for JBoss EJB3.1 timerservice component</description>
 
-	<properties>
-		<jboss.server.config>all</jboss.server.config>
-		<!--
-			The jboss.home "intermediate" property would not have been necessary,
-			if Maven's enforcer plugin supported enforcing setting of a "System"
-			environment variable. Details here
-			http://markmail.org/message/jwfmtrjesuyag7bh This intermediate
-			property is a workaround to use in the enforcer plugin to ensure that
-			the JBOSS_HOME is set. And now that we have an intermediate
-			jboss.home, let's use this throughout the pom instead of JBOSS_HOME.
-		-->
-		<jboss.home>${JBOSS_HOME}</jboss.home>
-	</properties>
+    <properties>
+        <jboss.server.config>all</jboss.server.config>
+        <!--
+              The jboss.home "intermediate" property would not have been necessary,
+              if Maven's enforcer plugin supported enforcing setting of a "System"
+              environment variable. Details here
+              http://markmail.org/message/jwfmtrjesuyag7bh This intermediate
+              property is a workaround to use in the enforcer plugin to ensure that
+              the JBOSS_HOME is set. And now that we have an intermediate
+              jboss.home, let's use this throughout the pom instead of JBOSS_HOME.
+          -->
+        <jboss.home>${JBOSS_HOME}</jboss.home>
+    </properties>
 
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-enforcer-plugin</artifactId>
-				<executions>
-					<!--  Enforce JDK6 -->
-					<execution>
-						<id>enforce-jdk6</id>
-						<goals>
-							<goal>enforce</goal>
-						</goals>
-						<configuration>
-							<rules>
-								<requireJavaVersion>
-									<version>1.6</version>
-								</requireJavaVersion>
-							</rules>
-						</configuration>
-					</execution>
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <!--  Enforce JDK6 -->
+                    <execution>
+                        <id>enforce-jdk6</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>1.6</version>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
 
-					<!--
-						Enforce presence of JBOSS_HOME during pre-intregation-test phase
-						(i.e. during server startup
-					-->
-					<execution>
-						<id>enforce-jboss-home</id>
-						<goals>
-							<goal>enforce</goal>
-						</goals>
-						<phase>pre-integration-test</phase>
-						<configuration>
-							<rules>
-								<requireProperty>
-									<property>jboss.home</property>
-									<message>"Please set
-										JBOSS_HOME"</message>
-								</requireProperty>
-							</rules>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+                    <!--
+                             Enforce presence of JBOSS_HOME during pre-intregation-test phase
+                             (i.e. during server startup
+                         -->
+                    <execution>
+                        <id>enforce-jboss-home</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <phase>pre-integration-test</phase>
+                        <configuration>
+                            <rules>
+                                <requireProperty>
+                                    <property>jboss.home</property>
+                                    <message>"Please set
+                                        JBOSS_HOME"
+                                    </message>
+                                </requireProperty>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
-			<!--  Use the correct "javac" -->
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-					<executable>${JAVA_HOME}/bin/javac</executable>
-				</configuration>
-			</plugin>
+            <!--  Use the correct "javac" -->
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                    <executable>${JAVA_HOME}/bin/javac</executable>
+                </configuration>
+            </plugin>
 
-			<!--
-				Skip unit tests and instead run integration-test. Before running the
-				integration test, start the server and after the tests, stop the
-				server
-			-->
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<!-- skip unit test -->
-					<skipTests>true</skipTests>
-					<redirectTestOutputToFile>true</redirectTestOutputToFile>
-					<printSummary>true</printSummary>
-				</configuration>
-			</plugin>
+            <!--
+                   Skip unit tests and instead run integration-test. Before running the
+                   integration test, start the server and after the tests, stop the
+                   server
+               -->
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- skip unit test -->
+                    <skipTests>true</skipTests>
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <printSummary>true</printSummary>
+                </configuration>
+            </plugin>
 
-			<!--
-				Setup the package manager and timerservice package so that it can be
-				installed later into the AS
-			-->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy-dependencies</id>
-						<phase>process-resources</phase>
-						<goals>
-							<goal>copy</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<!-- The package manager installer -->
-								<artifactItem>
-									<groupId>org.jboss.ejb3</groupId>
-									<artifactId>jboss-ejb3-package-manager</artifactId>
-									<classifier>installer</classifier>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/dependencies/package-manager</outputDirectory>
-								</artifactItem>
-								<!-- The timerservice package -->
-								<artifactItem>
-									<groupId>org.jboss.ejb3.timerservice</groupId>
-									<artifactId>jboss-ejb3-timerservice-mk2</artifactId>
-									<classifier>package</classifier>
-									<type>jar</type>
-									<outputDirectory>${project.build.directory}/dependencies/packages</outputDirectory>
-								</artifactItem>
+            <!--
+                   Setup the package manager and timerservice package so that it can be
+                   installed later into the AS
+               -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <!-- The package manager installer -->
+                                <artifactItem>
+                                    <groupId>org.jboss.ejb3</groupId>
+                                    <artifactId>jboss-ejb3-package-manager</artifactId>
+                                    <classifier>installer</classifier>
+                                    <type>zip</type>
+                                    <outputDirectory>${project.build.directory}/dependencies/package-manager
+                                    </outputDirectory>
+                                </artifactItem>
+                                <!-- The timerservice package -->
+                                <artifactItem>
+                                    <groupId>org.jboss.ejb3.timerservice</groupId>
+                                    <artifactId>jboss-ejb3-timerservice-mk2</artifactId>
+                                    <classifier>package</classifier>
+                                    <type>jar</type>
+                                    <outputDirectory>${project.build.directory}/dependencies/packages</outputDirectory>
+                                </artifactItem>
                                 <!-- 
 								<artifactItem>
 									<groupId>org.jboss.ejb3</groupId>
@@ -142,296 +144,296 @@
 								</artifactItem>
 								-->
 
-								<artifactItem>
-									<groupId>junit</groupId>
-									<artifactId>junit</artifactId>
-									<outputDirectory>${project.build.directory}/dependencies/lib</outputDirectory>
-								</artifactItem>
+                                <artifactItem>
+                                    <groupId>junit</groupId>
+                                    <artifactId>junit</artifactId>
+                                    <outputDirectory>${project.build.directory}/dependencies/lib</outputDirectory>
+                                </artifactItem>
 
-								<artifactItem>
-									<groupId>ant-contrib</groupId>
-									<artifactId>ant-contrib</artifactId>
-									<outputDirectory>${project.build.directory}/dependencies/lib</outputDirectory>
-								</artifactItem>
+                                <artifactItem>
+                                    <groupId>ant-contrib</groupId>
+                                    <artifactId>ant-contrib</artifactId>
+                                    <outputDirectory>${project.build.directory}/dependencies/lib</outputDirectory>
+                                </artifactItem>
 
-								<artifactItem>
-									<groupId>org.apache.ant</groupId>
-									<artifactId>ant-junit</artifactId>
-									<outputDirectory>${project.build.directory}/dependencies/lib</outputDirectory>
-								</artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.ant</groupId>
+                                    <artifactId>ant-junit</artifactId>
+                                    <outputDirectory>${project.build.directory}/dependencies/lib</outputDirectory>
+                                </artifactItem>
 
-								<artifactItem>
-									<groupId>org.jboss.shrinkwrap</groupId>
-									<artifactId>shrinkwrap-impl-base</artifactId>
-									<outputDirectory>${project.build.directory}/dependencies/lib</outputDirectory>
-								</artifactItem>
+                                <artifactItem>
+                                    <groupId>org.jboss.shrinkwrap</groupId>
+                                    <artifactId>shrinkwrap-impl-base</artifactId>
+                                    <outputDirectory>${project.build.directory}/dependencies/lib</outputDirectory>
+                                </artifactItem>
 
-								<artifactItem>
-									<groupId>org.jboss.shrinkwrap</groupId>
-									<artifactId>shrinkwrap-api</artifactId>
-									<outputDirectory>${project.build.directory}/dependencies/lib</outputDirectory>
-								</artifactItem>
+                                <artifactItem>
+                                    <groupId>org.jboss.shrinkwrap</groupId>
+                                    <artifactId>shrinkwrap-api</artifactId>
+                                    <outputDirectory>${project.build.directory}/dependencies/lib</outputDirectory>
+                                </artifactItem>
 
-								<artifactItem>
-									<groupId>org.jboss.shrinkwrap</groupId>
-									<artifactId>shrinkwrap-spi</artifactId>
-									<outputDirectory>${project.build.directory}/dependencies/lib</outputDirectory>
-								</artifactItem>
+                                <artifactItem>
+                                    <groupId>org.jboss.shrinkwrap</groupId>
+                                    <artifactId>shrinkwrap-spi</artifactId>
+                                    <outputDirectory>${project.build.directory}/dependencies/lib</outputDirectory>
+                                </artifactItem>
 
 
-							</artifactItems>
-							<overWriteIfNewer>true</overWriteIfNewer>
-							<stripVersion>true</stripVersion>
-							<excludeTransitive>true</excludeTransitive>
-						</configuration>
-					</execution>
-				</executions>
+                            </artifactItems>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                            <stripVersion>true</stripVersion>
+                            <excludeTransitive>true</excludeTransitive>
+                        </configuration>
+                    </execution>
+                </executions>
 
-			</plugin>
+            </plugin>
 
-			<!--
-				Install timerservice packages in pre-integration-test phase
-			-->
-			<plugin>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.3</version>
-				<executions>
-					<execution>
-						<id>install-singleton-packages</id>
-						<phase>pre-integration-test</phase>
-						<goals>
-							<goal>run</goal>
-						</goals>
-						<configuration>
-							<tasks unless="skip.packagemanager">
-								<ant antfile="${project.build.directory}/test-classes/build-test.xml"
-									target="install-timerservice-packages" inheritRefs="true"
-									inheritAll="true" />
-							</tasks>
-						</configuration>
-					</execution>
+            <!--
+                   Install timerservice packages in pre-integration-test phase
+               -->
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.3</version>
+                <executions>
+                    <execution>
+                        <id>install-singleton-packages</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks unless="skip.packagemanager">
+                                <ant antfile="${project.build.directory}/test-classes/build-test.xml"
+                                     target="install-timerservice-packages" inheritRefs="true"
+                                     inheritAll="true"/>
+                            </tasks>
+                        </configuration>
+                    </execution>
 
-					<execution>
-						<id>run-tests</id>
-						<phase>integration-test</phase>
-						<goals>
-							<goal>run</goal>
-						</goals>
-						<configuration>
-							<tasks unless="test">
-								<ant antfile="${project.build.directory}/test-classes/test.xml"
-									target="tests" inheritRefs="true" inheritAll="true" />
-							</tasks>
-						</configuration>
+                    <execution>
+                        <id>run-tests</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks unless="test">
+                                <ant antfile="${project.build.directory}/test-classes/test.xml"
+                                     target="tests" inheritRefs="true" inheritAll="true"/>
+                            </tasks>
+                        </configuration>
 
-					</execution>
-					<execution>
-						<id>run-one-test</id>
-						<phase>integration-test</phase>
-						<goals>
-							<goal>run</goal>
-						</goals>
-						<configuration>
-							<tasks if="test">
-								<ant antfile="${project.build.directory}/test-classes/test.xml"
-									target="one-test" inheritRefs="true" inheritAll="true" />
-							</tasks>
+                    </execution>
+                    <execution>
+                        <id>run-one-test</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks if="test">
+                                <ant antfile="${project.build.directory}/test-classes/test.xml"
+                                     target="one-test" inheritRefs="true" inheritAll="true"/>
+                            </tasks>
 
-						</configuration>
+                        </configuration>
 
-					</execution>
-				</executions>
-				
-				<dependencies>
-					<dependency>
-						<groupId>org.apache.ant</groupId>
-						<artifactId>ant</artifactId>
-						<version>1.7.1</version>
-					</dependency>
-				</dependencies>
-			</plugin>
+                    </execution>
+                </executions>
 
-			<!--
-				After installing the no-interface package, now start the server in
-				pre-integration-test phase
-			-->
-			<plugin>
-				<groupId>org.jboss.maven.plugins.jbossas</groupId>
-				<artifactId>maven-jboss-as-control-plugin</artifactId>
-				<version>0.1.1</version>
-				<executions>
-					<!--  Start AS -->
-					<execution>
-						<id>start-jboss-as</id>
-						<goals>
-							<goal>start</goal>
-						</goals>
-						<phase>pre-integration-test</phase>
-						<configuration>
-							<serverConfigName>${jboss.server.config}</serverConfigName>
-							<jvmArgs>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.ant</groupId>
+                        <artifactId>ant</artifactId>
+                        <version>1.7.1</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+            <!--
+                   After installing the no-interface package, now start the server in
+                   pre-integration-test phase
+               -->
+            <plugin>
+                <groupId>org.jboss.maven.plugins.jbossas</groupId>
+                <artifactId>maven-jboss-as-control-plugin</artifactId>
+                <version>0.1.1</version>
+                <executions>
+                    <!--  Start AS -->
+                    <execution>
+                        <id>start-jboss-as</id>
+                        <goals>
+                            <goal>start</goal>
+                        </goals>
+                        <phase>pre-integration-test</phase>
+                        <configuration>
+                            <serverConfigName>${jboss.server.config}</serverConfigName>
+                            <jvmArgs>
                                 <jvmArg>-Djava.endorsed.dirs=${JBOSS_HOME}/lib/endorsed</jvmArg>
-								<jvmArg>-Xms128m</jvmArg>
-								<jvmArg>-Xmx1024m</jvmArg>
-								<jvmArg>-XX:MaxPermSize=256m</jvmArg>
-								<jvmArg>-Dorg.jboss.resolver.warning=true</jvmArg>
-								<jvmArg>-Dsun.rmi.dgc.client.gcInterval=3600000</jvmArg>
-								<jvmArg>-Dsun.rmi.dgc.server.gcInterval=3600000</jvmArg>
-								<!--
-									Prefer IPv4 stack as as temporary workaround to avoid 'all'
-									config startup issues from IPv4 multicast addresses. See
-									JBAS-7936
-								-->
-								<jvmArg>-Djava.net.preferIPv4Stack=true</jvmArg>
-								<!-- Temporary, till AS boots without this property JBAS-6744 -->
-								<jvmArg>-Dxb.builder.useUnorderedSequence=true</jvmArg>
-								<!--
-									Uncomment to add debug JVM params
-									<jvmArg>-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n</jvmArg>
-								-->
-							</jvmArgs>
-							<jboss.test.run>true</jboss.test.run>
-						</configuration>
-					</execution>
+                                <jvmArg>-Xms128m</jvmArg>
+                                <jvmArg>-Xmx1024m</jvmArg>
+                                <jvmArg>-XX:MaxPermSize=256m</jvmArg>
+                                <jvmArg>-Dorg.jboss.resolver.warning=true</jvmArg>
+                                <jvmArg>-Dsun.rmi.dgc.client.gcInterval=3600000</jvmArg>
+                                <jvmArg>-Dsun.rmi.dgc.server.gcInterval=3600000</jvmArg>
+                                <!--
+                                            Prefer IPv4 stack as as temporary workaround to avoid 'all'
+                                            config startup issues from IPv4 multicast addresses. See
+                                            JBAS-7936
+                                        -->
+                                <jvmArg>-Djava.net.preferIPv4Stack=true</jvmArg>
+                                <!-- Temporary, till AS boots without this property JBAS-6744 -->
+                                <jvmArg>-Dxb.builder.useUnorderedSequence=true</jvmArg>
+                                <!--
+                                            Uncomment to add debug JVM params
+                                            <jvmArg>-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n</jvmArg>
+                                        -->
+                            </jvmArgs>
+                            <jboss.test.run>true</jboss.test.run>
+                        </configuration>
+                    </execution>
 
-					<!--  Stop AS -->
-					<execution>
-						<id>stop-jboss-as</id>
-						<goals>
-							<goal>stop</goal>
-						</goals>
-						<phase>post-integration-test</phase>
-						<configuration>
-							<serverConfigName>${jboss.server.config}</serverConfigName>
-							<jboss.test.run>true</jboss.test.run>
-						</configuration>
-					</execution>
+                    <!--  Stop AS -->
+                    <execution>
+                        <id>stop-jboss-as</id>
+                        <goals>
+                            <goal>stop</goal>
+                        </goals>
+                        <phase>post-integration-test</phase>
+                        <configuration>
+                            <serverConfigName>${jboss.server.config}</serverConfigName>
+                            <jboss.test.run>true</jboss.test.run>
+                        </configuration>
+                    </execution>
 
-				</executions>
-				<dependencies>
-					<!--
-						We need this dependency because the maven-jboss-as-control-plugin
-						connects to the MBeanServer to issue a stop request. The
-						MBeanServerConnection returned is actually a proxy which requires
-						a JBoss specific class (present in jboss-system-client.jar) to be
-						available in the classpath. See
-						https://jira.jboss.org/browse/JBAS-7818?focusedCommentId=12523915#action_12523915
-						for details
-					-->
-					<dependency>
-						<groupId>org.jboss.jbossas</groupId>
-						<artifactId>jboss-as-system</artifactId>
-						<classifier>client</classifier>
-						<version>6.0.0.20100429-M3</version>
-						<scope>runtime</scope>
-					</dependency>
-				</dependencies>
+                </executions>
+                <dependencies>
+                    <!--
+                             We need this dependency because the maven-jboss-as-control-plugin
+                             connects to the MBeanServer to issue a stop request. The
+                             MBeanServerConnection returned is actually a proxy which requires
+                             a JBoss specific class (present in jboss-system-client.jar) to be
+                             available in the classpath. See
+                             https://jira.jboss.org/browse/JBAS-7818?focusedCommentId=12523915#action_12523915
+                             for details
+                         -->
+                    <dependency>
+                        <groupId>org.jboss.jbossas</groupId>
+                        <artifactId>jboss-as-system</artifactId>
+                        <classifier>client</classifier>
+                        <version>6.0.0.20100429-M3</version>
+                        <scope>runtime</scope>
+                    </dependency>
+                </dependencies>
 
-			</plugin>
+            </plugin>
 
-		</plugins>
-	</build>
+        </plugins>
+    </build>
 
-	<dependencies>
-
-
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>ant-contrib</groupId>
-			<artifactId>ant-contrib</artifactId>
-			<version>1.0b3</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.ant</groupId>
-			<artifactId>ant-junit</artifactId>
-			<version>1.7.1</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.jboss.shrinkwrap</groupId>
-			<artifactId>shrinkwrap-api</artifactId>
-			<version>1.0.0-alpha-2</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.jboss.shrinkwrap</groupId>
-			<artifactId>shrinkwrap-spi</artifactId>
-			<version>1.0.0-alpha-2</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.jboss.shrinkwrap</groupId>
-			<artifactId>shrinkwrap-impl-base</artifactId>
-			<version>1.0.0-alpha-2</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.jboss.spec.javax.ejb</groupId>
-			<artifactId>jboss-ejb-api_3.1_spec</artifactId>
-			<version>1.0.0.Beta2</version>
-			<scope>test</scope>
-		</dependency> 
-
-		<dependency>
-			<groupId>org.jboss.spec.javax.ejb</groupId>
-			<artifactId>jboss-ejb-api_3.1_spec</artifactId>
-			<version>1.0.0.Beta2</version>
-			<scope>test</scope>
-		</dependency>
+    <dependencies>
 
 
-		<!--
-			TODO: Remove this dependency and instead depend on the components
-		-->
-		<dependency>
-			<groupId>org.jboss.ejb3</groupId>
-			<artifactId>jboss-ejb3_1</artifactId>
-			<scope>test</scope>
-			<version>1.0.2</version>
-			<type>pom</type>
-		</dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
 
-		<!--
-			The package manager installer which we use to install the
-			no-interface package into AS
-		-->
-		<dependency>
-			<groupId>org.jboss.ejb3</groupId>
-			<artifactId>jboss-ejb3-package-manager</artifactId>
-			<version>1.0.0-alpha-2</version>
-			<scope>test</scope>
-			<classifier>installer</classifier>
-			<type>zip</type>
-		</dependency>
+        <dependency>
+            <groupId>ant-contrib</groupId>
+            <artifactId>ant-contrib</artifactId>
+            <version>1.0b3</version>
+            <scope>test</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>org.jboss.ejb3.timerservice</groupId>
-			<artifactId>jboss-ejb3-timerservice-mk2</artifactId>
-			<version>${project.version}</version>
-			<classifier>package</classifier>
-			<scope>test</scope>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant-junit</artifactId>
+            <version>1.7.1</version>
+            <scope>test</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>org.jboss.ejb3</groupId>
-			<artifactId>jboss-ejb3-timerservice-deployer</artifactId>
-			<version>1.0.0-alpha-2</version>
-			<classifier>package</classifier>
-			<scope>test</scope>
-		</dependency>
+        <dependency>
+            <groupId>org.jboss.shrinkwrap</groupId>
+            <artifactId>shrinkwrap-api</artifactId>
+            <version>1.0.0-alpha-2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.shrinkwrap</groupId>
+            <artifactId>shrinkwrap-spi</artifactId>
+            <version>1.0.0-alpha-2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.shrinkwrap</groupId>
+            <artifactId>shrinkwrap-impl-base</artifactId>
+            <version>1.0.0-alpha-2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.spec.javax.ejb</groupId>
+            <artifactId>jboss-ejb-api_3.1_spec</artifactId>
+            <version>1.0.0.Beta2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.spec.javax.ejb</groupId>
+            <artifactId>jboss-ejb-api_3.1_spec</artifactId>
+            <version>1.0.0.Beta2</version>
+            <scope>test</scope>
+        </dependency>
 
 
-	</dependencies>
+        <!--
+              TODO: Remove this dependency and instead depend on the components
+          -->
+        <dependency>
+            <groupId>org.jboss.ejb3</groupId>
+            <artifactId>jboss-ejb3_1</artifactId>
+            <scope>test</scope>
+            <version>1.0.2</version>
+            <type>pom</type>
+        </dependency>
+
+        <!--
+              The package manager installer which we use to install the
+              no-interface package into AS
+          -->
+        <dependency>
+            <groupId>org.jboss.ejb3</groupId>
+            <artifactId>jboss-ejb3-package-manager</artifactId>
+            <version>1.0.0-alpha-2</version>
+            <scope>test</scope>
+            <classifier>installer</classifier>
+            <type>zip</type>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ejb3.timerservice</groupId>
+            <artifactId>jboss-ejb3-timerservice-mk2</artifactId>
+            <version>${project.version}</version>
+            <classifier>package</classifier>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ejb3</groupId>
+            <artifactId>jboss-ejb3-timerservice-deployer</artifactId>
+            <version>1.0.0-alpha-2</version>
+            <classifier>package</classifier>
+            <scope>test</scope>
+        </dependency>
+
+
+    </dependencies>
 
 </project>

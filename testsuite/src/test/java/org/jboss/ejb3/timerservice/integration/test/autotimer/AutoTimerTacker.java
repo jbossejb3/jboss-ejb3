@@ -27,10 +27,9 @@ package org.jboss.ejb3.timerservice.integration.test.autotimer;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public interface AutoTimerTacker
-{
+public interface AutoTimerTacker {
 
-   int getNumTimeoutsForEvery10SecTimer();
-   
-   int getNumTimeoutsForEveryMinuteTimer();
+    int getNumTimeoutsForEvery10SecTimer();
+
+    int getNumTimeoutsForEveryMinuteTimer();
 }

@@ -27,13 +27,12 @@ package org.jboss.ejb3.timerservice.integration.test.cancel;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public interface SimpleTimer
-{
-   void createTimer(long intialDuration, long intervalDurationMillis);
+public interface SimpleTimer {
+    void createTimer(long intialDuration, long intervalDurationMillis);
 
-   void stopTimers();
+    void stopTimers();
 
-   boolean timersCreated();
+    boolean timersCreated();
 
-   int getTimeoutCount();
+    int getTimeoutCount();
 }

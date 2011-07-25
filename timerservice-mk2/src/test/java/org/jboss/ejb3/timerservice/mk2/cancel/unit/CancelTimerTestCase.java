@@ -21,17 +21,17 @@
  */
 package org.jboss.ejb3.timerservice.mk2.cancel.unit;
 
-import java.util.Date;
-import java.util.UUID;
-
-import javax.ejb.Timer;
-
 import org.jboss.ejb3.timerservice.mk2.TimerImpl;
 import org.jboss.ejb3.timerservice.mk2.TimerServiceImpl;
 import org.jboss.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.junit.Test;
 
-import static org.mockito.Mockito.*;
+import javax.ejb.Timer;
+import java.util.Date;
+import java.util.UUID;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 
 /**
@@ -40,25 +40,23 @@ import static org.mockito.Mockito.*;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class CancelTimerTestCase
-{
+public class CancelTimerTestCase {
 
-   /**
-    * Tests that invoking a {@link Timer#cancel()} which has no future schedules,
-    * doesn't throw any exceptions
-    */
-   @Test
-   public void cancelUnScheduledTimer()
-   {
-      // create the mocks
-      TimerServiceImpl mockTimerService = mock(TimerServiceImpl.class);
-      TimedObjectInvoker mockInvoker = mock(TimedObjectInvoker.class);
-      when(mockInvoker.getTimedObjectId()).thenReturn("Dummy");
-      when(mockTimerService.getInvoker()).thenReturn(mockInvoker);
-      
-      // now create the real timer
-      TimerImpl timer = new TimerImpl(UUID.randomUUID().toString(), mockTimerService, new Date(), 0, null, false);
-      // cancel a timer without starting it (i.e. there are no scheduled tasks) 
-      timer.cancel();
-   }
+    /**
+     * Tests that invoking a {@link Timer#cancel()} which has no future schedules,
+     * doesn't throw any exceptions
+     */
+    @Test
+    public void cancelUnScheduledTimer() {
+        // create the mocks
+        TimerServiceImpl mockTimerService = mock(TimerServiceImpl.class);
+        TimedObjectInvoker mockInvoker = mock(TimedObjectInvoker.class);
+        when(mockInvoker.getTimedObjectId()).thenReturn("Dummy");
+        when(mockTimerService.getInvoker()).thenReturn(mockInvoker);
+
+        // now create the real timer
+        TimerImpl timer = new TimerImpl(UUID.randomUUID().toString(), mockTimerService, new Date(), 0, null, false);
+        // cancel a timer without starting it (i.e. there are no scheduled tasks)
+        timer.cancel();
+    }
 }

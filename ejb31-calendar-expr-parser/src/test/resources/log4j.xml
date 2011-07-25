@@ -2,40 +2,39 @@
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/"
-	debug="false">
+                     debug="false">
 
-	<!-- ================================= -->
-	<!-- Preserve messages in a local file -->
-	<!-- ================================= -->
-
-
-
-	<!-- A size based file rolling appender -->
-	<appender name="FILE"
-		class="org.jboss.logging.appender.RollingFileAppender">
-		<param name="File" value="target/test.log" />
-		<param name="Append" value="true" />
-		<param name="MaxFileSize" value="5000KB" />
-		<param name="MaxBackupIndex" value="10" />
-
-		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d %-5p [%c] %m%n" />
-		</layout>
-	</appender>
+    <!-- ================================= -->
+    <!-- Preserve messages in a local file -->
+    <!-- ================================= -->
 
 
-	<category name="org.jboss.ejb3">
-		<priority value="DEBUG" />
-	</category>
+    <!-- A size based file rolling appender -->
+    <appender name="FILE"
+              class="org.jboss.logging.appender.RollingFileAppender">
+        <param name="File" value="target/test.log"/>
+        <param name="Append" value="true"/>
+        <param name="MaxFileSize" value="5000KB"/>
+        <param name="MaxBackupIndex" value="10"/>
 
- 
-	<!-- ======================= -->
-	<!-- Setup the Root category -->
-	<!-- ======================= -->
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d %-5p [%c] %m%n"/>
+        </layout>
+    </appender>
 
-	<root>
-		<priority value="INFO" />
-		<appender-ref ref="FILE" />
-	</root>
+
+    <category name="org.jboss.ejb3">
+        <priority value="DEBUG"/>
+    </category>
+
+
+    <!-- ======================= -->
+    <!-- Setup the Root category -->
+    <!-- ======================= -->
+
+    <root>
+        <priority value="INFO"/>
+        <appender-ref ref="FILE"/>
+    </root>
 
 </log4j:configuration>

@@ -27,10 +27,9 @@ package org.jboss.ejb3.timerservice.integration.test.autotimer;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public interface SLSBAutoTimer
-{
+public interface SLSBAutoTimer {
 
-   int getNumTimeoutsForEvery5SecTimer();
-   
-   int getNumTimeoutsForEvery4SecTimer();
+    int getNumTimeoutsForEvery5SecTimer();
+
+    int getNumTimeoutsForEvery4SecTimer();
 }

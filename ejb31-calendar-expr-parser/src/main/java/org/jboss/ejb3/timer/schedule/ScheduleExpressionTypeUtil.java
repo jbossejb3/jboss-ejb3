@@ -21,10 +21,10 @@
  */
 package org.jboss.ejb3.timer.schedule;
 
-import javax.ejb.ScheduleExpression;
-
 import org.jboss.ejb3.timer.schedule.value.RangeValue;
 import org.jboss.ejb3.timer.schedule.value.ScheduleExpressionType;
+
+import javax.ejb.ScheduleExpression;
 
 
 /**
@@ -33,39 +33,32 @@ import org.jboss.ejb3.timer.schedule.value.ScheduleExpressionType;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class ScheduleExpressionTypeUtil
-{
-   /**
-    * Returns the corresponding {@link ScheduleExpressionType} for the passed value
-    *  
-    * @param value The value to be parsed
-    * @return
-    */
-   public static ScheduleExpressionType getType(String value)
-   {
-      if (value == null)
-      {
-         throw new IllegalArgumentException("Value cannot be null");
-      }
-      // Order of check is important.
-      // TODO: Explain why this order is important
-      
-      if (value.trim().equals("*"))
-      {
-         return ScheduleExpressionType.WILDCARD;
-      }
-      if (value.contains(","))
-      {
-         return ScheduleExpressionType.LIST;
-      }
-      if (value.contains("-") && RangeValue.accepts(value))
-      {
-         return ScheduleExpressionType.RANGE;
-      }
-      if (value.contains("/"))
-      {
-         return ScheduleExpressionType.INCREMENT;
-      }
-      return ScheduleExpressionType.SINGLE_VALUE;
-   }
+public class ScheduleExpressionTypeUtil {
+    /**
+     * Returns the corresponding {@link ScheduleExpressionType} for the passed value
+     *
+     * @param value The value to be parsed
+     * @return
+     */
+    public static ScheduleExpressionType getType(String value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Value cannot be null");
+        }
+        // Order of check is important.
+        // TODO: Explain why this order is important
+
+        if (value.trim().equals("*")) {
+            return ScheduleExpressionType.WILDCARD;
+        }
+        if (value.contains(",")) {
+            return ScheduleExpressionType.LIST;
+        }
+        if (value.contains("-") && RangeValue.accepts(value)) {
+            return ScheduleExpressionType.RANGE;
+        }
+        if (value.contains("/")) {
+            return ScheduleExpressionType.INCREMENT;
+        }
+        return ScheduleExpressionType.SINGLE_VALUE;
+    }
 }

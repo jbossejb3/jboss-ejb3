@@ -27,8 +27,7 @@ package org.jboss.ejb3.timer.schedule.value;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public interface ScheduleValue
-{
+public interface ScheduleValue {
 
-   
+
 }

@@ -22,21 +22,25 @@
 
 <project name="Timerservice MK2 package install script">
 
-	<target name="post-install">
-		<echo level="info">***************************************************************</echo>
-		<echo level="info">Post-install of timerservice mk2 package</echo>
-		<echo level="info">***************************************************************</echo>
-		<move failonerror="false" file="${JBOSS_HOME}/server/default/deploy/ejb3-timerservice-jboss-beans.xml" tofile="${JBOSS_HOME}/server/default/deploy/ejb3-timerservice-jboss-beans.xml.bak" />
-		<move failonerror="false" file="${JBOSS_HOME}/server/all/deploy/ejb3-timerservice-jboss-beans.xml" tofile="${JBOSS_HOME}/server/all/deploy/ejb3-timerservice-jboss-beans.xml.bak" />
-	</target>
+    <target name="post-install">
+        <echo level="info">***************************************************************</echo>
+        <echo level="info">Post-install of timerservice mk2 package</echo>
+        <echo level="info">***************************************************************</echo>
+        <move failonerror="false" file="${JBOSS_HOME}/server/default/deploy/ejb3-timerservice-jboss-beans.xml"
+              tofile="${JBOSS_HOME}/server/default/deploy/ejb3-timerservice-jboss-beans.xml.bak"/>
+        <move failonerror="false" file="${JBOSS_HOME}/server/all/deploy/ejb3-timerservice-jboss-beans.xml"
+              tofile="${JBOSS_HOME}/server/all/deploy/ejb3-timerservice-jboss-beans.xml.bak"/>
+    </target>
 
-	<target name="post-uninstall">
-		<echo level="info">***************************************************************</echo>
-		<echo level="info">Post-uninstall of timerservice mk2 package</echo>
-		<echo level="info">***************************************************************</echo>
-		<move failonerror="false" file="${JBOSS_HOME}/server/default/deploy/ejb3-timerservice-jboss-beans.xml.bak" tofile="${JBOSS_HOME}/server/default/deploy/ejb3-timerservice-jboss-beans.xml"/>
-		<move failonerror="false" file="${JBOSS_HOME}/server/all/deploy/ejb3-timerservice-jboss-beans.xml.bak" tofile="${JBOSS_HOME}/server/all/deploy/ejb3-timerservice-jboss-beans.xml"/>
+    <target name="post-uninstall">
+        <echo level="info">***************************************************************</echo>
+        <echo level="info">Post-uninstall of timerservice mk2 package</echo>
+        <echo level="info">***************************************************************</echo>
+        <move failonerror="false" file="${JBOSS_HOME}/server/default/deploy/ejb3-timerservice-jboss-beans.xml.bak"
+              tofile="${JBOSS_HOME}/server/default/deploy/ejb3-timerservice-jboss-beans.xml"/>
+        <move failonerror="false" file="${JBOSS_HOME}/server/all/deploy/ejb3-timerservice-jboss-beans.xml.bak"
+              tofile="${JBOSS_HOME}/server/all/deploy/ejb3-timerservice-jboss-beans.xml"/>
 
-	</target>
+    </target>
 
 </project>

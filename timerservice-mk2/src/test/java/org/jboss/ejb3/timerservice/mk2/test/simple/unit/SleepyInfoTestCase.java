@@ -42,74 +42,64 @@ import static org.junit.Assert.assertTrue;
 @Ignore
 public class SleepyInfoTestCase // extends AbstractTimerTestCase
 {
-   static class Sleepy implements Serializable
-   {
-      private boolean asleep = true;
+    static class Sleepy implements Serializable {
+        private boolean asleep = true;
 
-      public void awake()
-      {
-         asleep = false;
-      }
+        public void awake() {
+            asleep = false;
+        }
 
-      @Override
-      public boolean equals(Object o)
-      {
-         if (asleep) throw new IllegalStateException("still asleep");
-         
-         if (this == o) return true;
-         if (o == null || getClass() != o.getClass()) return false;
+        @Override
+        public boolean equals(Object o) {
+            if (asleep) throw new IllegalStateException("still asleep");
 
-         Sleepy sleepy = (Sleepy) o;
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
 
-         if (asleep != sleepy.asleep) return false;
+            Sleepy sleepy = (Sleepy) o;
 
-         return true;
-      }
+            if (asleep != sleepy.asleep) return false;
 
-      @Override
-      public int hashCode()
-      {
-         return (asleep ? 1 : 0);
-      }
-   }
+            return true;
+        }
 
-   @Test
-   public void testSleepy() throws Exception
-   {
-      final Semaphore semaphore = new Semaphore(0);
-      TimedObjectInvoker invoker = new TimedObjectInvoker() {
-         public void callTimeout(Timer timer) throws Exception
-         {
-            semaphore.release();
-         }
+        @Override
+        public int hashCode() {
+            return (asleep ? 1 : 0);
+        }
+    }
 
-         public String getTimedObjectId()
-         {
-            return "test";
-         }
-      };
+    @Test
+    public void testSleepy() throws Exception {
+        final Semaphore semaphore = new Semaphore(0);
+        TimedObjectInvoker invoker = new TimedObjectInvoker() {
+            public void callTimeout(Timer timer) throws Exception {
+                semaphore.release();
+            }
 
-      TransactionManager tm = null; //getBeanByType(TransactionManager.class);
-      
-      TimerServiceFactory factory = null; // getBeanByType(TimerServiceFactory.class);
-      TimerService service = factory.createTimerService(invoker);
+            public String getTimedObjectId() {
+                return "test";
+            }
+        };
 
-      tm.begin();
-      try
-      {
-         Sleepy sleepy = new Sleepy();
-         service.createTimer(500, sleepy);
-         sleepy.awake();
-         tm.commit();
-      }
-      finally
-      {
-         if(tm.getStatus() == Status.STATUS_ACTIVE)
-            tm.rollback();
-      }
+        TransactionManager tm = null; //getBeanByType(TransactionManager.class);
 
-      boolean success = semaphore.tryAcquire(5, SECONDS);
+        TimerServiceFactory factory = null; // getBeanByType(TimerServiceFactory.class);
+        TimerService service = factory.createTimerService(invoker);
 
-      assertTrue("timeout failed", success);
-   }
+        tm.begin();
+        try {
+            Sleepy sleepy = new Sleepy();
+            service.createTimer(500, sleepy);
+            sleepy.awake();
+            tm.commit();
+        } finally {
+            if (tm.getStatus() == Status.STATUS_ACTIVE)
+                tm.rollback();
+        }
+
+        boolean success = semaphore.tryAcquire(5, SECONDS);
+
+        assertTrue("timeout failed", success);
+    }
 }

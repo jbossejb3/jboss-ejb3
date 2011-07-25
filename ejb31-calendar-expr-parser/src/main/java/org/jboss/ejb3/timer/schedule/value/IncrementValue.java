@@ -26,76 +26,73 @@ import java.util.StringTokenizer;
 /**
  * Represents a value for a {@link ScheduleExpression} which is expressed as an increment type. An
  * {@link IncrementValue} comprises of a start value and a interval, separated by a "/"
- * 
+ * <p/>
  * <p>
- *  An {@link IncrementValue} is specified in the form of x&#47;y to mean "Every N { seconds | minutes | hours } 
- *  within the { minute | hour | day }" (respectively).  For expression x/y, the attribute is constrained to 
- *  every yth value within the set of allowable values beginning at time x. The x value is inclusive. 
- *  The wildcard character (*) can be used in the x position, and is equivalent to 0.
+ * An {@link IncrementValue} is specified in the form of x&#47;y to mean "Every N { seconds | minutes | hours }
+ * within the { minute | hour | day }" (respectively).  For expression x/y, the attribute is constrained to
+ * every yth value within the set of allowable values beginning at time x. The x value is inclusive.
+ * The wildcard character (*) can be used in the x position, and is equivalent to 0.
  * </p>
  *
- * @see ScheduleExpressionType#INCREMENT
- * 
  * @author Jaikiran Pai
  * @version $Revision: $
+ * @see ScheduleExpressionType#INCREMENT
  */
-public class IncrementValue implements ScheduleValue
-{
+public class IncrementValue implements ScheduleValue {
 
-   /**
-    * The separator which is used for parsing a {@link String} which
-    * represents a {@link IncrementValue} 
-    */
-   public static final String INCREMENT_SEPARATOR = "/";
+    /**
+     * The separator which is used for parsing a {@link String} which
+     * represents a {@link IncrementValue}
+     */
+    public static final String INCREMENT_SEPARATOR = "/";
 
-   /**
-    * The "x" value in the x&#47;y expression
-    */
-   private String start;
-   
-   /**
-    * The "y" value in the x&#47;y expression
-    */
-   private String interval;
+    /**
+     * The "x" value in the x&#47;y expression
+     */
+    private String start;
 
-   /**
-    * Creates a {@link IncrementValue} by parsing the passed <code>value</code>.
-    * <p>
-    *   Upon successfully parsing the passed <code>value</code>, this constructor
-    *   sets the start value and the interval value of this {@link IncrementValue} 
-    * </p>
-    * @param value The value to be parsed
-    * @throws IllegalArgumentException If the passed <code>value</code> cannot be 
-    *           represented as an {@link IncrementValue}
-    */
-   public IncrementValue(String value)
-   {
-      StringTokenizer tokenizer = new StringTokenizer(value, INCREMENT_SEPARATOR);
-      int numberOfTokens = tokenizer.countTokens();
-      if (numberOfTokens != 2)
-      {
-         throw new IllegalArgumentException("Invalid increment value: " + value);
-      }
-      
-      this.start = tokenizer.nextToken().trim();
-      this.interval = tokenizer.nextToken().trim();
-   }
+    /**
+     * The "y" value in the x&#47;y expression
+     */
+    private String interval;
 
-   /**
-    * Returns the start of this {@link IncrementValue}
-    * @return
-    */
-   public String getStart()
-   {
-      return this.start;
-   }
-   
-   /**
-    * Returns the interval of this {@link IncrementValue}
-    * @return
-    */
-   public String getInterval()
-   {
-      return this.interval;
-   }
+    /**
+     * Creates a {@link IncrementValue} by parsing the passed <code>value</code>.
+     * <p>
+     * Upon successfully parsing the passed <code>value</code>, this constructor
+     * sets the start value and the interval value of this {@link IncrementValue}
+     * </p>
+     *
+     * @param value The value to be parsed
+     * @throws IllegalArgumentException If the passed <code>value</code> cannot be
+     *                                  represented as an {@link IncrementValue}
+     */
+    public IncrementValue(String value) {
+        StringTokenizer tokenizer = new StringTokenizer(value, INCREMENT_SEPARATOR);
+        int numberOfTokens = tokenizer.countTokens();
+        if (numberOfTokens != 2) {
+            throw new IllegalArgumentException("Invalid increment value: " + value);
+        }
+
+        this.start = tokenizer.nextToken().trim();
+        this.interval = tokenizer.nextToken().trim();
+    }
+
+    /**
+     * Returns the start of this {@link IncrementValue}
+     *
+     * @return
+     */
+    public String getStart() {
+        return this.start;
+    }
+
+    /**
+     * Returns the interval of this {@link IncrementValue}
+     *
+     * @return
+     */
+    public String getInterval() {
+        return this.interval;
+    }
 }

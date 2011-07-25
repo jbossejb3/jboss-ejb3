@@ -28,11 +28,12 @@ package org.jboss.ejb3.timerservice.integration.test.jndi;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public interface TimerServiceJNDIAccessTester
-{
-   public boolean wasTimerServiceAvailableInPostConstruct();
-   
-   public boolean isTimerServiceInjected();
-   public boolean isTimerServiceAvailableInENCAtCustomName();
-   public boolean isTimerServiceAvailableThroughEJBContext();
+public interface TimerServiceJNDIAccessTester {
+    public boolean wasTimerServiceAvailableInPostConstruct();
+
+    public boolean isTimerServiceInjected();
+
+    public boolean isTimerServiceAvailableInENCAtCustomName();
+
+    public boolean isTimerServiceAvailableThroughEJBContext();
 }

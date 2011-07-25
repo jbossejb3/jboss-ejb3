@@ -27,8 +27,7 @@ package org.jboss.ejb3.timerservice.integration.test.disallowed;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public interface Echo
-{
+public interface Echo {
 
-   String echo(String msg);
+    String echo(String msg);
 }

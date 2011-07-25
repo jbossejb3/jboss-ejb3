@@ -40,28 +40,25 @@ import static org.junit.Assert.assertTrue;
 @Ignore
 public class SimpleTimerTestCase // extends AbstractTimerTestCase
 {
-   @Test
-   public void test1() throws Exception
-   {
-      final Semaphore semaphore = new Semaphore(0);
-      TimedObjectInvoker invoker = new TimedObjectInvoker() {
-         public void callTimeout(Timer timer) throws Exception
-         {
-            semaphore.release();
-         }
+    @Test
+    public void test1() throws Exception {
+        final Semaphore semaphore = new Semaphore(0);
+        TimedObjectInvoker invoker = new TimedObjectInvoker() {
+            public void callTimeout(Timer timer) throws Exception {
+                semaphore.release();
+            }
 
-         public String getTimedObjectId()
-         {
-            return "test";
-         }
-      };
-      
-      TimerServiceFactory factory = null;// getBeanByType(TimerServiceFactory.class);
-      TimerService service = factory.createTimerService(invoker);
-      service.createTimer(500, null);
-      
-      boolean success = semaphore.tryAcquire(5, SECONDS);
-      
-      assertTrue("timeout failed", success);
-   }
+            public String getTimedObjectId() {
+                return "test";
+            }
+        };
+
+        TimerServiceFactory factory = null;// getBeanByType(TimerServiceFactory.class);
+        TimerService service = factory.createTimerService(invoker);
+        service.createTimer(500, null);
+
+        boolean success = semaphore.tryAcquire(5, SECONDS);
+
+        assertTrue("timeout failed", success);
+    }
 }

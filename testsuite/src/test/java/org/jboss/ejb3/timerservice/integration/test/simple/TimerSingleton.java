@@ -21,22 +21,16 @@
  */
 package org.jboss.ejb3.timerservice.integration.test.simple;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import org.jboss.ejb3.annotation.RemoteBinding;
+import org.jboss.logging.Logger;
 
 import javax.annotation.Resource;
 import javax.ejb.Remote;
-import javax.ejb.ScheduleExpression;
 import javax.ejb.Singleton;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
-import javax.ejb.TimerHandle;
 import javax.ejb.TimerService;
-
-import org.jboss.ejb3.annotation.RemoteBinding;
-import org.jboss.logging.Logger;
+import java.util.Date;
 
 /**
  * TimerSingleton
@@ -45,44 +39,39 @@ import org.jboss.logging.Logger;
  * @version $Revision: $
  */
 @Singleton
-@Remote (TimerUtil.class)
-@RemoteBinding (jndiBinding = TimerSingleton.JNDI_NAME)
-public class TimerSingleton implements TimerUtil
-{
-   private static Logger logger = Logger.getLogger(TimerSingleton.class);
+@Remote(TimerUtil.class)
+@RemoteBinding(jndiBinding = TimerSingleton.JNDI_NAME)
+public class TimerSingleton implements TimerUtil {
+    private static Logger logger = Logger.getLogger(TimerSingleton.class);
 
-   public static final String JNDI_NAME = "TimerSFSBRemote";
-   
-   @Resource
-   private TimerService timerService;
-   
-   private TimeoutTracker timeoutTracker = new TimeoutTracker();
-   
-   @Override
-   public void createTimer(Date firstExpiration, long interval, int maxTimeouts)
-   {
-      this.timerService.createTimer(firstExpiration, interval, maxTimeouts);
-    
-   }
-   
-   @Timeout
-   private void timeout(Timer timer)
-   {
-      logger.info("Timeout method called for timer " + timer + " on bean " + this + " at " + new Date());
-      this.timeoutTracker.trackTimeout(timer);
-      int numTimeouts = timeoutTracker.getTimeoutCount();
-      Integer maxTimeouts = (Integer) timer.getInfo();
-      logger.debug("Number of timeouts = " + numTimeouts + " max allowed = " + maxTimeouts);
-      if (numTimeouts == maxTimeouts)
-      {
-         logger.info("Cancelling timer " + timer + " " + " for bean " + this);
-         timer.cancel();
-      }
-   }
-   
-   @Override
-   public TimeoutTracker getTimeoutTracker()
-   {
-      return this.timeoutTracker;
-   }
+    public static final String JNDI_NAME = "TimerSFSBRemote";
+
+    @Resource
+    private TimerService timerService;
+
+    private TimeoutTracker timeoutTracker = new TimeoutTracker();
+
+    @Override
+    public void createTimer(Date firstExpiration, long interval, int maxTimeouts) {
+        this.timerService.createTimer(firstExpiration, interval, maxTimeouts);
+
+    }
+
+    @Timeout
+    private void timeout(Timer timer) {
+        logger.info("Timeout method called for timer " + timer + " on bean " + this + " at " + new Date());
+        this.timeoutTracker.trackTimeout(timer);
+        int numTimeouts = timeoutTracker.getTimeoutCount();
+        Integer maxTimeouts = (Integer) timer.getInfo();
+        logger.debug("Number of timeouts = " + numTimeouts + " max allowed = " + maxTimeouts);
+        if (numTimeouts == maxTimeouts) {
+            logger.info("Cancelling timer " + timer + " " + " for bean " + this);
+            timer.cancel();
+        }
+    }
+
+    @Override
+    public TimeoutTracker getTimeoutTracker() {
+        return this.timeoutTracker;
+    }
 }

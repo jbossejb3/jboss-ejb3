@@ -21,7 +21,7 @@
  */
 package org.jboss.ejb3.timerservice.integration.test.disallowed;
 
-import java.util.Date;
+import org.jboss.ejb3.annotation.RemoteBinding;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -31,8 +31,7 @@ import javax.ejb.ScheduleExpression;
 import javax.ejb.Stateless;
 import javax.ejb.TimerConfig;
 import javax.ejb.TimerService;
-
-import org.jboss.ejb3.annotation.RemoteBinding;
+import java.util.Date;
 
 /**
  * SimpleSLSB
@@ -43,150 +42,114 @@ import org.jboss.ejb3.annotation.RemoteBinding;
 @Stateless
 @Remote(Echo.class)
 @RemoteBinding(jndiBinding = SimpleSLSB.JNDI_NAME)
-public class SimpleSLSB implements Echo
-{
+public class SimpleSLSB implements Echo {
 
-   public static final String JNDI_NAME = "UselessBean";
+    public static final String JNDI_NAME = "UselessBean";
 
-   @Resource
-   private TimerService timerService;
+    @Resource
+    private TimerService timerService;
 
-   @PostConstruct
-   public void postConstruct()
-   {
-      Date now = new Date();
-      ScheduleExpression schedule = new ScheduleExpression();
+    @PostConstruct
+    public void postConstruct() {
+        Date now = new Date();
+        ScheduleExpression schedule = new ScheduleExpression();
 
-      // All these method invocation on timerservice aren't allowed in lifecycle
-      // callback on SLSB. They are expected to throw IllegalStateException, which
-      // is what we are testing
+        // All these method invocation on timerservice aren't allowed in lifecycle
+        // callback on SLSB. They are expected to throw IllegalStateException, which
+        // is what we are testing
 
-      try
-      {
-         this.timerService.createCalendarTimer(schedule);
-         throw new EJBException("TimerService.createCalendarTimer was allowed in @Postconstruct of "
-               + this.getClass().getName() + " bean");
-      }
-      catch (IllegalStateException ise)
-      {
-         // expected
-      }
+        try {
+            this.timerService.createCalendarTimer(schedule);
+            throw new EJBException("TimerService.createCalendarTimer was allowed in @Postconstruct of "
+                    + this.getClass().getName() + " bean");
+        } catch (IllegalStateException ise) {
+            // expected
+        }
 
-      try
-      {
-         this.timerService.createCalendarTimer(schedule, new TimerConfig());
-         throw new EJBException("TimerService.createCalendarTimer was allowed in @Postconstruct of "
-               + this.getClass().getName() + " bean");
-      }
-      catch (IllegalStateException ise)
-      {
-         // expected
-      }
+        try {
+            this.timerService.createCalendarTimer(schedule, new TimerConfig());
+            throw new EJBException("TimerService.createCalendarTimer was allowed in @Postconstruct of "
+                    + this.getClass().getName() + " bean");
+        } catch (IllegalStateException ise) {
+            // expected
+        }
 
-      try
-      {
-         this.timerService.createIntervalTimer(now, 0, new TimerConfig());
-         throw new EJBException("TimerService.createIntervalTimer was allowed in @Postconstruct of "
-               + this.getClass().getName() + " bean");
-      }
-      catch (IllegalStateException ise)
-      {
-         // expected
-      }
+        try {
+            this.timerService.createIntervalTimer(now, 0, new TimerConfig());
+            throw new EJBException("TimerService.createIntervalTimer was allowed in @Postconstruct of "
+                    + this.getClass().getName() + " bean");
+        } catch (IllegalStateException ise) {
+            // expected
+        }
 
-      try
-      {
-         this.timerService.createIntervalTimer(10, 0, new TimerConfig());
-         throw new EJBException("TimerService.createIntervalTimer was allowed in @Postconstruct of "
-               + this.getClass().getName() + " bean");
-      }
-      catch (IllegalStateException ise)
-      {
-         // expected
-      }
+        try {
+            this.timerService.createIntervalTimer(10, 0, new TimerConfig());
+            throw new EJBException("TimerService.createIntervalTimer was allowed in @Postconstruct of "
+                    + this.getClass().getName() + " bean");
+        } catch (IllegalStateException ise) {
+            // expected
+        }
 
-      try
-      {
-         this.timerService.createSingleActionTimer(now, new TimerConfig());
-         throw new EJBException("TimerService.createSingleActionTimer was allowed in @Postconstruct of "
-               + this.getClass().getName() + " bean");
-      }
-      catch (IllegalStateException ise)
-      {
-         // expected
-      }
+        try {
+            this.timerService.createSingleActionTimer(now, new TimerConfig());
+            throw new EJBException("TimerService.createSingleActionTimer was allowed in @Postconstruct of "
+                    + this.getClass().getName() + " bean");
+        } catch (IllegalStateException ise) {
+            // expected
+        }
 
-      try
-      {
-         this.timerService.createSingleActionTimer(10, new TimerConfig());
-         throw new EJBException("TimerService.createSingleActionTimer was allowed in @Postconstruct of "
-               + this.getClass().getName() + " bean");
-      }
-      catch (IllegalStateException ise)
-      {
-         // expected
-      }
+        try {
+            this.timerService.createSingleActionTimer(10, new TimerConfig());
+            throw new EJBException("TimerService.createSingleActionTimer was allowed in @Postconstruct of "
+                    + this.getClass().getName() + " bean");
+        } catch (IllegalStateException ise) {
+            // expected
+        }
 
-      try
-      {
-         this.timerService.createTimer(10, null);
-         throw new EJBException("TimerService.createTimer was allowed in @Postconstruct of "
-               + this.getClass().getName() + " bean");
-      }
-      catch (IllegalStateException ise)
-      {
-         // expected
-      }
+        try {
+            this.timerService.createTimer(10, null);
+            throw new EJBException("TimerService.createTimer was allowed in @Postconstruct of "
+                    + this.getClass().getName() + " bean");
+        } catch (IllegalStateException ise) {
+            // expected
+        }
 
-      try
-      {
-         this.timerService.createTimer(now, 0, null);
-         throw new EJBException("TimerService.createTimer was allowed in @Postconstruct of "
-               + this.getClass().getName() + " bean");
-      }
-      catch (IllegalStateException ise)
-      {
-         // expected
-      }
+        try {
+            this.timerService.createTimer(now, 0, null);
+            throw new EJBException("TimerService.createTimer was allowed in @Postconstruct of "
+                    + this.getClass().getName() + " bean");
+        } catch (IllegalStateException ise) {
+            // expected
+        }
 
-      try
-      {
-         this.timerService.createTimer(10, 0, null);
-         throw new EJBException("TimerService.createTimer was allowed in @Postconstruct of "
-               + this.getClass().getName() + " bean");
-      }
-      catch (IllegalStateException ise)
-      {
-         // expected
-      }
+        try {
+            this.timerService.createTimer(10, 0, null);
+            throw new EJBException("TimerService.createTimer was allowed in @Postconstruct of "
+                    + this.getClass().getName() + " bean");
+        } catch (IllegalStateException ise) {
+            // expected
+        }
 
-      try
-      {
-         this.timerService.createTimer(now, null);
-         throw new EJBException("TimerService.createTimer was allowed in @Postconstruct of "
-               + this.getClass().getName() + " bean");
-      }
-      catch (IllegalStateException ise)
-      {
-         // expected
-      }
+        try {
+            this.timerService.createTimer(now, null);
+            throw new EJBException("TimerService.createTimer was allowed in @Postconstruct of "
+                    + this.getClass().getName() + " bean");
+        } catch (IllegalStateException ise) {
+            // expected
+        }
 
-      try
-      {
-         this.timerService.getTimers();
-         throw new EJBException("TimerService.getTimers was allowed in @Postconstruct of " + this.getClass().getName()
-               + " bean");
-      }
-      catch (IllegalStateException ise)
-      {
-         // expected
-      }
-   }
+        try {
+            this.timerService.getTimers();
+            throw new EJBException("TimerService.getTimers was allowed in @Postconstruct of " + this.getClass().getName()
+                    + " bean");
+        } catch (IllegalStateException ise) {
+            // expected
+        }
+    }
 
-   @Override
-   public String echo(String msg)
-   {
-      return msg;
-   }
+    @Override
+    public String echo(String msg) {
+        return msg;
+    }
 
 }

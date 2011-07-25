@@ -21,70 +21,62 @@
  */
 package org.jboss.ejb3.timerservice.mk2.test.common;
 
-import java.sql.Connection;
-
-import javax.naming.InitialContext;
-
 import org.hsqldb.jdbc.jdbcDataSource;
 import org.jboss.logging.Logger;
+
+import javax.naming.InitialContext;
+import java.sql.Connection;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @version $Revision: $
  */
-public class HSQLDBService
-{
-   private static final Logger log = Logger.getLogger(HSQLDBService.class);
-   
-   private String jndiName = "java:/DefaultDS";
-   
-   private jdbcDataSource ds;
-   private InitialContext ctx;
-   private Connection conn;
-   
-   public void create() throws Exception
-   {
-      log.info("Creating HSQLDB service");
-      
-      ds = new jdbcDataSource();
-      ds.setDatabase("jdbc:hsqldb:file:target/hsqldb/db");
-      ds.setUser("sa");
-      ds.setPassword("");
-      
-      ctx = new InitialContext();
-   }
-   
-   public void destroy() throws Exception
-   {
-      log.info("Destroying HSQLDB service");
-      
-      if(ctx != null)
-      {
-         ctx.close();
-         ctx = null;
-      }
-      ds = null;
-   }
-   
-   public void start() throws Exception
-   {
-      log.info("Starting HSQLDB service");
-      
-      conn = ds.getConnection();
-      
-      ctx.bind(jndiName, ds);
-   }
-   
-   public void stop() throws Exception
-   {
-      log.info("Stopping HSQLDB service");
-      
-      ctx.unbind(jndiName);
-      
-      if(conn != null)
-      {
-         conn.close();
-         conn = null;
-      }
-   }
+public class HSQLDBService {
+    private static final Logger log = Logger.getLogger(HSQLDBService.class);
+
+    private String jndiName = "java:/DefaultDS";
+
+    private jdbcDataSource ds;
+    private InitialContext ctx;
+    private Connection conn;
+
+    public void create() throws Exception {
+        log.info("Creating HSQLDB service");
+
+        ds = new jdbcDataSource();
+        ds.setDatabase("jdbc:hsqldb:file:target/hsqldb/db");
+        ds.setUser("sa");
+        ds.setPassword("");
+
+        ctx = new InitialContext();
+    }
+
+    public void destroy() throws Exception {
+        log.info("Destroying HSQLDB service");
+
+        if (ctx != null) {
+            ctx.close();
+            ctx = null;
+        }
+        ds = null;
+    }
+
+    public void start() throws Exception {
+        log.info("Starting HSQLDB service");
+
+        conn = ds.getConnection();
+
+        ctx.bind(jndiName, ds);
+    }
+
+    public void stop() throws Exception {
+        log.info("Stopping HSQLDB service");
+
+        ctx.unbind(jndiName);
+
+        if (conn != null) {
+            conn.close();
+            conn = null;
+        }
+    }
 }

@@ -21,14 +21,13 @@
  */
 package org.jboss.ejb3.timerservice.integration.test.ejbthree2209.bad;
 
-import java.util.Date;
+import org.jboss.logging.Logger;
 
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
 import javax.jms.Message;
 import javax.jms.MessageListener;
-
-import org.jboss.logging.Logger;
+import java.util.Date;
 
 /**
  * BadMDB used for testing EJBTHREE-2209
@@ -36,19 +35,17 @@ import org.jboss.logging.Logger;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-@MessageDriven (name = "EJBTHREE-2209-MDB", activationConfig = {
-      @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue")
-      ,@ActivationConfigProperty(propertyName="nonExistentProperty", propertyValue="whoCares") // non-existent activation config property to fail deployment
-  }) 
-public class BadMDB implements MessageListener
-{
+@MessageDriven(name = "EJBTHREE-2209-MDB", activationConfig = {
+        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue")
+        , @ActivationConfigProperty(propertyName = "nonExistentProperty", propertyValue = "whoCares") // non-existent activation config property to fail deployment
+})
+public class BadMDB implements MessageListener {
 
-   private static Logger logger = Logger.getLogger(BadMDB.class);
-   
-   @Override
-   public void onMessage(Message message)
-   {
-      logger.info("Received message: " + message + " at " + new Date());
-   }
+    private static Logger logger = Logger.getLogger(BadMDB.class);
+
+    @Override
+    public void onMessage(Message message) {
+        logger.info("Received message: " + message + " at " + new Date());
+    }
 
 }

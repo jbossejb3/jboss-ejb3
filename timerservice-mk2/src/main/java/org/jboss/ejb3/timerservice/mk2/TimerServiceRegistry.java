@@ -30,50 +30,41 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class TimerServiceRegistry
-{
+public class TimerServiceRegistry {
 
-   private static Map<String, TimerServiceImpl> timerServices = new ConcurrentHashMap<String, TimerServiceImpl>();
+    private static Map<String, TimerServiceImpl> timerServices = new ConcurrentHashMap<String, TimerServiceImpl>();
 
-   public static void registerTimerService(TimerServiceImpl timerservice)
-   {
-      if (timerservice == null)
-      {
-         throw new IllegalArgumentException("null timerservice cannot be registered");
-      }
-      // get hold of the timed object id
-      String timedObjectId = timerservice.getInvoker().getTimedObjectId();
-      if (timerServices.containsKey(timedObjectId))
-      {
-         throw new IllegalStateException("Timer service with timedObjectId: " + timedObjectId
-               + " is already registered");
-      }
-      // add to the registry
-      timerServices.put(timedObjectId, timerservice);
-   }
+    public static void registerTimerService(TimerServiceImpl timerservice) {
+        if (timerservice == null) {
+            throw new IllegalArgumentException("null timerservice cannot be registered");
+        }
+        // get hold of the timed object id
+        String timedObjectId = timerservice.getInvoker().getTimedObjectId();
+        if (timerServices.containsKey(timedObjectId)) {
+            throw new IllegalStateException("Timer service with timedObjectId: " + timedObjectId
+                    + " is already registered");
+        }
+        // add to the registry
+        timerServices.put(timedObjectId, timerservice);
+    }
 
-   public static TimerServiceImpl getTimerService(String timedObjectId)
-   {
-      return timerServices.get(timedObjectId);
-   }
+    public static TimerServiceImpl getTimerService(String timedObjectId) {
+        return timerServices.get(timedObjectId);
+    }
 
-   public static boolean isRegistered(String timedObjectId)
-   {
-      return timerServices.containsKey(timedObjectId);
-   }
+    public static boolean isRegistered(String timedObjectId) {
+        return timerServices.containsKey(timedObjectId);
+    }
 
-   public static void unregisterTimerService(String timedObjectId)
-   {
-      if (timedObjectId == null)
-      {
-         throw new IllegalArgumentException("null timedObjectId cannot be used for unregistering timerservice");
-      }
-      if (isRegistered(timedObjectId) == false)
-      {
-         throw new IllegalArgumentException("Cannot unregister timer service with timedObjectId: " + timedObjectId
-               + " because it's not registered");
-      }
-      timerServices.remove(timedObjectId);
+    public static void unregisterTimerService(String timedObjectId) {
+        if (timedObjectId == null) {
+            throw new IllegalArgumentException("null timedObjectId cannot be used for unregistering timerservice");
+        }
+        if (isRegistered(timedObjectId) == false) {
+            throw new IllegalArgumentException("Cannot unregister timer service with timedObjectId: " + timedObjectId
+                    + " because it's not registered");
+        }
+        timerServices.remove(timedObjectId);
 
-   }
+    }
 }

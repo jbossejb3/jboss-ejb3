@@ -21,11 +21,8 @@
  */
 package org.jboss.ejb3.timerservice.mk2.persistence;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.util.Date;
+import org.jboss.ejb3.timerservice.mk2.TimerImpl;
+import org.jboss.ejb3.timerservice.mk2.TimerState;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -34,9 +31,11 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
-
-import org.jboss.ejb3.timerservice.mk2.TimerImpl;
-import org.jboss.ejb3.timerservice.mk2.TimerState;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -45,152 +44,126 @@ import org.jboss.ejb3.timerservice.mk2.TimerState;
 @Entity
 @Table(name = "timer")
 @Inheritance(strategy = InheritanceType.JOINED)
-public class TimerEntity implements Serializable
-{
-   @Id
-   protected String id;
+public class TimerEntity implements Serializable {
+    @Id
+    protected String id;
 
-   @Column(nullable = false)
-   @NotNull
-   protected String timedObjectId;
+    @Column(nullable = false)
+    @NotNull
+    protected String timedObjectId;
 
-   protected Date initialDate;
+    protected Date initialDate;
 
-   protected long repeatInterval;
+    protected long repeatInterval;
 
-   protected Date nextDate;
+    protected Date nextDate;
 
-   protected Date previousRun;
+    protected Date previousRun;
 
-   protected byte[] info;
+    protected byte[] info;
 
 
-   protected TimerState timerState;
+    protected TimerState timerState;
 
-   public TimerEntity()
-   {
+    public TimerEntity() {
 
-   }
+    }
 
-   public TimerEntity(TimerImpl timer)
-   {
-      this.id = timer.getId();
-      this.initialDate = timer.getInitialExpiration();
-      this.repeatInterval = timer.getInterval();
-      this.nextDate = timer.getNextExpiration();
-      this.previousRun = timer.getPreviousRun();
-      this.timerState = timer.getState();
-      this.timedObjectId = timer.getTimedObjectId();
-      if (timer.getTimerInfo() != null)
-      {
-         this. info = this.getBytes(timer.getTimerInfo());
-      }
+    public TimerEntity(TimerImpl timer) {
+        this.id = timer.getId();
+        this.initialDate = timer.getInitialExpiration();
+        this.repeatInterval = timer.getInterval();
+        this.nextDate = timer.getNextExpiration();
+        this.previousRun = timer.getPreviousRun();
+        this.timerState = timer.getState();
+        this.timedObjectId = timer.getTimedObjectId();
+        if (timer.getTimerInfo() != null) {
+            this.info = this.getBytes(timer.getTimerInfo());
+        }
 
-   }
+    }
 
-   public String getId()
-   {
-      return id;
-   }
+    public String getId() {
+        return id;
+    }
 
-   public String getTimedObjectId()
-   {
-      return timedObjectId;
-   }
+    public String getTimedObjectId() {
+        return timedObjectId;
+    }
 
-   public Date getInitialDate()
-   {
-      return initialDate;
-   }
+    public Date getInitialDate() {
+        return initialDate;
+    }
 
-   public long getInterval()
-   {
-      return repeatInterval;
-   }
+    public long getInterval() {
+        return repeatInterval;
+    }
 
-   public byte[] getInfo()
-   {
-      return this.info;
-   }
+    public byte[] getInfo() {
+        return this.info;
+    }
 
-   public Date getNextDate()
-   {
-      return nextDate;
-   }
+    public Date getNextDate() {
+        return nextDate;
+    }
 
-   public void setNextDate(Date nextDate)
-   {
-      this.nextDate = nextDate;
-   }
+    public void setNextDate(Date nextDate) {
+        this.nextDate = nextDate;
+    }
 
-   public Date getPreviousRun()
-   {
-      return previousRun;
-   }
+    public Date getPreviousRun() {
+        return previousRun;
+    }
 
-   public void setPreviousRun(Date previousRun)
-   {
-      this.previousRun = previousRun;
-   }
+    public void setPreviousRun(Date previousRun) {
+        this.previousRun = previousRun;
+    }
 
-   public TimerState getTimerState()
-   {
-      return timerState;
-   }
+    public TimerState getTimerState() {
+        return timerState;
+    }
 
-   public void setTimerState(TimerState timerState)
-   {
-      this.timerState = timerState;
-   }
+    public void setTimerState(TimerState timerState) {
+        this.timerState = timerState;
+    }
 
-   public boolean isCalendarTimer()
-   {
-      return false;
-   }
+    public boolean isCalendarTimer() {
+        return false;
+    }
 
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (obj == null)
-      {
-         return false;
-      }
-      if (obj instanceof TimerEntity == false)
-      {
-         return false;
-      }
-      TimerEntity other = (TimerEntity) obj;
-      if (this.id == null)
-      {
-         return false;
-      }
-      return this.id.equals(other.id);
-   }
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj instanceof TimerEntity == false) {
+            return false;
+        }
+        TimerEntity other = (TimerEntity) obj;
+        if (this.id == null) {
+            return false;
+        }
+        return this.id.equals(other.id);
+    }
 
-   @Override
-   public int hashCode()
-   {
-      if (this.id == null)
-      {
-         return super.hashCode();
-      }
-      return this.id.hashCode();
-   }
+    @Override
+    public int hashCode() {
+        if (this.id == null) {
+            return super.hashCode();
+        }
+        return this.id.hashCode();
+    }
 
-   private byte[] getBytes(Serializable ser)
-   {
-      try
-      {
-         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-         ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
-         objectOutputStream.writeObject(ser);
-         return outputStream.toByteArray();
-      }
-      catch (IOException ioe)
-      {
-         throw new RuntimeException("Could not get bytes out of serializable object: " + ser, ioe);
-      }
+    private byte[] getBytes(Serializable ser) {
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+            objectOutputStream.writeObject(ser);
+            return outputStream.toByteArray();
+        } catch (IOException ioe) {
+            throw new RuntimeException("Could not get bytes out of serializable object: " + ser, ioe);
+        }
 
-   }
-   
+    }
+
 }

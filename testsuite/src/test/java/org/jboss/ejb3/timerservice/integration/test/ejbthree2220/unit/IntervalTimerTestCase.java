@@ -21,14 +21,7 @@
  */
 package org.jboss.ejb3.timerservice.integration.test.ejbthree2220.unit;
 
-import java.io.File;
-import java.net.URL;
-import java.util.Date;
-
-import javax.ejb.TimerService;
-
 import junit.framework.Assert;
-
 import org.jboss.ejb3.timerservice.integration.test.common.AbstractTimerServiceTestCase;
 import org.jboss.ejb3.timerservice.integration.test.ejbthree2220.TimerBean;
 import org.jboss.ejb3.timerservice.integration.test.ejbthree2220.TimerTester;
@@ -37,66 +30,65 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.ejb.TimerService;
+import java.io.File;
+import java.net.URL;
+import java.util.Date;
+
 /**
  * Tests {@link TimerService#createIntervalTimer(long, long, javax.ejb.TimerConfig)}
- * 
- * @see https://issues.jboss.org/browse/EJBTHREE-2220
  *
  * @author Jaikiran Pai
  * @version $Revision: $
+ * @see https://issues.jboss.org/browse/EJBTHREE-2220
  */
-public class IntervalTimerTestCase extends AbstractTimerServiceTestCase
-{
+public class IntervalTimerTestCase extends AbstractTimerServiceTestCase {
 
-   private static Logger logger = Logger.getLogger(IntervalTimerTestCase.class);
+    private static Logger logger = Logger.getLogger(IntervalTimerTestCase.class);
 
-   private URL deployment;
+    private URL deployment;
 
-   /**
-    * 
-    * @return
-    * @throws Exception
-    */
-   @Before
-   public void before() throws Exception
-   {
-      String jarName = "ejbthree-2220.jar";
-      File jar = buildSimpleJar(jarName, TimerBean.class.getPackage());
-      this.deployment = jar.toURI().toURL();
-      this.redeploy(deployment);
-   }
+    /**
+     * @return
+     * @throws Exception
+     */
+    @Before
+    public void before() throws Exception {
+        String jarName = "ejbthree-2220.jar";
+        File jar = buildSimpleJar(jarName, TimerBean.class.getPackage());
+        this.deployment = jar.toURI().toURL();
+        this.redeploy(deployment);
+    }
 
-   @After
-   public void after() throws Exception
-   {
-      if (this.deployment != null)
-      {
-         this.undeploy(deployment);
-      }
-   }
+    @After
+    public void after() throws Exception {
+        if (this.deployment != null) {
+            this.undeploy(deployment);
+        }
+    }
 
-   /**
-    * Tests that a timer created through a call to {@link TimerService#createIntervalTimer(long, long, javax.ejb.TimerConfig)}
-    * doesn't timeout before the <code>initialDuration</code>
-    * @see https://issues.jboss.org/browse/EJBTHREE-2220
-    * @throws Exception
-    */
-   @Test
-   public void testIntervalTimer() throws Exception
-   {
-      TimerTester timerBean = (TimerTester) this.getInitialContext().lookup(TimerBean.JNDI_NAME);
-      long fiveSecondsFromNow = 5000;
-      long everyHour = 60 * 60 * 1000;
-      Date expectedFirstTimeout = new Date(System.currentTimeMillis() + fiveSecondsFromNow);
-      timerBean.createIntervalTimer(fiveSecondsFromNow, everyHour, null);
-      logger.debug("Created interval timer with initialDuration = " + fiveSecondsFromNow + " milli sec. and intervalDuration = " + everyHour + " milli sec.");
-      
-      logger.info("Sleeping for 7 seconds to wait for the timeout to happen");
-      Thread.sleep(7000);
-      
-      Date firstTimeout = timerBean.getFirstTimeout();
-      
-      Assert.assertNotNull("Timeout was not invoked on TimerBean", firstTimeout);
-      Assert.assertFalse("First timeout " + firstTimeout + " happened before the expected time " + expectedFirstTimeout, firstTimeout.before(expectedFirstTimeout));
-   }
+    /**
+     * Tests that a timer created through a call to {@link TimerService#createIntervalTimer(long, long, javax.ejb.TimerConfig)}
+     * doesn't timeout before the <code>initialDuration</code>
+     *
+     * @throws Exception
+     * @see https://issues.jboss.org/browse/EJBTHREE-2220
+     */
+    @Test
+    public void testIntervalTimer() throws Exception {
+        TimerTester timerBean = (TimerTester) this.getInitialContext().lookup(TimerBean.JNDI_NAME);
+        long fiveSecondsFromNow = 5000;
+        long everyHour = 60 * 60 * 1000;
+        Date expectedFirstTimeout = new Date(System.currentTimeMillis() + fiveSecondsFromNow);
+        timerBean.createIntervalTimer(fiveSecondsFromNow, everyHour, null);
+        logger.debug("Created interval timer with initialDuration = " + fiveSecondsFromNow + " milli sec. and intervalDuration = " + everyHour + " milli sec.");
+
+        logger.info("Sleeping for 7 seconds to wait for the timeout to happen");
+        Thread.sleep(7000);
+
+        Date firstTimeout = timerBean.getFirstTimeout();
+
+        Assert.assertNotNull("Timeout was not invoked on TimerBean", firstTimeout);
+        Assert.assertFalse("First timeout " + firstTimeout + " happened before the expected time " + expectedFirstTimeout, firstTimeout.before(expectedFirstTimeout));
+    }
 }

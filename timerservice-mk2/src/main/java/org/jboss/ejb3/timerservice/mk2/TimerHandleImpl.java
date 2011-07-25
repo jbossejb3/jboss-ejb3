@@ -21,134 +21,116 @@
  */
 package org.jboss.ejb3.timerservice.mk2;
 
+import org.jboss.ejb3.timerservice.spi.TimedObjectInvoker;
+
 import javax.ejb.EJBException;
 import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.Timer;
 import javax.ejb.TimerHandle;
 
-import org.jboss.ejb3.timerservice.spi.TimedObjectInvoker;
-
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @version $Revision: $
  */
-public class TimerHandleImpl implements TimerHandle
-{
-   private static final long serialVersionUID = 1L;
+public class TimerHandleImpl implements TimerHandle {
+    private static final long serialVersionUID = 1L;
 
-   /**
-    * Id of the target {@link TimedObjectInvoker}
-    */
-   private String timedObjectId;
-   
-   /**
-    * Each {@link TimedObjectInvoker} can have multiple timer instances.
-    * This id corresponds to one such <i>instance</i> 
-    */
-   private String id;
-   
-   /**
-    * The {@link TimerServiceImpl} to which this timer handle belongs to  
-    */
-   private transient TimerServiceImpl service;
-   
-   /**
-    * For serialization only 
-    */
-   public TimerHandleImpl()
-   {
-      
-   }
-   
-   /**
-    * Creates a {@link TimerHandleImpl}
-    * 
-    * @param id The id of the timer instance
-    * @param timedObjectId The id of the target {@link TimedObjectInvoker} 
-    * @param service The timer service to which this timer handle belongs to
-    * @throws IllegalArgumentException If either of the passed parameters is null
-    */
-   public TimerHandleImpl(String id, String timedObjectId, TimerServiceImpl service) throws IllegalArgumentException
-   {
-      if (id == null)
-      {
-         throw new IllegalArgumentException("Id cannot be null");
-      }
-      if (timedObjectId == null)
-      {
-         throw new IllegalArgumentException("Timed objectid cannot be null");
-      }
-      if (service == null)
-      {
-         throw new IllegalArgumentException("Timer service cannot be null");
-      }
+    /**
+     * Id of the target {@link TimedObjectInvoker}
+     */
+    private String timedObjectId;
 
-      this.timedObjectId = timedObjectId;
-      this.id = id;
-      this.service = service;
-   }
-   
-   /**
-    * Returns the {@link Timer} corresponding to this timer handle
-    * 
-    * {@inheritDoc}
-    */
-   public Timer getTimer() throws IllegalStateException, NoSuchObjectLocalException, EJBException
-   {
-      if(service == null)
-      {
-         // get hold of the timer service through the use of timed object id
-         service = TimerServiceRegistry.getTimerService(this.timedObjectId);
-         if (service == null)
-         {
-            throw new EJBException("Timerservice with timedObjectId: " + timedObjectId + " is not registered");
-         }
-      }
-      org.jboss.ejb3.timerservice.extension.Timer timer = this.service.getTimer(this);
-      if (timer != null && timer.isActive() == false)
-      {
-         throw new NoSuchObjectLocalException("Timer for handle: " + this + " is not active");
-      }
-      return timer;
-   }
-   
-   public String getId()
-   {
-      return this.id;
-   }
-   
-   public String getTimedObjectId()
-   {
-      return this.timedObjectId;
-   }
-   
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (obj == null)
-      {
-         return false;
-      }
-      if (obj instanceof TimerHandleImpl == false)
-      {
-         return false;
-      }
-      TimerHandleImpl other = (TimerHandleImpl) obj;
-      if (this == other)
-      {
-         return true;
-      }
-      if(this.id.equals(other.id) && this.timedObjectId.equals(other.timedObjectId))
-      {
-         return true;
-      }
-      return false;
-   }
-   
-   @Override
-   public int hashCode()
-   {
-      return this.id.hashCode();
-   }
-   
+    /**
+     * Each {@link TimedObjectInvoker} can have multiple timer instances.
+     * This id corresponds to one such <i>instance</i>
+     */
+    private String id;
+
+    /**
+     * The {@link TimerServiceImpl} to which this timer handle belongs to
+     */
+    private transient TimerServiceImpl service;
+
+    /**
+     * For serialization only
+     */
+    public TimerHandleImpl() {
+
+    }
+
+    /**
+     * Creates a {@link TimerHandleImpl}
+     *
+     * @param id            The id of the timer instance
+     * @param timedObjectId The id of the target {@link TimedObjectInvoker}
+     * @param service       The timer service to which this timer handle belongs to
+     * @throws IllegalArgumentException If either of the passed parameters is null
+     */
+    public TimerHandleImpl(String id, String timedObjectId, TimerServiceImpl service) throws IllegalArgumentException {
+        if (id == null) {
+            throw new IllegalArgumentException("Id cannot be null");
+        }
+        if (timedObjectId == null) {
+            throw new IllegalArgumentException("Timed objectid cannot be null");
+        }
+        if (service == null) {
+            throw new IllegalArgumentException("Timer service cannot be null");
+        }
+
+        this.timedObjectId = timedObjectId;
+        this.id = id;
+        this.service = service;
+    }
+
+    /**
+     * Returns the {@link Timer} corresponding to this timer handle
+     * <p/>
+     * {@inheritDoc}
+     */
+    public Timer getTimer() throws IllegalStateException, NoSuchObjectLocalException, EJBException {
+        if (service == null) {
+            // get hold of the timer service through the use of timed object id
+            service = TimerServiceRegistry.getTimerService(this.timedObjectId);
+            if (service == null) {
+                throw new EJBException("Timerservice with timedObjectId: " + timedObjectId + " is not registered");
+            }
+        }
+        org.jboss.ejb3.timerservice.extension.Timer timer = this.service.getTimer(this);
+        if (timer != null && timer.isActive() == false) {
+            throw new NoSuchObjectLocalException("Timer for handle: " + this + " is not active");
+        }
+        return timer;
+    }
+
+    public String getId() {
+        return this.id;
+    }
+
+    public String getTimedObjectId() {
+        return this.timedObjectId;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj instanceof TimerHandleImpl == false) {
+            return false;
+        }
+        TimerHandleImpl other = (TimerHandleImpl) obj;
+        if (this == other) {
+            return true;
+        }
+        if (this.id.equals(other.id) && this.timedObjectId.equals(other.timedObjectId)) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.id.hashCode();
+    }
+
 }

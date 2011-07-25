@@ -21,22 +21,20 @@
  */
 package org.jboss.ejb3.timerservice.mk2.timerhandle.unit;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.Date;
-import java.util.UUID;
-
-import javax.ejb.Timer;
-import javax.ejb.TimerHandle;
-
 import junit.framework.Assert;
-
 import org.jboss.ejb3.timerservice.mk2.TimerImpl;
 import org.jboss.ejb3.timerservice.mk2.TimerServiceImpl;
 import org.jboss.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.logging.Logger;
 import org.junit.Test;
+
+import javax.ejb.Timer;
+import javax.ejb.TimerHandle;
+import java.util.Date;
+import java.util.UUID;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * TimerHandleTestCase
@@ -44,36 +42,31 @@ import org.junit.Test;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class TimerHandleTestCase
-{
-   private static Logger logger = Logger.getLogger(TimerHandleTestCase.class);
+public class TimerHandleTestCase {
+    private static Logger logger = Logger.getLogger(TimerHandleTestCase.class);
 
-   /**
-    * Tests that {@link Timer#getHandle()} throws {@link IllegalStateException} for non-persistent
-    * timers (mandated by EJB3.1 spec 18.2.6 section: Timer handles are only available for persistent timers.) 
-    */
-   @Test
-   public void getTimerHandleFromNonPersistentTimer()
-   {
-      // create the mocks
-      TimerServiceImpl mockTimerService = mock(TimerServiceImpl.class);
-      TimedObjectInvoker mockInvoker = mock(TimedObjectInvoker.class);
-      when(mockInvoker.getTimedObjectId()).thenReturn("Dummy");
-      when(mockTimerService.getInvoker()).thenReturn(mockInvoker);
-      
-      // now create the real timer
-      TimerImpl nonPersistentTimer = new TimerImpl(UUID.randomUUID().toString(), mockTimerService, new Date(), 0, null, false);
-      
-      try
-      {
-         TimerHandle handle = nonPersistentTimer.getHandle();
-         Assert.fail("Timer.getHandle() did not throw IllegalStateException for non-persistent timers. EJB3.1 Spec section 18.2.6 violation");
-      }
-      catch (IllegalStateException ise)
-      {
-         // expected
-         logger.debug("Caught expected IllegalStateException on call to getHandle() on non-persistent timer", ise);
-      }
-      
-   }
+    /**
+     * Tests that {@link Timer#getHandle()} throws {@link IllegalStateException} for non-persistent
+     * timers (mandated by EJB3.1 spec 18.2.6 section: Timer handles are only available for persistent timers.)
+     */
+    @Test
+    public void getTimerHandleFromNonPersistentTimer() {
+        // create the mocks
+        TimerServiceImpl mockTimerService = mock(TimerServiceImpl.class);
+        TimedObjectInvoker mockInvoker = mock(TimedObjectInvoker.class);
+        when(mockInvoker.getTimedObjectId()).thenReturn("Dummy");
+        when(mockTimerService.getInvoker()).thenReturn(mockInvoker);
+
+        // now create the real timer
+        TimerImpl nonPersistentTimer = new TimerImpl(UUID.randomUUID().toString(), mockTimerService, new Date(), 0, null, false);
+
+        try {
+            TimerHandle handle = nonPersistentTimer.getHandle();
+            Assert.fail("Timer.getHandle() did not throw IllegalStateException for non-persistent timers. EJB3.1 Spec section 18.2.6 violation");
+        } catch (IllegalStateException ise) {
+            // expected
+            logger.debug("Caught expected IllegalStateException on call to getHandle() on non-persistent timer", ise);
+        }
+
+    }
 }

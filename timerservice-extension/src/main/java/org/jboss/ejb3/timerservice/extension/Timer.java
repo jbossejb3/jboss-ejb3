@@ -27,10 +27,9 @@ package org.jboss.ejb3.timerservice.extension;
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public interface Timer extends javax.ejb.Timer
-{
+public interface Timer extends javax.ejb.Timer {
 
-   boolean isAutoTimer();
-   
-   boolean isActive();
+    boolean isAutoTimer();
+
+    boolean isActive();
 }

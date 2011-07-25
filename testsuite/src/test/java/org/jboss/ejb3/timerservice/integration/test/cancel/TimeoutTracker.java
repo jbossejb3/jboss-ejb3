@@ -31,18 +31,15 @@ import javax.ejb.Timer;
  * @version $Revision: $
  */
 @Singleton
-public class TimeoutTracker
-{
+public class TimeoutTracker {
 
-   private int count;
+    private int count;
 
-   public void trackTimeout(Timer timer)
-   {
-      this.count++;
-   }
-   
-   public int getTimeoutCount()
-   {
-      return this.count;
-   }
+    public void trackTimeout(Timer timer) {
+        this.count++;
+    }
+
+    public int getTimeoutCount() {
+        return this.count;
+    }
 }

@@ -21,16 +21,15 @@
  */
 package org.jboss.ejb3.timerservice.integration.test.autotimer;
 
-import java.util.Date;
+import org.jboss.ejb3.annotation.RemoteBinding;
+import org.jboss.logging.Logger;
 
 import javax.ejb.Remote;
 import javax.ejb.Schedule;
 import javax.ejb.Schedules;
 import javax.ejb.Singleton;
 import javax.ejb.Timer;
-
-import org.jboss.ejb3.annotation.RemoteBinding;
-import org.jboss.logging.Logger;
+import java.util.Date;
 
 /**
  * SingletonAutoTimerBean
@@ -41,59 +40,50 @@ import org.jboss.logging.Logger;
 @Singleton
 @Remote(AutoTimerTacker.class)
 @RemoteBinding(jndiBinding = SingletonAutoTimerBean.JNDI_NAME)
-public class SingletonAutoTimerBean implements AutoTimerTacker
-{
+public class SingletonAutoTimerBean implements AutoTimerTacker {
 
-   private static Logger logger = Logger.getLogger(SingletonAutoTimerBean.class);
+    private static Logger logger = Logger.getLogger(SingletonAutoTimerBean.class);
 
-   public static final String JNDI_NAME = "AutoTimerTestBean";
+    public static final String JNDI_NAME = "AutoTimerTestBean";
 
-   public static final String INFO_EVERY_10_SEC = "Every 10 Sec";
+    public static final String INFO_EVERY_10_SEC = "Every 10 Sec";
 
-   public static final String INFO_EVERY_MINUTE = "Every Minute";
+    public static final String INFO_EVERY_MINUTE = "Every Minute";
 
-   private int numTimeoutsForEvery10SecTimer;
+    private int numTimeoutsForEvery10SecTimer;
 
-   private int numTimeoutsForEveryMinute;
+    private int numTimeoutsForEveryMinute;
 
-   @Schedules(
-   {@Schedule(second = "*/10", minute = "*", hour = "*", info = INFO_EVERY_10_SEC),
-         @Schedule(minute = "*/1", hour = "*", info = INFO_EVERY_MINUTE)})
-   public void timeout(Timer timer)
-   {
-      Date now = new Date();
-      logger.info("Timeout method invoked for timer " + timer + " at " + now);
-      if (timer.getInfo().equals(INFO_EVERY_10_SEC))
-      {
-         logger.info("Timer " + timer + " is every 10 second timer");
-         numTimeoutsForEvery10SecTimer++;
-         if (numTimeoutsForEvery10SecTimer == 3)
-         {
-            logger.info("Cancelling  every 10 second timer: " + timer);
-            timer.cancel();
-         }
-      }
-      else if (timer.getInfo().equals(INFO_EVERY_MINUTE))
-      {
-         logger.info("Timer " + timer + " is every 1 minute timer");
-         numTimeoutsForEveryMinute++;
-         if (numTimeoutsForEveryMinute == 1)
-         {
-            logger.info("Cancelling  every 1 minute timer: " + timer);
-            timer.cancel();
-         }
-      }
-   }
+    @Schedules(
+            {@Schedule(second = "*/10", minute = "*", hour = "*", info = INFO_EVERY_10_SEC),
+                    @Schedule(minute = "*/1", hour = "*", info = INFO_EVERY_MINUTE)})
+    public void timeout(Timer timer) {
+        Date now = new Date();
+        logger.info("Timeout method invoked for timer " + timer + " at " + now);
+        if (timer.getInfo().equals(INFO_EVERY_10_SEC)) {
+            logger.info("Timer " + timer + " is every 10 second timer");
+            numTimeoutsForEvery10SecTimer++;
+            if (numTimeoutsForEvery10SecTimer == 3) {
+                logger.info("Cancelling  every 10 second timer: " + timer);
+                timer.cancel();
+            }
+        } else if (timer.getInfo().equals(INFO_EVERY_MINUTE)) {
+            logger.info("Timer " + timer + " is every 1 minute timer");
+            numTimeoutsForEveryMinute++;
+            if (numTimeoutsForEveryMinute == 1) {
+                logger.info("Cancelling  every 1 minute timer: " + timer);
+                timer.cancel();
+            }
+        }
+    }
 
-   @Override
-   public int getNumTimeoutsForEvery10SecTimer()
-   {
-      return this.numTimeoutsForEvery10SecTimer;
-   }
+    @Override
+    public int getNumTimeoutsForEvery10SecTimer() {
+        return this.numTimeoutsForEvery10SecTimer;
+    }
 
-   @Override
-   public int getNumTimeoutsForEveryMinuteTimer()
-   {
-      return this.numTimeoutsForEveryMinute;
-   }
+    @Override
+    public int getNumTimeoutsForEveryMinuteTimer() {
+        return this.numTimeoutsForEveryMinute;
+    }
 }

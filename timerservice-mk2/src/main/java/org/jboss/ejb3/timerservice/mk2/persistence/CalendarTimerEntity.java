@@ -21,8 +21,8 @@
  */
 package org.jboss.ejb3.timerservice.mk2.persistence;
 
-import java.lang.reflect.Method;
-import java.util.Date;
+import org.jboss.ejb3.timer.schedule.CalendarBasedTimeout;
+import org.jboss.ejb3.timerservice.mk2.CalendarTimer;
 
 import javax.ejb.ScheduleExpression;
 import javax.persistence.CascadeType;
@@ -32,9 +32,8 @@ import javax.persistence.InheritanceType;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-
-import org.jboss.ejb3.timer.schedule.CalendarBasedTimeout;
-import org.jboss.ejb3.timerservice.mk2.CalendarTimer;
+import java.lang.reflect.Method;
+import java.util.Date;
 
 /**
  * CalendarTimerEntity
@@ -45,214 +44,181 @@ import org.jboss.ejb3.timerservice.mk2.CalendarTimer;
 @Entity
 @Table(name = "calendar_timer")
 @Inheritance(strategy = InheritanceType.JOINED)
-public class CalendarTimerEntity extends TimerEntity
-{
+public class CalendarTimerEntity extends TimerEntity {
 
-   @Transient
-   private ScheduleExpression scheduleExpression;
+    @Transient
+    private ScheduleExpression scheduleExpression;
 
-   @Transient
-   private CalendarBasedTimeout calendarTimeout;
+    @Transient
+    private CalendarBasedTimeout calendarTimeout;
 
-   private String scheduleExprSecond;
+    private String scheduleExprSecond;
 
-   private String scheduleExprMinute;
+    private String scheduleExprMinute;
 
-   private String scheduleExprHour;
+    private String scheduleExprHour;
 
-   private String scheduleExprDayOfWeek;
+    private String scheduleExprDayOfWeek;
 
-   private String scheduleExprDayOfMonth;
+    private String scheduleExprDayOfMonth;
 
-   private String scheduleExprMonth;
+    private String scheduleExprMonth;
 
-   private String scheduleExprYear;
+    private String scheduleExprYear;
 
-   private Date scheduleExprStartDate;
+    private Date scheduleExprStartDate;
 
-   private Date scheduleExprEndDate;
+    private Date scheduleExprEndDate;
 
-   private String scheduleExprTimezone;
+    private String scheduleExprTimezone;
 
-   private boolean autoTimer;
+    private boolean autoTimer;
 
-   @OneToOne(cascade = CascadeType.ALL)
-   private TimeoutMethod timeoutMethod;
+    @OneToOne(cascade = CascadeType.ALL)
+    private TimeoutMethod timeoutMethod;
 
-   public CalendarTimerEntity()
-   {
+    public CalendarTimerEntity() {
 
-   }
+    }
 
-   public CalendarTimerEntity(CalendarTimer calendarTimer)
-   {
-      super(calendarTimer);
-      this.scheduleExpression = calendarTimer.getScheduleExpression();
-      this.autoTimer = calendarTimer.isAutoTimer();
-      if (calendarTimer.isAutoTimer())
-      {
-         Method method = calendarTimer.getTimeoutMethod();
-         Class<?>[] methodParams = method.getParameterTypes();
-         String[] params = new String[methodParams.length];
-         for (int i = 0; i < methodParams.length; i++)
-         {
-            params[i] = methodParams[i].getName();
-         }
-         this.timeoutMethod = new TimeoutMethod(method.getDeclaringClass().getName(), method.getName(), params);
-      }
+    public CalendarTimerEntity(CalendarTimer calendarTimer) {
+        super(calendarTimer);
+        this.scheduleExpression = calendarTimer.getScheduleExpression();
+        this.autoTimer = calendarTimer.isAutoTimer();
+        if (calendarTimer.isAutoTimer()) {
+            Method method = calendarTimer.getTimeoutMethod();
+            Class<?>[] methodParams = method.getParameterTypes();
+            String[] params = new String[methodParams.length];
+            for (int i = 0; i < methodParams.length; i++) {
+                params[i] = methodParams[i].getName();
+            }
+            this.timeoutMethod = new TimeoutMethod(method.getDeclaringClass().getName(), method.getName(), params);
+        }
 
-      this.scheduleExprSecond = this.scheduleExpression.getSecond();
-      this.scheduleExprMinute = this.scheduleExpression.getMinute();
-      this.scheduleExprHour = this.scheduleExpression.getHour();
-      this.scheduleExprDayOfMonth = this.scheduleExpression.getDayOfMonth();
-      this.scheduleExprMonth = this.scheduleExpression.getMonth();
-      this.scheduleExprDayOfWeek = this.scheduleExpression.getDayOfWeek();
-      this.scheduleExprYear = this.scheduleExpression.getYear();
-      this.scheduleExprStartDate = this.scheduleExpression.getStart();
-      this.scheduleExprEndDate = this.scheduleExpression.getEnd();
-      this.scheduleExprTimezone = this.scheduleExpression.getTimezone();
+        this.scheduleExprSecond = this.scheduleExpression.getSecond();
+        this.scheduleExprMinute = this.scheduleExpression.getMinute();
+        this.scheduleExprHour = this.scheduleExpression.getHour();
+        this.scheduleExprDayOfMonth = this.scheduleExpression.getDayOfMonth();
+        this.scheduleExprMonth = this.scheduleExpression.getMonth();
+        this.scheduleExprDayOfWeek = this.scheduleExpression.getDayOfWeek();
+        this.scheduleExprYear = this.scheduleExpression.getYear();
+        this.scheduleExprStartDate = this.scheduleExpression.getStart();
+        this.scheduleExprEndDate = this.scheduleExpression.getEnd();
+        this.scheduleExprTimezone = this.scheduleExpression.getTimezone();
 
-   }
+    }
 
-   @Override
-   public boolean isCalendarTimer()
-   {
-      return true;
-   }
+    @Override
+    public boolean isCalendarTimer() {
+        return true;
+    }
 
-   public ScheduleExpression getScheduleExpression()
-   {
-      if (this.scheduleExpression == null)
-      {
-         this.scheduleExpression = new ScheduleExpression();
-         this.scheduleExpression.second(this.scheduleExprSecond).minute(this.scheduleExprMinute).hour(this.scheduleExprHour).dayOfWeek(this.scheduleExprDayOfWeek)
-               .dayOfMonth(this.scheduleExprDayOfMonth).month(this.scheduleExprMonth).year(this.scheduleExprYear).timezone(this.scheduleExprTimezone);
+    public ScheduleExpression getScheduleExpression() {
+        if (this.scheduleExpression == null) {
+            this.scheduleExpression = new ScheduleExpression();
+            this.scheduleExpression.second(this.scheduleExprSecond).minute(this.scheduleExprMinute).hour(this.scheduleExprHour).dayOfWeek(this.scheduleExprDayOfWeek)
+                    .dayOfMonth(this.scheduleExprDayOfMonth).month(this.scheduleExprMonth).year(this.scheduleExprYear).timezone(this.scheduleExprTimezone);
 
-      }
-      return scheduleExpression;
-   }
+        }
+        return scheduleExpression;
+    }
 
-   public CalendarBasedTimeout getCalendarTimeout()
-   {
-      if (this.calendarTimeout == null)
-      {
-         this.calendarTimeout = new CalendarBasedTimeout(this.getScheduleExpression());
-      }
-      return this.calendarTimeout;
-   }
+    public CalendarBasedTimeout getCalendarTimeout() {
+        if (this.calendarTimeout == null) {
+            this.calendarTimeout = new CalendarBasedTimeout(this.getScheduleExpression());
+        }
+        return this.calendarTimeout;
+    }
 
-   public String getSecond()
-   {
-      return scheduleExprSecond;
-   }
+    public String getSecond() {
+        return scheduleExprSecond;
+    }
 
-   public String getMinute()
-   {
-      return scheduleExprMinute;
-   }
+    public String getMinute() {
+        return scheduleExprMinute;
+    }
 
-   public String getHour()
-   {
-      return scheduleExprHour;
-   }
+    public String getHour() {
+        return scheduleExprHour;
+    }
 
-   public String getDayOfWeek()
-   {
-      return scheduleExprDayOfWeek;
-   }
+    public String getDayOfWeek() {
+        return scheduleExprDayOfWeek;
+    }
 
-   public String getDayOfMonth()
-   {
-      return scheduleExprDayOfMonth;
-   }
+    public String getDayOfMonth() {
+        return scheduleExprDayOfMonth;
+    }
 
-   public String getMonth()
-   {
-      return scheduleExprMonth;
-   }
+    public String getMonth() {
+        return scheduleExprMonth;
+    }
 
-   public String getYear()
-   {
-      return scheduleExprYear;
-   }
+    public String getYear() {
+        return scheduleExprYear;
+    }
 
-   public Date getStartDate()
-   {
-      return scheduleExprStartDate;
-   }
+    public Date getStartDate() {
+        return scheduleExprStartDate;
+    }
 
-   public void setStartDate(Date start)
-   {
-      this.scheduleExprStartDate = start;
-   }
+    public void setStartDate(Date start) {
+        this.scheduleExprStartDate = start;
+    }
 
-   public Date getEndDate()
-   {
-      return scheduleExprEndDate;
-   }
+    public Date getEndDate() {
+        return scheduleExprEndDate;
+    }
 
-   public void setEndDate(Date end)
-   {
-      this.scheduleExprEndDate = end;
-   }
+    public void setEndDate(Date end) {
+        this.scheduleExprEndDate = end;
+    }
 
-   public TimeoutMethod getTimeoutMethod()
-   {
-      return timeoutMethod;
-   }
+    public TimeoutMethod getTimeoutMethod() {
+        return timeoutMethod;
+    }
 
-   public void setTimeoutMethod(TimeoutMethod timeoutMethod)
-   {
-      this.timeoutMethod = timeoutMethod;
-   }
+    public void setTimeoutMethod(TimeoutMethod timeoutMethod) {
+        this.timeoutMethod = timeoutMethod;
+    }
 
-   public boolean isAutoTimer()
-   {
-      return autoTimer;
-   }
+    public boolean isAutoTimer() {
+        return autoTimer;
+    }
 
-   public void setAutoTimer(boolean autoTimer)
-   {
-      this.autoTimer = autoTimer;
-   }
+    public void setAutoTimer(boolean autoTimer) {
+        this.autoTimer = autoTimer;
+    }
 
-   public String getTimezone()
-   {
-      return scheduleExprTimezone;
-   }
+    public String getTimezone() {
+        return scheduleExprTimezone;
+    }
 
-   public void setTimezone(String timezone)
-   {
-      this.scheduleExprTimezone = timezone;
-   }
-   
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (obj == null)
-      {
-         return false;
-      }
-      if (obj instanceof CalendarTimerEntity == false)
-      {
-         return false;
-      }
-      CalendarTimerEntity other = (CalendarTimerEntity) obj;
-      if (this.id == null)
-      {
-         return false;
-      }
-      return this.id.equals(other.id);
-   }
-   
-   @Override
-   public int hashCode()
-   {
-      if (this.id == null)
-      {
-         return super.hashCode();
-      }
-      return this.id.hashCode();
-   }
+    public void setTimezone(String timezone) {
+        this.scheduleExprTimezone = timezone;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj instanceof CalendarTimerEntity == false) {
+            return false;
+        }
+        CalendarTimerEntity other = (CalendarTimerEntity) obj;
+        if (this.id == null) {
+            return false;
+        }
+        return this.id.equals(other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        if (this.id == null) {
+            return super.hashCode();
+        }
+        return this.id.hashCode();
+    }
 
 }

@@ -21,13 +21,12 @@
  */
 package org.jboss.ejb3.timerservice.integration.test.calendar;
 
+import javax.ejb.Singleton;
+import javax.ejb.Timer;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import javax.ejb.Singleton;
-import javax.ejb.Timer;
 
 /**
  * TimeoutTracker
@@ -36,26 +35,22 @@ import javax.ejb.Timer;
  * @version $Revision: $
  */
 @Singleton
-public class TimeoutTracker implements Serializable
-{
+public class TimeoutTracker implements Serializable {
 
-   private int timeoutCount;
-   
-   private List<Date> timeouts = new ArrayList<Date>();
-   
-   public int getTimeoutCount()
-   {
-      return this.timeoutCount;
-   }
-   
-   public List<Date> getTimeouts()
-   {
-      return this.timeouts;
-   }
-   
-   public void trackTimeout(Timer timer, Date timeoutDate)
-   {
-      this.timeoutCount ++;
-      this.timeouts.add(timeoutDate);
-   }
+    private int timeoutCount;
+
+    private List<Date> timeouts = new ArrayList<Date>();
+
+    public int getTimeoutCount() {
+        return this.timeoutCount;
+    }
+
+    public List<Date> getTimeouts() {
+        return this.timeouts;
+    }
+
+    public void trackTimeout(Timer timer, Date timeoutDate) {
+        this.timeoutCount++;
+        this.timeouts.add(timeoutDate);
+    }
 }

@@ -21,8 +21,8 @@
  */
 package org.jboss.ejb3.timerservice.integration.test.timerinfo;
 
-import java.io.Serializable;
-import java.util.Date;
+import org.jboss.ejb3.annotation.RemoteBinding;
+import org.jboss.logging.Logger;
 
 import javax.annotation.Resource;
 import javax.ejb.Remote;
@@ -30,9 +30,8 @@ import javax.ejb.Singleton;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
-
-import org.jboss.ejb3.annotation.RemoteBinding;
-import org.jboss.logging.Logger;
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * SimpleTimerBean
@@ -41,36 +40,32 @@ import org.jboss.logging.Logger;
  * @version $Revision: $
  */
 @Singleton
-@Remote (SimpleTimer.class)
-@RemoteBinding (jndiBinding = SerializableInfoTimerBean.JNDI_NAME)
-public class SerializableInfoTimerBean implements SimpleTimer
-{
+@Remote(SimpleTimer.class)
+@RemoteBinding(jndiBinding = SerializableInfoTimerBean.JNDI_NAME)
+public class SerializableInfoTimerBean implements SimpleTimer {
 
-   public static final String JNDI_NAME = "SerializableInfoTestBean";
-   
-   private Serializable infoFromTimer;
-   
-   private static Logger logger = Logger.getLogger(SerializableInfoTimerBean.class);
-   
-   @Resource
-   private TimerService timerService;
-   
-   public void createTimer(Date timeoutDate, Serializable info)
-   {
-      this.timerService.createTimer(timeoutDate, info);
+    public static final String JNDI_NAME = "SerializableInfoTestBean";
 
-   }
-   
-   @Timeout
-   public void timeout(Timer timer)
-   {
-      this.infoFromTimer = timer.getInfo();
-      logger.info("Got info: " + this.infoFromTimer);
-   }
-   
-   @Override
-   public Serializable getInfoFromTimer()
-   {
-      return this.infoFromTimer;
-   }
+    private Serializable infoFromTimer;
+
+    private static Logger logger = Logger.getLogger(SerializableInfoTimerBean.class);
+
+    @Resource
+    private TimerService timerService;
+
+    public void createTimer(Date timeoutDate, Serializable info) {
+        this.timerService.createTimer(timeoutDate, info);
+
+    }
+
+    @Timeout
+    public void timeout(Timer timer) {
+        this.infoFromTimer = timer.getInfo();
+        logger.info("Got info: " + this.infoFromTimer);
+    }
+
+    @Override
+    public Serializable getInfoFromTimer() {
+        return this.infoFromTimer;
+    }
 }

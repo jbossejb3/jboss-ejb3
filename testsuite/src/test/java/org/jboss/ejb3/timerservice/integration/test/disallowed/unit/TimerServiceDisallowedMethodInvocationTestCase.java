@@ -21,13 +21,7 @@
  */
 package org.jboss.ejb3.timerservice.integration.test.disallowed.unit;
 
-import java.io.File;
-import java.net.URL;
-
-import javax.ejb.TimerService;
-
 import junit.framework.Assert;
-
 import org.jboss.ejb3.timerservice.integration.test.common.AbstractTimerServiceTestCase;
 import org.jboss.ejb3.timerservice.integration.test.disallowed.Echo;
 import org.jboss.ejb3.timerservice.integration.test.disallowed.SimpleSLSB;
@@ -36,61 +30,59 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.ejb.TimerService;
+import java.io.File;
+import java.net.URL;
+
 /**
  * {@link TimerService} method invocations isn't allowed during lifecycle callbacks of SLSB
- * and MDB. This testcase tests that these rules are obeyed 
+ * and MDB. This testcase tests that these rules are obeyed
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public class TimerServiceDisallowedMethodInvocationTestCase extends AbstractTimerServiceTestCase
-{
-   private static Logger logger = Logger.getLogger(TimerServiceDisallowedMethodInvocationTestCase.class);
+public class TimerServiceDisallowedMethodInvocationTestCase extends AbstractTimerServiceTestCase {
+    private static Logger logger = Logger.getLogger(TimerServiceDisallowedMethodInvocationTestCase.class);
 
-   private URL deployment;
+    private URL deployment;
 
-   /**
-    * 
-    * @return
-    * @throws Exception
-    */
-   @Before
-   public void before() throws Exception
-   {
-      String jarName = "timerservice-disallowed-methods-test.jar";
-      File jar = buildSimpleJar(jarName, Echo.class.getPackage());
-      this.deployment = jar.toURI().toURL();
-      this.redeploy(deployment);
-   }
+    /**
+     * @return
+     * @throws Exception
+     */
+    @Before
+    public void before() throws Exception {
+        String jarName = "timerservice-disallowed-methods-test.jar";
+        File jar = buildSimpleJar(jarName, Echo.class.getPackage());
+        this.deployment = jar.toURI().toURL();
+        this.redeploy(deployment);
+    }
 
-   @After
-   public void after() throws Exception
-   {
-      if (this.deployment != null)
-      {
-         this.undeploy(deployment);
-      }
-   }
+    @After
+    public void after() throws Exception {
+        if (this.deployment != null) {
+            this.undeploy(deployment);
+        }
+    }
 
-   /**
-    * Tests that a SLSB ({@link SimpleSLSB}) can't invoke {@link TimerService} methods
-    * in its postconstruct method
-    *  
-    * @throws Exception
-    */
-   @Test
-   public void testTimerServiceDisallowedMethodInvocationForSLSB() throws Exception
-   {
-      Echo bean = (Echo) this.getInitialContext().lookup(SimpleSLSB.JNDI_NAME);
-      // The SimpleSLSB invokes various dis-allowed timerservice methods *and catches* the
-      // expected exceptions. If such exceptions weren't thrown by the timerservice, then
-      // the postconstruct of the SimpleSLSB is implemented to throw an exception to prevent
-      // the bean from being constructed.
+    /**
+     * Tests that a SLSB ({@link SimpleSLSB}) can't invoke {@link TimerService} methods
+     * in its postconstruct method
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testTimerServiceDisallowedMethodInvocationForSLSB() throws Exception {
+        Echo bean = (Echo) this.getInitialContext().lookup(SimpleSLSB.JNDI_NAME);
+        // The SimpleSLSB invokes various dis-allowed timerservice methods *and catches* the
+        // expected exceptions. If such exceptions weren't thrown by the timerservice, then
+        // the postconstruct of the SimpleSLSB is implemented to throw an exception to prevent
+        // the bean from being constructed.
 
-      // So just testing a simple invocation on the bean is enough. The mere possibility of invoking on the bean,
-      // is an indication that the bean deployment did not fail.
-      String msg = "hello";
-      String returnedMsg = bean.echo(msg);
-      Assert.assertEquals("Unexpected echo from bean " + SimpleSLSB.class.getSimpleName(), msg, returnedMsg);
-   }
+        // So just testing a simple invocation on the bean is enough. The mere possibility of invoking on the bean,
+        // is an indication that the bean deployment did not fail.
+        String msg = "hello";
+        String returnedMsg = bean.echo(msg);
+        Assert.assertEquals("Unexpected echo from bean " + SimpleSLSB.class.getSimpleName(), msg, returnedMsg);
+    }
 }

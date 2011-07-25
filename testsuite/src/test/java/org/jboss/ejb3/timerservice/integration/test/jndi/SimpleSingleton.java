@@ -21,6 +21,8 @@
  */
 package org.jboss.ejb3.timerservice.integration.test.jndi;
 
+import org.jboss.ejb3.annotation.RemoteBinding;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.EJBContext;
@@ -31,8 +33,6 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.jboss.ejb3.annotation.RemoteBinding;
-
 /**
  * SimpleSingleton
  *
@@ -40,69 +40,57 @@ import org.jboss.ejb3.annotation.RemoteBinding;
  * @version $Revision: $
  */
 @Singleton
-@Remote (TimerServiceJNDIAccessTester.class)
-@RemoteBinding (jndiBinding = SimpleSingleton.JNDI_NAME)
-public class SimpleSingleton implements TimerServiceJNDIAccessTester
-{
+@Remote(TimerServiceJNDIAccessTester.class)
+@RemoteBinding(jndiBinding = SimpleSingleton.JNDI_NAME)
+public class SimpleSingleton implements TimerServiceJNDIAccessTester {
 
-   public static final String JNDI_NAME = "TimerServiceJNDITestBean";
-   
-   @Resource
-   private TimerService injectedTimerService;
-   
-   @Resource (name = "tService")
-   private TimerService anotherInjectedTimerService;
+    public static final String JNDI_NAME = "TimerServiceJNDITestBean";
+
+    @Resource
+    private TimerService injectedTimerService;
+
+    @Resource(name = "tService")
+    private TimerService anotherInjectedTimerService;
 
 
-   private TimerService lookedupTimerService;
-   
-   @PostConstruct
-   public void onConstruct() throws Exception
-   {
-      Context ctx = new InitialContext();
-      this.lookedupTimerService = (TimerService) ctx.lookup("java:comp/TimerService");
-   }
-   
-   @Override
-   public boolean wasTimerServiceAvailableInPostConstruct()
-   {
-      return this.lookedupTimerService != null;
-   }
-   
-   
-   public boolean isTimerServiceInjected()
-   {
-      return this.injectedTimerService != null;
-   }
-   
-   public boolean isTimerServiceAvailableInENCAtCustomName()
-   {
-      try
-      {
-         Context ctx = new InitialContext();
-         EJBContext ejbContext = (EJBContext) ctx.lookup("java:comp/EJBContext");
-         TimerService tService = (TimerService) ejbContext.lookup("tService");
-         return tService != null;
-      }
-      catch (NamingException ne)
-      {
-         throw new RuntimeException(ne);
-      }
-   }
-   
-   public boolean isTimerServiceAvailableThroughEJBContext()
-   {
-      try
-      {
-         Context ctx = new InitialContext();
-         EJBContext ejbContext = (EJBContext) ctx.lookup("java:comp/EJBContext");
-         TimerService tService = ejbContext.getTimerService();
-         return tService != null;
-      }
-      catch (NamingException ne)
-      {
-         throw new RuntimeException(ne);
-      }
-      
-   }
+    private TimerService lookedupTimerService;
+
+    @PostConstruct
+    public void onConstruct() throws Exception {
+        Context ctx = new InitialContext();
+        this.lookedupTimerService = (TimerService) ctx.lookup("java:comp/TimerService");
+    }
+
+    @Override
+    public boolean wasTimerServiceAvailableInPostConstruct() {
+        return this.lookedupTimerService != null;
+    }
+
+
+    public boolean isTimerServiceInjected() {
+        return this.injectedTimerService != null;
+    }
+
+    public boolean isTimerServiceAvailableInENCAtCustomName() {
+        try {
+            Context ctx = new InitialContext();
+            EJBContext ejbContext = (EJBContext) ctx.lookup("java:comp/EJBContext");
+            TimerService tService = (TimerService) ejbContext.lookup("tService");
+            return tService != null;
+        } catch (NamingException ne) {
+            throw new RuntimeException(ne);
+        }
+    }
+
+    public boolean isTimerServiceAvailableThroughEJBContext() {
+        try {
+            Context ctx = new InitialContext();
+            EJBContext ejbContext = (EJBContext) ctx.lookup("java:comp/EJBContext");
+            TimerService tService = ejbContext.getTimerService();
+            return tService != null;
+        } catch (NamingException ne) {
+            throw new RuntimeException(ne);
+        }
+
+    }
 }

@@ -21,16 +21,15 @@
  */
 package org.jboss.ejb3.timerservice.integration.test.autotimer;
 
-import java.util.Date;
+import org.jboss.ejb3.annotation.RemoteBinding;
+import org.jboss.logging.Logger;
 
 import javax.ejb.EJB;
 import javax.ejb.Remote;
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
 import javax.ejb.Timer;
-
-import org.jboss.ejb3.annotation.RemoteBinding;
-import org.jboss.logging.Logger;
+import java.util.Date;
 
 /**
  * SimpleSLSBAutoTimer
@@ -41,48 +40,42 @@ import org.jboss.logging.Logger;
 @Stateless
 @Remote(SLSBAutoTimer.class)
 @RemoteBinding(jndiBinding = SimpleSLSBAutoTimerBean.JNDI_NAME)
-public class SimpleSLSBAutoTimerBean implements SLSBAutoTimer
-{
+public class SimpleSLSBAutoTimerBean implements SLSBAutoTimer {
 
-   private static Logger logger = Logger.getLogger(SimpleSLSBAutoTimerBean.class);
+    private static Logger logger = Logger.getLogger(SimpleSLSBAutoTimerBean.class);
 
-   public static final String JNDI_NAME = "SLSBAutoTimer";
+    public static final String JNDI_NAME = "SLSBAutoTimer";
 
-   @EJB
-   private TimeoutTrackerForSLSB timeoutTracker;
+    @EJB
+    private TimeoutTrackerForSLSB timeoutTracker;
 
-   @Schedule(second = "*/5", minute = "*", hour = "*")
-   public void scheduleEvery5Second()
-   {
-      Date now = new Date();
-      this.timeoutTracker.trackTimeout("scheduleEvery5Second", now);
+    @Schedule(second = "*/5", minute = "*", hour = "*")
+    public void scheduleEvery5Second() {
+        Date now = new Date();
+        this.timeoutTracker.trackTimeout("scheduleEvery5Second", now);
 
-   }
+    }
 
-   @Schedule(second = "0, 4, 8, 12, 16, 20, 24, 28, 32, 36,40, 44, 48, 52, 56", minute = "*", hour = "*")
-   public void scheduleEvery4Seconds(Timer timer)
-   {
-      Date now = new Date();
-      this.timeoutTracker.trackTimeout("scheduleEvery4Seconds", now);
-      int numTimeouts = this.timeoutTracker.getNumberOfTimeouts("scheduleEvery4Seconds");
-      if (numTimeouts == 2)
-      {
-         logger.info("Cancelling timer " + timer);
-         timer.cancel();
-      }
-   }
+    @Schedule(second = "0, 4, 8, 12, 16, 20, 24, 28, 32, 36,40, 44, 48, 52, 56", minute = "*", hour = "*")
+    public void scheduleEvery4Seconds(Timer timer) {
+        Date now = new Date();
+        this.timeoutTracker.trackTimeout("scheduleEvery4Seconds", now);
+        int numTimeouts = this.timeoutTracker.getNumberOfTimeouts("scheduleEvery4Seconds");
+        if (numTimeouts == 2) {
+            logger.info("Cancelling timer " + timer);
+            timer.cancel();
+        }
+    }
 
-   @Override
-   public int getNumTimeoutsForEvery4SecTimer()
-   {
-      return this.timeoutTracker.getNumberOfTimeouts("scheduleEvery4Seconds");
-   }
+    @Override
+    public int getNumTimeoutsForEvery4SecTimer() {
+        return this.timeoutTracker.getNumberOfTimeouts("scheduleEvery4Seconds");
+    }
 
-   @Override
-   public int getNumTimeoutsForEvery5SecTimer()
-   {
-      return this.timeoutTracker.getNumberOfTimeouts("scheduleEvery5Second");
-   }
-   
-   
+    @Override
+    public int getNumTimeoutsForEvery5SecTimer() {
+        return this.timeoutTracker.getNumberOfTimeouts("scheduleEvery5Second");
+    }
+
+
 }
