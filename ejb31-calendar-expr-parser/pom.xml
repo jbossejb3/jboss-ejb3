@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.jboss.ejb3.timerservice</groupId>
 		<artifactId>jboss-ejb3-timerservice-parent</artifactId>
-		<version>1.0.0-alpha-14-SNAPSHOT</version>
+        <version>2.0.0.Alpha1-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -16,10 +16,8 @@
 	<packaging>jar</packaging>
 
 	<name>EJB3.1 Calendar expression (ScheduleExpression) parser</name>
-	<description>
-    A parser for EJB3.1 timerservice calendar expressions (a.k.a ScheduleExpression)
-  </description>
-	<url>http://labs.jboss.com/jbossejb3/</url>
+	<description>A parser for EJB3.1 timerservice calendar expressions (a.k.a ScheduleExpression)</description>
+	<url>https://github.com/jbossejb3</url>
 
 	
 	<build>
@@ -59,12 +57,12 @@
 		<dependency>
 			<groupId>org.jboss.spec.javax.ejb</groupId>
 			<artifactId>jboss-ejb-api_3.1_spec</artifactId>
-			<version>1.0.0.Beta2</version>
 		</dependency>
-		<dependency>
-			<groupId>org.jboss.logging</groupId>
-			<artifactId>jboss-logging-spi</artifactId>
-		</dependency>
+
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+        </dependency>
 
 		<dependency>
 			<groupId>junit</groupId>

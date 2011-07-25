@@ -21,24 +21,23 @@
  */
 package org.jboss.ejb3.timerservice.mk2;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import org.jboss.ejb3.timerservice.spi.TimedObjectInvoker;
+import org.jboss.ejb3.timerservice.spi.TimerServiceFactory;
+import org.jboss.logging.Logger;
 
 import javax.ejb.TimerService;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
 import javax.transaction.TransactionManager;
-
-import org.jboss.beans.metadata.api.annotations.Inject;
-import org.jboss.ejb3.timerservice.spi.TimedObjectInvoker;
-import org.jboss.ejb3.timerservice.spi.TimerServiceFactory;
-import org.jboss.logging.Logger;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Implementation of {@link TimerServiceFactory}, responsible for 
  * creating and managing MK2 timer services
  * 
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * @author Stuart Douglas
  * @version $Revision: $
  */
 public class TimerServiceFactoryImpl implements TimerServiceFactory
@@ -141,7 +140,6 @@ public class TimerServiceFactoryImpl implements TimerServiceFactory
     * 
     * @param tm Transaction manager
     */
-   @Inject
    public void setTransactionManager(TransactionManager tm)
    {
       this.transactionManager = tm;
