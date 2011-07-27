@@ -24,6 +24,7 @@
         <version.org.jboss.ejb3.context>0.2.0</version.org.jboss.ejb3.context>
         <version.jboss.ejb.metadata>7.0.0.Beta5</version.jboss.ejb.metadata>
         <version.jboss-ejb-api_3.1_spec>1.0.1.Final</version.jboss-ejb-api_3.1_spec>
+        <version.jboss-msc>1.0.0.GA</version.jboss-msc>
     </properties>
 
     <modules>

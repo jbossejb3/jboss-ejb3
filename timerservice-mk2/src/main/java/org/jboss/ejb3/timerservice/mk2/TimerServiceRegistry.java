@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class TimerServiceRegistry {
 
-    private static Map<String, TimerServiceImpl> timerServices = new ConcurrentHashMap<String, TimerServiceImpl>();
+    private static final Map<String, TimerServiceImpl> timerServices = new ConcurrentHashMap<String, TimerServiceImpl>();
 
     public static void registerTimerService(TimerServiceImpl timerservice) {
         if (timerservice == null) {

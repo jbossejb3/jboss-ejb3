@@ -55,6 +55,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -128,9 +129,6 @@ public class TimerServiceImpl implements TimerService {
         if (invoker == null) {
             throw new IllegalArgumentException("Invoker cannot be null");
         }
-        if (emf == null) {
-            throw new IllegalArgumentException("EntityManagerFactory cannot be null");
-        }
         if (transactionManager == null) {
             throw new IllegalArgumentException("Transaction manager cannot be null");
         }
@@ -160,7 +158,7 @@ public class TimerServiceImpl implements TimerService {
     public Timer createCalendarTimer(ScheduleExpression schedule, TimerConfig timerConfig)
             throws IllegalArgumentException, IllegalStateException, EJBException {
         Serializable info = timerConfig == null ? null : timerConfig.getInfo();
-        boolean persistent = timerConfig == null ? true : timerConfig.isPersistent();
+        boolean persistent = timerConfig == null || timerConfig.isPersistent();
         return this.createCalendarTimer(schedule, info, persistent, null);
     }
 
@@ -289,13 +287,14 @@ public class TimerServiceImpl implements TimerService {
     }
 
     @Override
-    public org.jboss.ejb3.timerservice.extension.Timer getAutoTimer(ScheduleExpression schedule, Method timeoutMethod) {
+    public org.jboss.ejb3.timerservice.extension.Timer loadAutoTimer(ScheduleExpression schedule, Method timeoutMethod) {
+
         return this.createCalendarTimer(schedule, null, true, timeoutMethod);
     }
 
     @Override
-    public org.jboss.ejb3.timerservice.extension.Timer getAutoTimer(ScheduleExpression schedule,
-                                                                    TimerConfig timerConfig, Method timeoutMethod) {
+    public org.jboss.ejb3.timerservice.extension.Timer loadAutoTimer(ScheduleExpression schedule,
+                                                                     TimerConfig timerConfig, Method timeoutMethod) {
         return this.createCalendarTimer(schedule, timerConfig.getInfo(), timerConfig.isPersistent(), timeoutMethod);
     }
 
@@ -384,7 +383,7 @@ public class TimerServiceImpl implements TimerService {
      */
     private org.jboss.ejb3.timerservice.extension.Timer createCalendarTimer(ScheduleExpression schedule,
                                                                             Serializable info, boolean persistent, Method timeoutMethod) {
-        if (this.isLifecycleCallbackInvocation() && this.isSingletonBeanInvocation() == false) {
+        if (this.isLifecycleCallbackInvocation() && !this.isSingletonBeanInvocation()) {
             throw new IllegalStateException("Creation of timers is not allowed during lifecycle callback of non-singleton EJBs");
         }
         if (schedule == null) {
@@ -586,6 +585,15 @@ public class TimerServiceImpl implements TimerService {
         Transaction previousTx = null;
         boolean newTxStarted = false;
         try {
+
+
+            EntityManager em = this.getCurrentEntityManager();
+            //if the em is null timer persistence is disabled
+            if(em == null) {
+                logger.warn("Timer persistence is not enabled, persistent timers will not survive JVM restarts");
+                return;
+            }
+
             previousTx = this.transactionManager.getTransaction();
             // we persist with REQUIRED tx semantics
             // if there's no current tx in progress, then create a new one
@@ -594,7 +602,6 @@ public class TimerServiceImpl implements TimerService {
                 newTxStarted = true;
             }
 
-            EntityManager em = this.getCurrentEntityManager();
             // merge the state
             TimerEntity mergedTimerEntity = em.merge(timerEntity);
 
@@ -833,7 +840,10 @@ public class TimerServiceImpl implements TimerService {
         String id = timerHandle.getId();
         String timedObjectId = timerHandle.getTimedObjectId();
         EntityManager em = this.emf.createEntityManager();
-        Query query = em.createQuery("from TimerEntity t where t.id = :id and t.timedObjectId = :timedObjectId");
+        if (em == null) {
+            return null;
+        }
+        Query query = em.createQuery("select t from TimerEntity t where t.id = :id and t.timedObjectId = :timedObjectId");
         query.setParameter("id", id);
         query.setParameter("timedObjectId", timedObjectId);
 
@@ -856,26 +866,38 @@ public class TimerServiceImpl implements TimerService {
         // we need only those timers which correspond to the
         // timed object invoker to which this timer service belongs. So
         // first get hold of the timed object id
-        String timedObjectId = this.getInvoker().getTimedObjectId();
+        final String timedObjectId = this.getInvoker().getTimedObjectId();
 
         // timer states which do *not* represent an active timer
-        Set<TimerState> ineligibleTimerStates = new HashSet<TimerState>();
+        final Set<TimerState> ineligibleTimerStates = new HashSet<TimerState>();
         ineligibleTimerStates.add(TimerState.CANCELED);
         ineligibleTimerStates.add(TimerState.EXPIRED);
+        if (this.emf == null) {
+            //if the em is null then there are no persistent timers
+            return Collections.emptyList();
+        }
+        final EntityManager em = this.emf.createEntityManager();
 
-        EntityManager em = this.emf.createEntityManager();
-
-        Query activeTimersQuery = em
-                .createQuery("from TimerEntity t where t.timedObjectId = :timedObjectId and t.timerState not in (:timerStates)");
+        final Query activeTimersQuery = em
+                .createQuery("select t from TimerEntity t where t.timedObjectId = :timedObjectId and t.timerState not in (:timerStates)");
         activeTimersQuery.setParameter("timedObjectId", timedObjectId);
         activeTimersQuery.setParameter("timerStates", ineligibleTimerStates);
 
-        List<TimerEntity> persistedTimers = activeTimersQuery.getResultList();
-        List<TimerImpl> activeTimers = new ArrayList<TimerImpl>();
+        final List<TimerEntity> persistedTimers = activeTimersQuery.getResultList();
+        final List<TimerImpl> activeTimers = new ArrayList<TimerImpl>();
         for (TimerEntity persistedTimer : persistedTimers) {
+
             TimerImpl activeTimer = null;
             if (persistedTimer.isCalendarTimer()) {
                 CalendarTimerEntity calendarTimerEntity = (CalendarTimerEntity) persistedTimer;
+
+                //we don't load auto timers here
+                //if they are not loaded automatically by the auto timer deployment process
+                //then the annotation has been removed, and they should not be loaded.
+                if (calendarTimerEntity.isAutoTimer()) {
+                    continue;
+                }
+
                 // create a timer instance from the persisted calendar timer
                 activeTimer = new CalendarTimer(calendarTimerEntity, this);
             } else {
@@ -901,82 +923,66 @@ public class TimerServiceImpl implements TimerService {
         return (Serializable) clonedInfo;
     }
 
-    private org.jboss.ejb3.timerservice.extension.Timer getExistingAutoTimer(ScheduleExpression schedule,
-                                                                             TimerConfig timerConfig, String timeoutMethodName, String[] methodParams) {
-        //      if (timerConfig != null && timerConfig.isPersistent() == false)
-        //      {
-        //         return null;
-        //      }
-        //      // we need to restore only those timers which correspond to the
-        //      // timed object invoker to which this timer service belongs. So
-        //      // first get hold of the timed object id
-        //      String timedObjectId = this.getInvoker().getTimedObjectId();
-        //
-        //      // TODO: Again the boilerplate transaction management code
-        //      // (which will go, once the timer service is "managed")
-        //      boolean thisMethodStartedTx = this.startTxIfNone();
-        //
-        //      try
-        //      {
-        //
-        //         // join the transaction, since the entity manager was created
-        //         // outside the transaction context
-        //         this.em.joinTransaction();
-        //
-        //         Query autoTimersQuery = this.em
-        //               .createQuery("from CalendarTimerEntity t where t.timedObjectId = :timedObjectId and t.autoTimer is true");
-        //         autoTimersQuery.setParameter("timedObjectId", timedObjectId);
-        //
-        //         List<CalendarTimerEntity> autoTimers = autoTimersQuery.getResultList();
-        //         for (CalendarTimerEntity autoTimer : autoTimers)
-        //         {
-        //            TimeoutMethod timeoutMethod = autoTimer.getTimeoutMethod();
-        //            if (this.doesTimeoutMethodMatch(timeoutMethod, timeoutMethodName, methodParams) == false)
-        //            {
-        //               continue;
-        //            }
-        //            if (timerConfig != null)
-        //            {
-        //               Serializable info = timerConfig.getInfo();
-        //               if (info != null)
-        //               {
-        //                  if (info.equals(autoTimer.getInfo()) == false)
-        //                  {
-        //                     continue;
-        //                  }
-        //               }
-        //               else
-        //               {
-        //                  if (autoTimer.getInfo() != null)
-        //                  {
-        //                     continue;
-        //                  }
-        //               }
-        //            }
-        //            // now onto schedule
-        //            ScheduleExpression autoTimerSchedule = autoTimer.getScheduleExpression();
-        //            if (this.doSchedulesMatch(autoTimerSchedule, schedule))
-        //            {
-        //               return new CalendarTimer(autoTimer, this);
-        //            }
-        //
-        //         }
-        //      }
-        //      catch (Throwable t)
-        //      {
-        //         // TODO: Again the tx management boilerplate
-        //         this.setRollbackOnly();
-        //         throw new RuntimeException(t);
-        //      }
-        //      finally
-        //      {
-        //         // TODO: Remove this once the timer service implementation
-        //         // becomes "managed"
-        //         if (thisMethodStartedTx)
-        //         {
-        //            this.endTransaction();
-        //         }
-        //      }
+    private org.jboss.ejb3.timerservice.extension.Timer getExistingAutoTimer(ScheduleExpression schedule, TimerConfig timerConfig, String timeoutMethodName, String[] methodParams) {
+//        if (timerConfig != null && !timerConfig.isPersistent()) {
+//            return null;
+//        }
+//        // we need to restore only those timers which correspond to the
+//        // timed object invoker to which this timer service belongs. So
+//        // first get hold of the timed object id
+//        String timedObjectId = this.getInvoker().getTimedObjectId();
+//
+//        // TODO: Again the boilerplate transaction management code
+//        // (which will go, once the timer service is "managed")
+//        boolean thisMethodStartedTx = this.startTxIfNone();
+//
+//        try {
+//
+//            // join the transaction, since the entity manager was created
+//            // outside the transaction context
+//            final EntityManager em = getCurrentEntityManager();
+//            em.joinTransaction();
+//
+//            Query autoTimersQuery = em
+//                    .createQuery("select t from CalendarTimerEntity t where t.timedObjectId = :timedObjectId and t.autoTimer is true");
+//            autoTimersQuery.setParameter("timedObjectId", timedObjectId);
+//
+//            List<CalendarTimerEntity> autoTimers = autoTimersQuery.getResultList();
+//            for (CalendarTimerEntity autoTimer : autoTimers) {
+//                TimeoutMethod timeoutMethod = autoTimer.getTimeoutMethod();
+//                if (!this.doesTimeoutMethodMatch(timeoutMethod, timeoutMethodName, methodParams)) {
+//                    continue;
+//                }
+//                if (timerConfig != null) {
+//                    Serializable info = timerConfig.getInfo();
+//                    if (info != null) {
+//                        if (!info.equals(autoTimer.getInfo())) {
+//                            continue;
+//                        }
+//                    } else {
+//                        if (autoTimer.getInfo() != null) {
+//                            continue;
+//                        }
+//                    }
+//                }
+//                // now onto schedule
+//                ScheduleExpression autoTimerSchedule = autoTimer.getScheduleExpression();
+//                if (this.doSchedulesMatch(autoTimerSchedule, schedule)) {
+//                    return new CalendarTimer(autoTimer, this);
+//                }
+//
+//            }
+//        } catch (Throwable t) {
+//            // TODO: Again the tx management boilerplate
+//            this.setRollbackOnly();
+//            throw new RuntimeException(t);
+//        } finally {
+//            // TODO: Remove this once the timer service implementation
+//            // becomes "managed"
+//            if (thisMethodStartedTx) {
+//                this.endTransaction();
+//            }
+//        }
         return null;
     }
 
@@ -1152,6 +1158,9 @@ public class TimerServiceImpl implements TimerService {
     }
 
     private EntityManager getCurrentEntityManager() throws Exception {
+        if(this.emf == null) {
+            return null;
+        }
         EntityManager em = this.transactionScopedEntityManager.get();
         if (em != null) {
             return em;

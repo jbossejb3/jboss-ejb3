@@ -125,7 +125,6 @@
             <artifactId>jboss-logging</artifactId>
         </dependency>
 
-
         <!--  Test dependencies -->
 
         <!-- For 'mocking' a DataSource we use Hypersonic -->

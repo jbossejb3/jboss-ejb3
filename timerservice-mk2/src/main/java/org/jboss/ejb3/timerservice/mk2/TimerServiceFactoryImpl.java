@@ -27,9 +27,7 @@ import org.jboss.logging.Logger;
 
 import javax.ejb.TimerService;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceUnit;
 import javax.transaction.TransactionManager;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
@@ -49,17 +47,23 @@ public class TimerServiceFactoryImpl implements TimerServiceFactory {
     /**
      * Entity manager factory for JPA backed persistence
      */
-    private EntityManagerFactory emf;
+    private final EntityManagerFactory emf;
 
     /**
      * Transaction manager for transaction management
      */
-    private TransactionManager transactionManager;
+    private final TransactionManager transactionManager;
 
     /**
      * Exceutor service for creating the scheduled timer tasks
      */
-    private ScheduledExecutorService executor;
+    private final ScheduledExecutorService executor;
+
+    public TimerServiceFactoryImpl(final EntityManagerFactory emf, final TransactionManager transactionManager, final ScheduledExecutorService executor) {
+        this.emf = emf;
+        this.transactionManager = transactionManager;
+        this.executor = executor;
+    }
 
     /**
      * Creates a timer service for the passed <code>invoker</code>.
@@ -69,9 +73,6 @@ public class TimerServiceFactoryImpl implements TimerServiceFactory {
      * </p>
      */
     public TimerService createTimerService(TimedObjectInvoker invoker) {
-        // TODO: inject
-        executor = Executors.newScheduledThreadPool(10);
-
         // create the timer service
         TimerServiceImpl timerService = new TimerServiceImpl(invoker, emf, transactionManager, executor);
 
@@ -109,7 +110,7 @@ public class TimerServiceFactoryImpl implements TimerServiceFactory {
         String timedObjectId = mk2TimerService.getInvoker().getTimedObjectId();
         // if the timer service is not registered (maybe it was unregistered when it
         // was suspended) then register it with the timer service registry
-        if (TimerServiceRegistry.isRegistered(timedObjectId) == false) {
+        if (!TimerServiceRegistry.isRegistered(timedObjectId)) {
             TimerServiceRegistry.registerTimerService(mk2TimerService);
         }
 
@@ -117,26 +118,6 @@ public class TimerServiceFactoryImpl implements TimerServiceFactory {
         // restore the timers
         mk2TimerService.restoreTimers();
 
-    }
-
-    /**
-     * Set the entity manager factory responsible for managing persistence of the
-     * timers.
-     *
-     * @param emf Entity manager factory
-     */
-    @PersistenceUnit(unitName = "timerdb")
-    public void setEntityManagerFactory(EntityManagerFactory emf) {
-        this.emf = emf;
-    }
-
-    /**
-     * Sets the transaction mananger responsible for transaction management of timers
-     *
-     * @param tm Transaction manager
-     */
-    public void setTransactionManager(TransactionManager tm) {
-        this.transactionManager = tm;
     }
 
     /**

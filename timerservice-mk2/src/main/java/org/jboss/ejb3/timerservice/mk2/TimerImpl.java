@@ -59,7 +59,7 @@ public class TimerImpl implements Timer {
     /**
      * Unique id for this timer instance
      */
-    protected String id;
+    protected final String id;
 
     /**
      * The timer state

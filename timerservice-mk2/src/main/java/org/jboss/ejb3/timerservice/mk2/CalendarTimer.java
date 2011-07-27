@@ -231,7 +231,7 @@ public class CalendarTimer extends TimerImpl {
         if (this.handle == null) {
             return false;
         }
-        if (obj instanceof CalendarTimer == false) {
+        if (!(obj instanceof CalendarTimer)) {
             return false;
         }
         CalendarTimer otherTimer = (CalendarTimer) obj;

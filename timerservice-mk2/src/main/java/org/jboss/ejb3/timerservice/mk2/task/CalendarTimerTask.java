@@ -56,14 +56,14 @@ public class CalendarTimerTask extends TimerTask<CalendarTimer> {
         CalendarTimer calendarTimer = this.getTimer();
 
         // if we have any more schedules remaining, then schedule a new task
-        if (calendarTimer.getNextExpiration() != null && calendarTimer.isInRetry() == false) {
+        if (calendarTimer.getNextExpiration() != null && !calendarTimer.isInRetry()) {
             calendarTimer.scheduleTimeout();
         }
 
         // finally invoke the timeout method through the invoker
         if (calendarTimer.isAutoTimer()) {
             TimedObjectInvoker invoker = this.timerService.getInvoker();
-            if (invoker instanceof MultiTimeoutMethodTimedObjectInvoker == false) {
+            if (!(invoker instanceof MultiTimeoutMethodTimedObjectInvoker)) {
                 String msg = "Cannot invoke timeout method because timer: " + calendarTimer
                         + " is an auto timer, but invoker is not of type" + MultiTimeoutMethodTimedObjectInvoker.class;
                 logger.error(msg);

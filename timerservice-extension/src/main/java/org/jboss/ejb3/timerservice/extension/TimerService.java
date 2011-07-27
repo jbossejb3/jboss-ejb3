@@ -33,8 +33,8 @@ import java.lang.reflect.Method;
  */
 public interface TimerService extends javax.ejb.TimerService {
 
-    Timer getAutoTimer(ScheduleExpression schedule, Method timeoutMethod);
+    Timer loadAutoTimer(ScheduleExpression schedule, Method timeoutMethod);
 
-    Timer getAutoTimer(ScheduleExpression schedule, TimerConfig timerConfig, Method timeoutMethod);
+    Timer loadAutoTimer(ScheduleExpression schedule, TimerConfig timerConfig, Method timeoutMethod);
 }
 
