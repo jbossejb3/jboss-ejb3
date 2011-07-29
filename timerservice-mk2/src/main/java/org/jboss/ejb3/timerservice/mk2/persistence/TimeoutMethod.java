@@ -21,14 +21,6 @@
  */
 package org.jboss.ejb3.timerservice.mk2.persistence;
 
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,29 +30,19 @@ import java.util.List;
  * TimeoutMethod
  *
  * @author Jaikiran Pai
- * @version $Revision: $
+ * @author Stuart Douglas
  */
-@Entity
-@Table(name = "timeout_method")
 public class TimeoutMethod implements Serializable {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @NotNull(message = "Declaring class for timeout method cannot be null")
     private String declaringClass;
 
-    @NotNull(message = "Method name for timeout method cannot be null")
     private String methodName;
 
-    // TODO: Ordering of method params is *not* considered right now
-    // (mainly because we expect atmost one param for a timeout method)
-    @ElementCollection
     private List<String> methodParams;
 
-    @Transient
-    private String cachedToString;
+    private transient String cachedToString;
 
     public TimeoutMethod() {
 

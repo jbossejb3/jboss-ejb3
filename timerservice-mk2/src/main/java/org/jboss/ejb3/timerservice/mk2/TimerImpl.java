@@ -176,7 +176,7 @@ public class TimerImpl implements Timer {
                 persistedTimer.getNextDate(), null, true);
         this.previousRun = persistedTimer.getPreviousRun();
         this.timerState = persistedTimer.getTimerState();
-        this.info = this.deserialize(persistedTimer.getInfo());
+        this.info = persistedTimer.getInfo();
     }
 
     /**
@@ -416,7 +416,6 @@ public class TimerImpl implements Timer {
      * is neither of the following:
      * <ul>
      * <li>{@link TimerState#CANCELED}</li>
-     * <li>{@link TimerState#CANCELED_IN_TX}</li>
      * <li>{@link TimerState#EXPIRED}</li>
      * </ul>
      * </p>
@@ -507,9 +506,6 @@ public class TimerImpl implements Timer {
         timerService.removeTimer(this);
         // Cancel any scheduled timer task for this timer
         this.cancelTimeout();
-
-        // persist changes
-        timerService.persistTimer(this);
     }
 
     /**

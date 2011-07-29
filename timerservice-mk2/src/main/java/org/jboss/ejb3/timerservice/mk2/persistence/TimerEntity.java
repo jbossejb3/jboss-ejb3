@@ -24,13 +24,6 @@ package org.jboss.ejb3.timerservice.mk2.persistence;
 import org.jboss.ejb3.timerservice.mk2.TimerImpl;
 import org.jboss.ejb3.timerservice.mk2.TimerState;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -39,17 +32,12 @@ import java.util.Date;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
- * @version $Revision: $
+ * @author Stuart Douglas
  */
-@Entity
-@Table(name = "timer")
-@Inheritance(strategy = InheritanceType.JOINED)
 public class TimerEntity implements Serializable {
-    @Id
+
     protected String id;
 
-    @Column(nullable = false)
-    @NotNull
     protected String timedObjectId;
 
     protected Date initialDate;
@@ -60,7 +48,7 @@ public class TimerEntity implements Serializable {
 
     protected Date previousRun;
 
-    protected byte[] info;
+    protected Serializable info;
 
 
     protected TimerState timerState;
@@ -77,10 +65,7 @@ public class TimerEntity implements Serializable {
         this.previousRun = timer.getPreviousRun();
         this.timerState = timer.getState();
         this.timedObjectId = timer.getTimedObjectId();
-        if (timer.getTimerInfo() != null) {
-            this.info = this.getBytes(timer.getTimerInfo());
-        }
-
+        this.info = timer.getTimerInfo();
     }
 
     public String getId() {
@@ -99,7 +84,7 @@ public class TimerEntity implements Serializable {
         return repeatInterval;
     }
 
-    public byte[] getInfo() {
+    public Serializable getInfo() {
         return this.info;
     }
 
@@ -136,7 +121,7 @@ public class TimerEntity implements Serializable {
         if (obj == null) {
             return false;
         }
-        if (obj instanceof TimerEntity == false) {
+        if (!(obj instanceof TimerEntity)) {
             return false;
         }
         TimerEntity other = (TimerEntity) obj;
@@ -152,18 +137,6 @@ public class TimerEntity implements Serializable {
             return super.hashCode();
         }
         return this.id.hashCode();
-    }
-
-    private byte[] getBytes(Serializable ser) {
-        try {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
-            objectOutputStream.writeObject(ser);
-            return outputStream.toByteArray();
-        } catch (IOException ioe) {
-            throw new RuntimeException("Could not get bytes out of serializable object: " + ser, ioe);
-        }
-
     }
 
 }

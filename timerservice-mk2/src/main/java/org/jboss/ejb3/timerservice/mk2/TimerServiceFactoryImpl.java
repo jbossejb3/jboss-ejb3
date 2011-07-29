@@ -21,12 +21,12 @@
  */
 package org.jboss.ejb3.timerservice.mk2;
 
+import org.jboss.ejb3.timerservice.mk2.persistence.TimerPersistence;
 import org.jboss.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.ejb3.timerservice.spi.TimerServiceFactory;
 import org.jboss.logging.Logger;
 
 import javax.ejb.TimerService;
-import javax.persistence.EntityManagerFactory;
 import javax.transaction.TransactionManager;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -47,7 +47,7 @@ public class TimerServiceFactoryImpl implements TimerServiceFactory {
     /**
      * Entity manager factory for JPA backed persistence
      */
-    private final EntityManagerFactory emf;
+    private final TimerPersistence timerPersistence;
 
     /**
      * Transaction manager for transaction management
@@ -59,8 +59,8 @@ public class TimerServiceFactoryImpl implements TimerServiceFactory {
      */
     private final ScheduledExecutorService executor;
 
-    public TimerServiceFactoryImpl(final EntityManagerFactory emf, final TransactionManager transactionManager, final ScheduledExecutorService executor) {
-        this.emf = emf;
+    public TimerServiceFactoryImpl(final TimerPersistence timerPersistence, final TransactionManager transactionManager, final ScheduledExecutorService executor) {
+        this.timerPersistence = timerPersistence;
         this.transactionManager = transactionManager;
         this.executor = executor;
     }
@@ -74,7 +74,7 @@ public class TimerServiceFactoryImpl implements TimerServiceFactory {
      */
     public TimerService createTimerService(TimedObjectInvoker invoker) {
         // create the timer service
-        TimerServiceImpl timerService = new TimerServiceImpl(invoker, emf, transactionManager, executor);
+        TimerServiceImpl timerService = new TimerServiceImpl(invoker, timerPersistence, transactionManager, executor);
 
         String timedObjectId = invoker.getTimedObjectId();
         // EJBTHREE-2209 I'm not too happy with this "fix". Ideally,

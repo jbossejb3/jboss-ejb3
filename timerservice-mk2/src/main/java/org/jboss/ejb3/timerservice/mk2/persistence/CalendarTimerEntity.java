@@ -25,13 +25,6 @@ import org.jboss.ejb3.timer.schedule.CalendarBasedTimeout;
 import org.jboss.ejb3.timerservice.mk2.CalendarTimer;
 
 import javax.ejb.ScheduleExpression;
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.persistence.Transient;
 import java.lang.reflect.Method;
 import java.util.Date;
 
@@ -39,18 +32,13 @@ import java.util.Date;
  * CalendarTimerEntity
  *
  * @author Jaikiran Pai
- * @version $Revision: $
+ * @author Stuart Douglas
  */
-@Entity
-@Table(name = "calendar_timer")
-@Inheritance(strategy = InheritanceType.JOINED)
 public class CalendarTimerEntity extends TimerEntity {
 
-    @Transient
-    private ScheduleExpression scheduleExpression;
+    private transient ScheduleExpression scheduleExpression;
 
-    @Transient
-    private CalendarBasedTimeout calendarTimeout;
+    private transient CalendarBasedTimeout calendarTimeout;
 
     private String scheduleExprSecond;
 
@@ -74,7 +62,6 @@ public class CalendarTimerEntity extends TimerEntity {
 
     private boolean autoTimer;
 
-    @OneToOne(cascade = CascadeType.ALL)
     private TimeoutMethod timeoutMethod;
 
     public CalendarTimerEntity() {
