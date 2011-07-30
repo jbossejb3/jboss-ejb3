@@ -19,17 +19,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.timerservice.extension;
+package org.jboss.ejb3.timerservice.api;
+
+import javax.ejb.ScheduleExpression;
+import javax.ejb.TimerConfig;
+import java.lang.reflect.Method;
 
 /**
- * Timer
+ * TimerService
  *
  * @author Jaikiran Pai
  * @version $Revision: $
  */
-public interface Timer extends javax.ejb.Timer {
+public interface TimerService extends javax.ejb.TimerService {
 
-    boolean isAutoTimer();
+    Timer loadAutoTimer(ScheduleExpression schedule, Method timeoutMethod);
 
-    boolean isActive();
+    Timer loadAutoTimer(ScheduleExpression schedule, TimerConfig timerConfig, Method timeoutMethod);
 }
+

@@ -531,8 +531,6 @@ public class CalendarBasedTimeout {
 
         // handle case#1
         if (nextMonth > currentMonth) {
-            // set the chosen month
-            nextCal.set(Calendar.MONTH, nextMonth);
             // since we are moving to a different month (as compared to the current month),
             // we should reset the second, minute, hour, day-of-week and dayofmonth appropriately, to their first possible
             // values
@@ -542,6 +540,8 @@ public class CalendarBasedTimeout {
             nextCal.set(Calendar.DAY_OF_WEEK, this.dayOfWeek.getFirst());
             nextCal.set(Calendar.DAY_OF_MONTH, 1);
 
+            // set the chosen month
+            nextCal.set(Calendar.MONTH, nextMonth);
             return nextCal;
         }
 

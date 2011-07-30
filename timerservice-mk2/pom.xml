@@ -83,25 +83,8 @@
 
         <dependency>
             <groupId>org.jboss.ejb3.timerservice</groupId>
-            <artifactId>jboss-ejb3-timerservice-extension</artifactId>
+            <artifactId>jboss-ejb3-timerservice-api</artifactId>
             <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.ejb3</groupId>
-            <artifactId>jboss-ejb3-timerservice-spi</artifactId>
-            <version>1.0.3</version>
-            <exclusions>
-                <!-- Make sure the EJB 3.0 API doesn't get in here -->
-                <exclusion>
-                    <groupId>org.jboss.javaee</groupId>
-                    <artifactId>jboss-ejb-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.metadata</groupId>
-                    <artifactId>jboss-metadata-ejb</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>

@@ -11,10 +11,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.jboss.ejb3.timerservice</groupId>
-    <artifactId>jboss-ejb3-timerservice-extension</artifactId>
+    <artifactId>jboss-ejb3-timerservice-api</artifactId>
     <packaging>jar</packaging>
 
-    <name>JBoss EJB3.1 TimerService extension</name>
+    <name>JBoss EJB3.1 TimerService API</name>
     <description>Extension of EJB3.1 timerservice, providing JBoss specific API</description>
     <url>http://labs.jboss.com/jbossejb3/</url>
 

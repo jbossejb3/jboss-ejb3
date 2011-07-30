@@ -21,8 +21,8 @@
  */
 package org.jboss.ejb3.timerservice.mk2;
 
-import org.jboss.ejb3.timerservice.extension.Timer;
-import org.jboss.ejb3.timerservice.extension.TimerService;
+import org.jboss.ejb3.timerservice.api.Timer;
+import org.jboss.ejb3.timerservice.api.TimerService;
 import org.jboss.ejb3.timerservice.mk2.persistence.TimerEntity;
 import org.jboss.ejb3.timerservice.mk2.task.TimerTask;
 import org.jboss.ejb3.timerservice.spi.TimedObjectInvoker;

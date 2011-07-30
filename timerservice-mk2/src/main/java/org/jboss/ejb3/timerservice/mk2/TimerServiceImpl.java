@@ -24,14 +24,14 @@ package org.jboss.ejb3.timerservice.mk2;
 import org.jboss.ejb3.context.CurrentInvocationContext;
 import org.jboss.ejb3.context.spi.InvocationContext;
 import org.jboss.ejb3.timer.schedule.CalendarBasedTimeout;
-import org.jboss.ejb3.timerservice.extension.TimerService;
+import org.jboss.ejb3.timerservice.api.TimerService;
 import org.jboss.ejb3.timerservice.mk2.persistence.CalendarTimerEntity;
 import org.jboss.ejb3.timerservice.mk2.persistence.TimeoutMethod;
 import org.jboss.ejb3.timerservice.mk2.persistence.TimerEntity;
 import org.jboss.ejb3.timerservice.mk2.persistence.TimerPersistence;
 import org.jboss.ejb3.timerservice.mk2.task.TimerTask;
+import org.jboss.ejb3.timerservice.spi.ScheduleTimer;
 import org.jboss.ejb3.timerservice.spi.TimedObjectInvoker;
-import org.jboss.ejb3.timerservice.spi.TimerServiceInvocationContext;
 import org.jboss.logging.Logger;
 
 import javax.ejb.EJBException;
@@ -56,14 +56,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -95,9 +96,14 @@ public class TimerServiceImpl implements TimerService {
     private final TransactionManager transactionManager;
 
     /**
-     * For scheduling timeout tasks
+     * For running timeout tasks
      */
-    private final ScheduledExecutorService executor;
+    private final ExecutorService executorService;
+
+    /**
+     * The timer
+     */
+    private final java.util.Timer timer;
 
     /**
      * All non-persistent timers which were created by this {@link TimerService}
@@ -109,7 +115,7 @@ public class TimerServiceImpl implements TimerService {
     /**
      * Holds the {@link Future} of each of the timer tasks that have been scheduled
      */
-    private final Map<TimerHandle, Future<?>> scheduledTimerFutures = new ConcurrentHashMap<TimerHandle, Future<?>>();
+    private final Map<TimerHandle, java.util.TimerTask> scheduledTimerFutures = new ConcurrentHashMap<TimerHandle, java.util.TimerTask>();
 
     /**
      * Creates a {@link TimerServiceImpl}
@@ -120,8 +126,8 @@ public class TimerServiceImpl implements TimerService {
      * @param executor           Executor service responsible for creating scheduled timer tasks
      * @throws IllegalArgumentException If either of the passed param is null
      */
-    public TimerServiceImpl(TimedObjectInvoker invoker, final TimerPersistence timerPersistence, TransactionManager transactionManager,
-                            ScheduledExecutorService executor) {
+    public TimerServiceImpl(final java.util.Timer timer, TimedObjectInvoker invoker, final TimerPersistence timerPersistence, TransactionManager transactionManager,
+                            ExecutorService executor) {
         if (invoker == null) {
             throw new IllegalArgumentException("Invoker cannot be null");
         }
@@ -135,7 +141,8 @@ public class TimerServiceImpl implements TimerService {
         this.invoker = invoker;
         this.timerPersistence = timerPersistence;
         this.transactionManager = transactionManager;
-        this.executor = executor;
+        this.executorService = executor;
+        this.timer = timer;
     }
 
     /**
@@ -283,14 +290,14 @@ public class TimerServiceImpl implements TimerService {
     }
 
     @Override
-    public org.jboss.ejb3.timerservice.extension.Timer loadAutoTimer(ScheduleExpression schedule, Method timeoutMethod) {
+    public org.jboss.ejb3.timerservice.api.Timer loadAutoTimer(ScheduleExpression schedule, Method timeoutMethod) {
 
         return this.createCalendarTimer(schedule, null, true, timeoutMethod);
     }
 
     @Override
-    public org.jboss.ejb3.timerservice.extension.Timer loadAutoTimer(ScheduleExpression schedule,
-                                                                     TimerConfig timerConfig, Method timeoutMethod) {
+    public org.jboss.ejb3.timerservice.api.Timer loadAutoTimer(ScheduleExpression schedule,
+                                                               TimerConfig timerConfig, Method timeoutMethod) {
         return this.createCalendarTimer(schedule, timerConfig.getInfo(), timerConfig.isPersistent(), timeoutMethod);
     }
 
@@ -377,8 +384,8 @@ public class TimerServiceImpl implements TimerService {
      * @throws IllegalArgumentException If the passed <code>schedule</code> is null
      * @throws IllegalStateException    If this method was invoked during a lifecycle callback on the EJB
      */
-    private org.jboss.ejb3.timerservice.extension.Timer createCalendarTimer(ScheduleExpression schedule,
-                                                                            Serializable info, boolean persistent, Method timeoutMethod) {
+    private org.jboss.ejb3.timerservice.api.Timer createCalendarTimer(ScheduleExpression schedule,
+                                                                      Serializable info, boolean persistent, Method timeoutMethod) {
         if (this.isLifecycleCallbackInvocation() && !this.isSingletonBeanInvocation()) {
             throw new IllegalStateException("Creation of timers is not allowed during lifecycle callback of non-singleton EJBs");
         }
@@ -420,15 +427,6 @@ public class TimerServiceImpl implements TimerService {
     }
 
     /**
-     * Returns the {@link ScheduledExecutorService} used for scheduling timer tasks
-     *
-     * @return
-     */
-    protected ScheduledExecutorService getExecutor() {
-        return executor;
-    }
-
-    /**
      * Returns the {@link TimedObjectInvoker} to which this timer service belongs
      *
      * @return
@@ -442,7 +440,7 @@ public class TimerServiceImpl implements TimerService {
      *
      * @param handle The {@link TimerHandle} for which the {@link Timer} is being looked for
      */
-    public org.jboss.ejb3.timerservice.extension.Timer getTimer(TimerHandle handle) {
+    public org.jboss.ejb3.timerservice.api.Timer getTimer(TimerHandle handle) {
         TimerImpl timer = nonPersistentTimers.get(handle);
         if (timer != null) {
             return timer;
@@ -551,20 +549,64 @@ public class TimerServiceImpl implements TimerService {
      * <p>
      * All such restored timers will be schedule for their next timeouts.
      * </p>
+     *
+     * @param autoTimers
      */
-    public void restoreTimers() {
+    public void restoreTimers(final List<ScheduleTimer> autoTimers) {
         // get the persisted timers which are considered active
         List<TimerImpl> restorableTimers = this.getActiveTimers();
+
+        //timers are removed from the list as they are loaded
+        final List<ScheduleTimer> newAutoTimers = new LinkedList<ScheduleTimer>(autoTimers);
 
         logger.debug("Found " + restorableTimers.size() + " active timers for timedObjectId: "
                 + this.invoker.getTimedObjectId());
         // now "start" each of the restorable timer. This involves, moving the timer to an ACTIVE state
         // and scheduling the timer task
-        for (TimerImpl activeTimer : restorableTimers) {
+        for (final TimerImpl activeTimer : restorableTimers) {
+
+            if (activeTimer.isAutoTimer()) {
+                boolean found = false;
+                final CalendarTimerEntity entity = (CalendarTimerEntity) activeTimer.getPersistentState();
+                //so we know we have an auto timer. We need to try and match it up with the auto timers.
+                ListIterator<ScheduleTimer> it = newAutoTimers.listIterator();
+                while (it.hasNext()) {
+                    ScheduleTimer timer = it.next();
+                    final String methodName = timer.getMethod().getName();
+                    final String[] params = new String[timer.getMethod().getParameterTypes().length];
+                    for (int i = 0; i < timer.getMethod().getParameterTypes().length; ++i) {
+                        params[i] = timer.getMethod().getParameterTypes()[i].getName();
+                    }
+                    if (doesTimeoutMethodMatch(entity.getTimeoutMethod(), methodName, params)) {
+
+                        //the timers have the same method.
+                        //now lets make sure the schedule is the same
+                        if (this.doesScheduleMatch(entity.getScheduleExpression(), timer.getScheduleExpression())) {
+                            it.remove();
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if (found) {
+                    startTimer(activeTimer);
+                    logger.debug("Started timer: " + activeTimer);
+                    // save any changes to the state (that will have happened on call to startTimer)
+                    this.persistTimer(activeTimer);
+                } else {
+                    //the annotation is no longer there
+                    this.removeTimer(activeTimer);
+                }
+            }
+            //TODO: we need to make sure that these only fire one event after being restored
             this.startTimer(activeTimer);
             logger.debug("Started timer: " + activeTimer);
             // save any changes to the state (that will have happened on call to startTimer)
             this.persistTimer(activeTimer);
+        }
+
+        for (ScheduleTimer timer : newAutoTimers) {
+            this.loadAutoTimer(timer.getScheduleExpression(), timer.getTimerConfig(), timer.getMethod());
         }
 
     }
@@ -691,15 +733,17 @@ public class TimerServiceImpl implements TimerService {
             logger.debug("Scheduling timer " + timer + " at fixed rate, starting at " + delay
                     + " milli seconds from now with repeated interval=" + intervalDuration);
             // schedule the task
-            Future<?> future = this.executor.scheduleAtFixedRate(timerTask, delay, intervalDuration, TimeUnit.MILLISECONDS);
+            final Task task = new Task(timerTask);
+            this.timer.scheduleAtFixedRate(task, delay, intervalDuration);
             // maintain it in timerservice for future use (like cancellation)
-            this.scheduledTimerFutures.put(timer.getTimerHandle(), future);
+            this.scheduledTimerFutures.put(timer.getTimerHandle(), task);
         } else {
             logger.debug("Scheduling a single action timer " + timer + " starting at " + delay + " milli seconds from now");
             // schedule the task
-            Future<?> future = this.executor.schedule(timerTask, delay, TimeUnit.MILLISECONDS);
+            this.timer.schedule(new Task(timerTask), delay);
             // maintain it in timerservice for future use (like cancellation)
-            this.scheduledTimerFutures.put(timer.getTimerHandle(), future);
+            final Task task = new Task(timerTask);
+            this.scheduledTimerFutures.put(timer.getTimerHandle(), task);
         }
     }
 
@@ -710,9 +754,9 @@ public class TimerServiceImpl implements TimerService {
      */
     protected void cancelTimeout(TimerImpl timer) {
         TimerHandle handle = timer.getTimerHandle();
-        Future<?> scheduleFuture = this.scheduledTimerFutures.get(handle);
-        if (scheduleFuture != null) {
-            scheduleFuture.cancel(false);
+        java.util.TimerTask timerTask = this.scheduledTimerFutures.get(handle);
+        if (timerTask != null) {
+            timerTask.cancel();
         }
 
     }
@@ -722,10 +766,8 @@ public class TimerServiceImpl implements TimerService {
         try {
             currentInvocationContext = CurrentInvocationContext.get();
 
-            if (currentInvocationContext instanceof TimerServiceInvocationContext) {
-                TimerServiceInvocationContext timerserviceInvocationCtx = (TimerServiceInvocationContext) currentInvocationContext;
-                return timerserviceInvocationCtx.isSingleton();
-            }
+            //TODO: do this properly
+
             return false;
         } catch (IllegalStateException ise) {
             // no context info available so return false
@@ -774,13 +816,6 @@ public class TimerServiceImpl implements TimerService {
             if (persistedTimer.isCalendarTimer()) {
                 CalendarTimerEntity calendarTimerEntity = (CalendarTimerEntity) persistedTimer;
 
-                //we don't load auto timers here
-                //if they are not loaded automatically by the auto timer deployment process
-                //then the annotation has been removed, and they should not be loaded.
-                if (calendarTimerEntity.isAutoTimer()) {
-                    continue;
-                }
-
                 // create a timer instance from the persisted calendar timer
                 activeTimer = new CalendarTimer(calendarTimerEntity, this);
             } else {
@@ -817,6 +852,52 @@ public class TimerServiceImpl implements TimerService {
         return this.methodParamsMatch(timeoutMethodParams, methodParams);
     }
 
+    private boolean doesScheduleMatch(final ScheduleExpression expression1, final ScheduleExpression expression2) {
+        if (!same(expression1.getDayOfMonth(), expression2.getDayOfMonth())) {
+            return false;
+        }
+        if (!same(expression1.getDayOfWeek(), expression2.getDayOfWeek())) {
+            return false;
+        }
+        if (!same(expression1.getEnd(), expression2.getEnd())) {
+            return false;
+        }
+        if (!same(expression1.getHour(), expression2.getHour())) {
+            return false;
+        }
+        if (!same(expression1.getMinute(), expression2.getMinute())) {
+            return false;
+        }
+        if (!same(expression1.getMonth(), expression2.getMonth())) {
+            return false;
+        }
+        if (!same(expression1.getSecond(), expression2.getSecond())) {
+            return false;
+        }
+        if (!same(expression1.getStart(), expression2.getStart())) {
+            return false;
+        }
+        if (!same(expression1.getTimezone(), expression2.getTimezone())) {
+            return false;
+        }
+        if (!same(expression1.getYear(), expression2.getYear())) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean same(Object i1, Object i2) {
+        if (i1 == null && i2 != null) {
+            return false;
+        }
+        if (i2 == null && i1 != null) {
+            return false;
+        }
+        if (i1 == null && i2 == null) {
+            return true;
+        }
+        return i1.equals(i2);
+    }
 
     private boolean isEitherParamNull(Object param1, Object param2) {
         if (param1 != null && param2 == null) {
@@ -941,6 +1022,20 @@ public class TimerServiceImpl implements TimerService {
 
         }
 
+    }
+
+    private class Task extends java.util.TimerTask {
+
+        private final Runnable delegate;
+
+        public Task(final Runnable delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void run() {
+            executorService.submit(delegate);
+        }
     }
 
 }

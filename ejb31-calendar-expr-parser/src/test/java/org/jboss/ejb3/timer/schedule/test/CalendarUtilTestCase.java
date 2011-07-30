@@ -85,6 +85,7 @@ public class CalendarUtilTestCase {
         // 1st Sun of July 2010 (hardcoded, after checking with the system calendar)
         int expectedDateOfFirstSunOfJuly2010 = 4;
         Calendar july2010 = new GregorianCalendar();
+        july2010.set(Calendar.DAY_OF_MONTH, 1);
         july2010.set(Calendar.MONTH, Calendar.JULY);
         july2010.set(Calendar.YEAR, 2010);
 
@@ -95,6 +96,7 @@ public class CalendarUtilTestCase {
         // 1st Mon of June 2009
         int expectedDateOfFirstMonOfJune2009 = 1;
         Calendar june2009 = new GregorianCalendar();
+        june2009.set(Calendar.DAY_OF_MONTH, 1);
         june2009.set(Calendar.MONTH, Calendar.JUNE);
         june2009.set(Calendar.YEAR, 2009);
 
@@ -105,6 +107,7 @@ public class CalendarUtilTestCase {
         // 1st Tue of Feb 2012
         int expectedDateOfFirstTueOfFeb2012 = 7;
         Calendar feb2012 = new GregorianCalendar();
+        feb2012.set(Calendar.DAY_OF_MONTH, 1);
         feb2012.set(Calendar.MONTH, Calendar.FEBRUARY);
         feb2012.set(Calendar.YEAR, 2012);
 
@@ -115,6 +118,7 @@ public class CalendarUtilTestCase {
         // 1st Wed of Jan 2006
         int expectedDateOfFirstMonOfJan2006 = 4;
         Calendar jan2006 = new GregorianCalendar();
+        jan2006.set(Calendar.DAY_OF_MONTH, 1);
         jan2006.set(Calendar.MONTH, Calendar.JANUARY);
         jan2006.set(Calendar.YEAR, 2006);
 
@@ -125,6 +129,7 @@ public class CalendarUtilTestCase {
         // 1st Thu of June 1999
         int expectedDateOfFirstThuOfSep1999 = 2;
         Calendar sep1999 = new GregorianCalendar();
+        sep1999.set(Calendar.DAY_OF_MONTH, 1);
         sep1999.set(Calendar.MONTH, Calendar.SEPTEMBER);
         sep1999.set(Calendar.YEAR, 1999);
 
@@ -135,6 +140,7 @@ public class CalendarUtilTestCase {
         // 1st Fri of Dec 2058
         int expectedDateOfFirstFriOfDec2058 = 6;
         Calendar dec2058 = new GregorianCalendar();
+        dec2058.set(Calendar.DAY_OF_MONTH, 1);
         dec2058.set(Calendar.MONTH, Calendar.DECEMBER);
         dec2058.set(Calendar.YEAR, 2058);
 
@@ -145,6 +151,7 @@ public class CalendarUtilTestCase {
         // 1st Sat of Aug 2000
         int expectedDateOfFirstSatOfAug2000 = 5;
         Calendar aug2000 = new GregorianCalendar();
+        aug2000.set(Calendar.DAY_OF_MONTH, 1);
         aug2000.set(Calendar.MONTH, Calendar.AUGUST);
         aug2000.set(Calendar.YEAR, 2000);
 

@@ -22,13 +22,16 @@
 package org.jboss.ejb3.timerservice.mk2;
 
 import org.jboss.ejb3.timerservice.mk2.persistence.TimerPersistence;
+import org.jboss.ejb3.timerservice.spi.ScheduleTimer;
 import org.jboss.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.ejb3.timerservice.spi.TimerServiceFactory;
 import org.jboss.logging.Logger;
 
 import javax.ejb.TimerService;
 import javax.transaction.TransactionManager;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.List;
+import java.util.Timer;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Implementation of {@link TimerServiceFactory}, responsible for
@@ -57,12 +60,18 @@ public class TimerServiceFactoryImpl implements TimerServiceFactory {
     /**
      * Exceutor service for creating the scheduled timer tasks
      */
-    private final ScheduledExecutorService executor;
+    private final ExecutorService executor;
 
-    public TimerServiceFactoryImpl(final TimerPersistence timerPersistence, final TransactionManager transactionManager, final ScheduledExecutorService executor) {
+    /**
+     * The timer to use
+     */
+    private final Timer timer;
+
+    public TimerServiceFactoryImpl(final TimerPersistence timerPersistence, final TransactionManager transactionManager, final ExecutorService executor) {
         this.timerPersistence = timerPersistence;
         this.transactionManager = transactionManager;
         this.executor = executor;
+        this.timer = new Timer("EJB Timer Thread", true);
     }
 
     /**
@@ -74,7 +83,7 @@ public class TimerServiceFactoryImpl implements TimerServiceFactory {
      */
     public TimerService createTimerService(TimedObjectInvoker invoker) {
         // create the timer service
-        TimerServiceImpl timerService = new TimerServiceImpl(invoker, timerPersistence, transactionManager, executor);
+        TimerServiceImpl timerService = new TimerServiceImpl(timer, invoker, timerPersistence, transactionManager, executor);
 
         String timedObjectId = invoker.getTimedObjectId();
         // EJBTHREE-2209 I'm not too happy with this "fix". Ideally,
@@ -103,9 +112,8 @@ public class TimerServiceFactoryImpl implements TimerServiceFactory {
      * the timer service with the {@link TimerServiceRegistry}
      * </p>
      *
-     * @see org.jboss.ejb3.timerservice.spi.TimerServiceFactory#restoreTimerService(javax.ejb.TimerService)
      */
-    public void restoreTimerService(TimerService timerService) {
+    public void restoreTimerService(TimerService timerService, final List<ScheduleTimer> autoTimers) {
         TimerServiceImpl mk2TimerService = (TimerServiceImpl) timerService;
         String timedObjectId = mk2TimerService.getInvoker().getTimedObjectId();
         // if the timer service is not registered (maybe it was unregistered when it
@@ -116,7 +124,7 @@ public class TimerServiceFactoryImpl implements TimerServiceFactory {
 
         logger.debug("Restoring timerservice for timedObjectId: " + timedObjectId);
         // restore the timers
-        mk2TimerService.restoreTimers();
+        mk2TimerService.restoreTimers(autoTimers);
 
     }
 
@@ -130,7 +138,7 @@ public class TimerServiceFactoryImpl implements TimerServiceFactory {
      * </p>
      * <p>
      * A suspended timer service (and the associated) timers can be restored by invoking
-     * {@link #restoreTimerService(TimerService)}
+     * {@link #restoreTimerService(TimerService,List)}
      * </p>
      * <p>
      * This method additionally unregisters the the timer service from the {@link TimerServiceRegistry}

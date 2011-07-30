@@ -19,22 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.timerservice.extension;
+package org.jboss.ejb3.timerservice.spi;
 
-import javax.ejb.ScheduleExpression;
-import javax.ejb.TimerConfig;
-import java.lang.reflect.Method;
+import javax.ejb.Timer;
 
 /**
- * TimerService
+ * An implementation can invoke the ejbTimeout method on a TimedObject.
  *
- * @author Jaikiran Pai
- * @version $Revision: $
+ * The TimedObjectInvoker has knowledge of the TimedObjectId, it
+ * knows which object to invoke.
+ *
+ * @author Thomas.Diesler@jboss.org
+ * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public interface TimerService extends javax.ejb.TimerService {
+public interface TimedObjectInvoker
+{
+   /**
+    * The globally unique identifier for this timed object invoker.
+    * 
+    * @return the identifier
+    */
+   String getTimedObjectId();
+   
+   /**
+    * Invokes the ejbTimeout method on the TimedObject with the given id.
+    *
+    * @param timer the Timer that is passed to ejbTimeout
+    */
+   void callTimeout(Timer timer) throws Exception;
 
-    Timer loadAutoTimer(ScheduleExpression schedule, Method timeoutMethod);
-
-    Timer loadAutoTimer(ScheduleExpression schedule, TimerConfig timerConfig, Method timeoutMethod);
 }
-
