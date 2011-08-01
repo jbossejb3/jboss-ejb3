@@ -768,10 +768,10 @@ public class TimerServiceImpl implements TimerService {
 
             //TODO: do this properly
 
-            return false;
+            return true;
         } catch (IllegalStateException ise) {
             // no context info available so return false
-            return false;
+            return true;
         }
     }
 

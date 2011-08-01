@@ -24,6 +24,15 @@ package org.jboss.ejb3.timerservice.mk2.persistence.filestore;
 import org.jboss.ejb3.timerservice.mk2.persistence.TimerEntity;
 import org.jboss.ejb3.timerservice.mk2.persistence.TimerPersistence;
 import org.jboss.logging.Logger;
+import org.jboss.marshalling.InputStreamByteInput;
+import org.jboss.marshalling.Marshaller;
+import org.jboss.marshalling.MarshallerFactory;
+import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.ModularClassResolver;
+import org.jboss.marshalling.OutputStreamByteOutput;
+import org.jboss.marshalling.Unmarshaller;
+import org.jboss.marshalling.river.RiverMarshallerFactory;
+import org.jboss.modules.ModuleLoader;
 
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
@@ -35,9 +44,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.ObjectStreamClass;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,8 +56,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * File based persistent timer store.
  * <p/>
- * TODO: this is fairly hackey at the moment, it should be registered as an XA resource,
- * and should not use ObjectOutputStream for serialization.
+ * TODO: this is fairly hackey at the moment, it should be registered as an XA resource to support proper XA semantics
  *
  * @author Stuart Douglas
  */
@@ -62,6 +67,8 @@ public class FileTimerPersistence implements TimerPersistence {
     private final File baseDir;
     private final boolean createIfNotExists;
     private static final Logger logger = Logger.getLogger(FileTimerPersistence.class);
+    private final MarshallerFactory factory;
+    private final MarshallingConfiguration configuration;
 
     /**
      * map of timed object id : timer id : timer
@@ -71,11 +78,17 @@ public class FileTimerPersistence implements TimerPersistence {
 
     private volatile boolean started = false;
 
-    public FileTimerPersistence(final TransactionManager transactionManager, final TransactionSynchronizationRegistry transactionSynchronizationRegistry, final File baseDir, final boolean createIfNotExists) {
+    public FileTimerPersistence(final TransactionManager transactionManager, final TransactionSynchronizationRegistry transactionSynchronizationRegistry, final File baseDir, final boolean createIfNotExists, final ModuleLoader moduleLoader) {
         this.transactionManager = transactionManager;
         this.transactionSynchronizationRegistry = transactionSynchronizationRegistry;
         this.baseDir = baseDir;
         this.createIfNotExists = createIfNotExists;
+        RiverMarshallerFactory factory = new RiverMarshallerFactory();
+        MarshallingConfiguration configuration = new MarshallingConfiguration();
+        configuration.setClassResolver(ModularClassResolver.getInstance(moduleLoader));
+
+        this.configuration = configuration;
+        this.factory = factory;
     }
 
     @Override
@@ -148,7 +161,7 @@ public class FileTimerPersistence implements TimerPersistence {
             //remove is not a transactional operation, as it only happens once the timer has expired
             final Map<String, TimerEntity> timers = getTimers(timerEntity.getTimedObjectId());
             final TimerEntity entity = timers.remove(timerEntity.getId());
-            if(entity != null) {
+            if (entity != null) {
                 writeFile(timers, timerEntity.getTimedObjectId());
             }
         } finally {
@@ -204,21 +217,19 @@ public class FileTimerPersistence implements TimerPersistence {
                 return new HashMap<String, TimerEntity>();
             }
             in = new FileInputStream(file);
-            final ObjectInputStream data = new ObjectInputStream(in) {
-                @Override
-                protected Class<?> resolveClass(final ObjectStreamClass objectStreamClass) throws IOException, ClassNotFoundException {
-                    return TimerEntity.class.getClassLoader().loadClass(objectStreamClass.getName());
-                }
-            };
-            return (Map<String, TimerEntity>) data.readObject();
-
+            Map<String, TimerEntity> map = null;
+            Unmarshaller unmarshaller = factory.createUnmarshaller(configuration);
+            unmarshaller.start(new InputStreamByteInput(in));
+            map = unmarshaller.readObject(Map.class);
+            unmarshaller.finish();
+            if (map != null) {
+                return map;
+            }
         } catch (FileNotFoundException e) {
             //no timers exist yet
             return new HashMap<String, TimerEntity>();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            logger.error("Could not restore timers for " + timedObjectId, e);
         } finally {
             if (in != null) {
                 try {
@@ -228,6 +239,7 @@ public class FileTimerPersistence implements TimerPersistence {
                 }
             }
         }
+        return new HashMap<String, TimerEntity>();
     }
 
     private File fileName(String timedObjectId) {
@@ -240,21 +252,22 @@ public class FileTimerPersistence implements TimerPersistence {
         final File tempFile = new File(file.getAbsolutePath() + ".tempFile");
 
         FileOutputStream fileOutputStream = null;
-        ObjectOutputStream data  = null;
         try {
             fileOutputStream = new FileOutputStream(tempFile, false);
-            data = new ObjectOutputStream(fileOutputStream);
-            data.writeObject(map);
-            data.flush();
+            final Marshaller marshaller = factory.createMarshaller(configuration);
+            marshaller.start(new OutputStreamByteOutput(fileOutputStream));
+            marshaller.writeObject(map);
+            marshaller.finish();
+            fileOutputStream.flush();
             fileOutputStream.getFD().sync();
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
-            if (data != null) {
+            if (fileOutputStream != null) {
                 try {
-                    data.close();
+                    fileOutputStream.close();
                 } catch (IOException e) {
                     logger.error("IOException closing file ", e);
                 }
