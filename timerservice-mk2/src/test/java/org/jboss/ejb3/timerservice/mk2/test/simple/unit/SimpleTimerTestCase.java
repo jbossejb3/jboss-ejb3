@@ -48,6 +48,11 @@ public class SimpleTimerTestCase // extends AbstractTimerTestCase
                 semaphore.release();
             }
 
+            @Override
+            public ClassLoader getClassLoader() {
+                return  getClass().getClassLoader();
+            }
+
             public String getTimedObjectId() {
                 return "test";
             }

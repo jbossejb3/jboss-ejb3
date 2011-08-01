@@ -48,4 +48,11 @@ public interface TimedObjectInvoker
     */
    void callTimeout(Timer timer) throws Exception;
 
+
+    /**
+     *
+     * @return The class loader that should be used to load restore any timers for this object
+     */
+    ClassLoader getClassLoader();
+
 }

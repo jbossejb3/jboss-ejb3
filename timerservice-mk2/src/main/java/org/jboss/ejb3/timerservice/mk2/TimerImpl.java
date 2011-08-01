@@ -674,7 +674,7 @@ public class TimerImpl implements Timer {
      * {@link Thread#getContextClassLoader()}. If it cannot resolve in the current context
      * loader, it passes on the control to {@link ObjectInputStream} to resolve the class
      */
-    private static final class ObjectInputStreamWithTCCL extends ObjectInputStream {
+    private final class ObjectInputStreamWithTCCL extends ObjectInputStream {
 
         public ObjectInputStreamWithTCCL(InputStream in) throws IOException {
             super(in);
@@ -686,15 +686,11 @@ public class TimerImpl implements Timer {
 
             logger.trace("Attempting to locate class [" + className + "]");
 
-            ClassLoader tccl = Thread.currentThread().getContextClassLoader();
             try {
-                resolvedClass = tccl.loadClass(className);
-                logger.trace("Class resolved through context class loader");
+                resolvedClass = timedObjectInvoker.getClassLoader().loadClass(className);
             } catch (ClassNotFoundException e) {
-                logger.trace("Asking super to resolve");
-                resolvedClass = super.resolveClass(v);
+                resolvedClass = getClass().getClassLoader().loadClass(className);
             }
-
             return resolvedClass;
         }
     }
