@@ -213,7 +213,7 @@ public class CalendarTimer extends TimerImpl {
     }
 
     public Method getTimeoutMethod() {
-        if (this.autoTimer == false) {
+        if (!this.autoTimer) {
             throw new IllegalStateException("Cannot invoke getTimeoutMethod on a timer which is not an auto-timer");
         }
         return this.timeoutMethod;
@@ -251,11 +251,10 @@ public class CalendarTimer extends TimerImpl {
      */
     private Method getTimeoutMethod(TimeoutMethod timeoutMethodInfo) {
 
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         String declaringClass = timeoutMethodInfo.getDeclaringClass();
         Class<?> timeoutMethodDeclaringClass = null;
         try {
-            timeoutMethodDeclaringClass = Class.forName(declaringClass, false, tccl);
+            timeoutMethodDeclaringClass = Class.forName(declaringClass, false, timedObjectInvoker.getClassLoader());
         } catch (ClassNotFoundException cnfe) {
             throw new RuntimeException("Could not load declaring class: " + declaringClass + " of timeout method");
         }
@@ -271,7 +270,7 @@ public class CalendarTimer extends TimerImpl {
             for (String paramClassName : timeoutMethodParams) {
                 Class<?> methodParamClass = null;
                 try {
-                    methodParamClass = Class.forName(paramClassName, false, tccl);
+                    methodParamClass = Class.forName(paramClassName, false, timedObjectInvoker.getClassLoader());
                 } catch (ClassNotFoundException cnfe) {
                     throw new RuntimeException("Could not load method param class: " + paramClassName + " of timeout method");
                 }
@@ -291,7 +290,7 @@ public class CalendarTimer extends TimerImpl {
                     }
                     for (int i = 0; i < methodParamTypes.length; i++) {
                         // param type doesn't match
-                        if (timeoutMethodParamTypes[i].equals(methodParamTypes[i]) == false) {
+                        if (!timeoutMethodParamTypes[i].equals(methodParamTypes[i])) {
                             continue;
                         }
                     }
