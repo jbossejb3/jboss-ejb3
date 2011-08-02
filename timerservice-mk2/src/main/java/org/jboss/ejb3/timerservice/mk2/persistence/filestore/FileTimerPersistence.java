@@ -75,6 +75,7 @@ public class FileTimerPersistence implements TimerPersistence {
      */
     private final ConcurrentMap<String, Map<String, TimerEntity>> timers = new ConcurrentHashMap<String, Map<String, TimerEntity>>();
     private final ConcurrentMap<String, Lock> locks = new ConcurrentHashMap<String, Lock>();
+    private final ConcurrentMap<String, String> directories = new ConcurrentHashMap<String, String>();
 
     private volatile boolean started = false;
 
@@ -118,25 +119,23 @@ public class FileTimerPersistence implements TimerPersistence {
     @Override
     public void persistTimer(final TimerEntity timerEntity) {
         final Lock lock = getLock(timerEntity.getTimedObjectId());
-        boolean syncRegistered = false;
         try {
-            lock.lock();
             final int status = transactionManager.getStatus();
             if (status == Status.STATUS_NO_TRANSACTION ||
                     status == Status.STATUS_UNKNOWN) {
-                Map<String, TimerEntity> map = getTimers(timerEntity.getTimedObjectId());
-                map.put(timerEntity.getId(), timerEntity);
-                writeFile(map, timerEntity.getTimedObjectId());
+                try {
+                    lock.lock();
+                    Map<String, TimerEntity> map = getTimers(timerEntity.getTimedObjectId());
+                    map.put(timerEntity.getId(), timerEntity);
+                    writeFile(timerEntity);
+                } finally {
+                    lock.unlock();
+                }
             } else {
                 transactionSynchronizationRegistry.registerInterposedSynchronization(new PersistTransactionSynchronization(timerEntity, lock));
-                syncRegistered = true;
             }
         } catch (SystemException e) {
             throw new RuntimeException(e);
-        } finally {
-            if (!syncRegistered) {
-                lock.unlock();
-            }
         }
     }
 
@@ -160,9 +159,12 @@ public class FileTimerPersistence implements TimerPersistence {
             lock.lock();
             //remove is not a transactional operation, as it only happens once the timer has expired
             final Map<String, TimerEntity> timers = getTimers(timerEntity.getTimedObjectId());
-            final TimerEntity entity = timers.remove(timerEntity.getId());
-            if (entity != null) {
-                writeFile(timers, timerEntity.getTimedObjectId());
+            timers.remove(timerEntity.getId());
+            File file = fileName(timerEntity.getTimedObjectId(), timerEntity.getId());
+            if(file.exists()) {
+                if(!file.delete()) {
+                    logger.error("Could not remove persistent timer " + file);
+                }
             }
         } finally {
             lock.unlock();
@@ -209,54 +211,79 @@ public class FileTimerPersistence implements TimerPersistence {
     }
 
     private Map<String, TimerEntity> loadTimersFromFile(final String timedObjectId) {
-        FileInputStream in = null;
+        final Map<String, TimerEntity> timers = new HashMap<String, TimerEntity>();
         try {
-            final File file = fileName(timedObjectId);
+            final File file = new File(getDirectory(timedObjectId));
             if (!file.exists()) {
                 //no timers exist yet
-                return new HashMap<String, TimerEntity>();
+                return timers;
+            } else if (!file.isDirectory()) {
+                logger.error(file + " is not a directory, could not restore timers");
+                return timers;
             }
-            in = new FileInputStream(file);
-            Map<String, TimerEntity> map = null;
             Unmarshaller unmarshaller = factory.createUnmarshaller(configuration);
-            unmarshaller.start(new InputStreamByteInput(in));
-            map = unmarshaller.readObject(Map.class);
-            unmarshaller.finish();
-            if (map != null) {
-                return map;
+            for (File timerFile : file.listFiles()) {
+                FileInputStream in = null;
+                try {
+                    in = new FileInputStream(timerFile);
+                    unmarshaller.start(new InputStreamByteInput(in));
+                    final TimerEntity entity = unmarshaller.readObject(TimerEntity.class);
+                    timers.put(entity.getId(), entity);
+                    unmarshaller.finish();
+                } catch (Exception e) {
+                    logger.error("Could not restore timer from " + timerFile, e);
+                } finally {
+                    if (in != null) {
+                        try {
+                            in.close();
+                        } catch (IOException e) {
+                            logger.error("error closing file ", e);
+                        }
+                    }
+                }
+
             }
-        } catch (FileNotFoundException e) {
-            //no timers exist yet
-            return new HashMap<String, TimerEntity>();
         } catch (Exception e) {
             logger.error("Could not restore timers for " + timedObjectId, e);
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    logger.error("error closing file ", e);
+        }
+        return timers;
+    }
+
+    private File fileName(String timedObjectId, String timerId) {
+        return new File(getDirectory(timedObjectId) + File.separator + timerId.replace(File.separator, "-"));
+    }
+
+    /**
+     * Gets the directory for a given timed object, making sure it exists.
+     * @param timedObjectId The timed object
+     * @return The directory
+     */
+    private String getDirectory(String timedObjectId) {
+        String dirName = directories.get(timedObjectId);
+        if (dirName == null) {
+            dirName = baseDir.getAbsolutePath() + File.separator + timedObjectId.replace(File.separator, "-");
+            File file = new File(dirName);
+            if(!file.exists()) {
+                if(!file.mkdirs()) {
+                    logger.error("Could not create directory " + file + " to persist EJB timers.");
                 }
             }
+            directories.put(timedObjectId, dirName);
         }
-        return new HashMap<String, TimerEntity>();
+        return dirName;
     }
 
-    private File fileName(String timedObjectId) {
-        return new File(baseDir.getAbsolutePath() + File.separator + timedObjectId.replace(File.separator, "-"));
-    }
 
-    private void writeFile(final Map<String, TimerEntity> map, final String timedObjectId) {
+    private void writeFile(TimerEntity entity) {
         //write out our temporary file
-        final File file = fileName(timedObjectId);
-        final File tempFile = new File(file.getAbsolutePath() + ".tempFile");
+        final File file = fileName(entity.getTimedObjectId(), entity.getId());
 
         FileOutputStream fileOutputStream = null;
         try {
-            fileOutputStream = new FileOutputStream(tempFile, false);
+            fileOutputStream = new FileOutputStream(file, false);
             final Marshaller marshaller = factory.createMarshaller(configuration);
             marshaller.start(new OutputStreamByteOutput(fileOutputStream));
-            marshaller.writeObject(map);
+            marshaller.writeObject(entity);
             marshaller.finish();
             fileOutputStream.flush();
             fileOutputStream.getFD().sync();
@@ -273,11 +300,6 @@ public class FileTimerPersistence implements TimerPersistence {
                 }
             }
         }
-        //now rename it over the top of the existing file (if any)
-        if (!tempFile.renameTo(file)) {
-            throw new RuntimeException("Could not rename temporary file " + tempFile + " to " + file + " timer changes not persisted");
-        }
-        //TODO: do we need to fsync after rename?
     }
 
     private final class PersistTransactionSynchronization implements Synchronization {
@@ -298,10 +320,11 @@ public class FileTimerPersistence implements TimerPersistence {
         @Override
         public void afterCompletion(final int status) {
             try {
+                    lock.lock();
                 if (status == Status.STATUS_COMMITTED) {
                     Map<String, TimerEntity> map = getTimers(timer.getTimedObjectId());
                     map.put(timer.getId(), timer);
-                    writeFile(map, timer.getTimedObjectId());
+                    writeFile(timer);
                 }
             } finally {
                 lock.unlock();
