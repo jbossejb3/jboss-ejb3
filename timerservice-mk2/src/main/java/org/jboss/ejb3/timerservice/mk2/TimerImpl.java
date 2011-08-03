@@ -214,12 +214,12 @@ public class TimerImpl implements Timer {
         if (currentTx == null) {
             // cancel any scheduled Future for this timer
             this.cancelTimeout();
+            // persist changes
+            timerService.persistTimer(this);
         } else {
             this.registerTimerCancellationWithTx(currentTx);
         }
 
-        // persist changes
-        timerService.persistTimer(this);
     }
 
     /**
@@ -720,6 +720,7 @@ public class TimerImpl implements Timer {
                     case IN_TIMEOUT:
                     case RETRY_TIMEOUT:
                         this.timer.cancelTimeout();
+                        timerService.persistTimer(timer);
                         break;
 
                 }

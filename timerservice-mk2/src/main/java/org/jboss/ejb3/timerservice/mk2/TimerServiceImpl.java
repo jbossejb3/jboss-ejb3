@@ -1008,8 +1008,10 @@ public class TimerServiceImpl implements TimerService {
                 TimerState timerState = this.timer.getState();
                 switch (timerState) {
                     case ACTIVE:
+                        if (this.timer.isPersistent()) {
+                            timerPersistence.removeTimer(this.timer.getPersistentState());
+                        }
                         this.timer.setTimerState(TimerState.CANCELED);
-                        timerPersistence.removeTimer(this.timer.getPersistentState());
                         break;
                 }
 
