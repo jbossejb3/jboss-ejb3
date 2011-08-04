@@ -1,5 +1,0 @@
-/.idea
-*.iml
-target
-# Ignore target folder generated through Maven
-target/
