@@ -3,8 +3,8 @@
 
     <parent>
         <groupId>org.jboss.ejb3.timerservice</groupId>
-        <artifactId>jboss-ejb3-timerservice-parent</artifactId>
-        <version>2.0.0.Alpha1-SNAPSHOT</version>
+        <artifactId>jboss-ejb3-timerservice</artifactId>
+        <version>2.0.0-beta-3-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -20,38 +20,6 @@
     <description>A parser for EJB3.1 timerservice calendar expressions (a.k.a ScheduleExpression)</description>
     <url>https://github.com/jbossejb3</url>
 
-
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>enforce-jdk6</id>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                        <configuration>
-                            <rules>
-                                <requireJavaVersion>
-                                    <version>[1.6,)</version>
-                                </requireJavaVersion>
-                            </rules>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-        </plugins>
-    </build>
 
     <dependencies>
 

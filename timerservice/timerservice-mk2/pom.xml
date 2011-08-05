@@ -6,8 +6,8 @@
 
     <parent>
         <groupId>org.jboss.ejb3.timerservice</groupId>
-        <artifactId>jboss-ejb3-timerservice-parent</artifactId>
-        <version>2.0.0.Alpha1-SNAPSHOT</version>
+        <artifactId>jboss-ejb3-timerservice</artifactId>
+        <version>2.0.0-beta-3-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -25,36 +25,6 @@
     </description>
     <url>http://labs.jboss.com/jbossejb3/</url>
 
-    <properties>
-    </properties>
-
-    <build>
-        <plugins>
-            <!-- Assembly Plugin -->
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.2-beta-4</version>
-                <executions>
-                    <!--  Build timerservice mk2 "package" -->
-                    <execution>
-                        <id>build-timerservice-mk2-package</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <descriptors>
-                        <descriptor>src/assembly/package-assembler.xml</descriptor>
-                    </descriptors>
-                </configuration>
-            </plugin>
-        </plugins>
-
-    </build>
-
-
     <dependencies>
 
         <dependency>
@@ -71,14 +41,17 @@
         <dependency>
             <groupId>org.jboss.spec.javax.ejb</groupId>
             <artifactId>jboss-ejb-api_3.1_spec</artifactId>
-            <version>1.0.0.Beta2</version>
         </dependency>
 
         <!--  Required for current invocation context usage -->
         <dependency>
             <groupId>org.jboss.spec.javax.interceptor</groupId>
             <artifactId>jboss-interceptors-api_1.1_spec</artifactId>
-            <version>1.0.0.Beta1</version>
+        </dependency>
+
+        <dependency>
+           <groupId>org.jboss.spec.javax.transaction</groupId>
+           <artifactId>jboss-transaction-api_1.1_spec</artifactId>
         </dependency>
 
         <dependency>

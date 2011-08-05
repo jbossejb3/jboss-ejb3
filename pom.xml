@@ -166,6 +166,7 @@
       <module>interceptors</module>
       <module>pool</module>
       <module>servitor</module>
+      <module>timerservice</module>
       <module>tx</module>
    </modules>
 
