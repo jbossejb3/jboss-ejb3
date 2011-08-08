@@ -3,7 +3,7 @@
    <parent>
       <artifactId>jboss-ejb3-effigy</artifactId>
       <groupId>org.jboss.ejb3.effigy</groupId>
-      <version>2.0.0-beta-3</version>
+      <version>2.0.0-beta-4-SNAPSHOT</version>
    </parent>
    <modelVersion>4.0.0</modelVersion>
 
