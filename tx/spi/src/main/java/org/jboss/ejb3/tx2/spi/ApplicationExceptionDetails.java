@@ -19,35 +19,36 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ejb3.concurrency.spi;
+package org.jboss.ejb3.tx2.spi;
 
 import java.io.Serializable;
-import java.util.concurrent.TimeUnit;
 
 /**
- * Class that represents a time period in a specified time unit
+ * Class that stores the details of application exceptions
  *
+ * @see javax.ejb.ApplicationException
  * @author Stuart Douglas
  */
-public final class TimePeriod implements Serializable
+public final class ApplicationExceptionDetails implements Serializable
 {
-   private final long value;
-   private final TimeUnit timeUnit;
 
-   public TimePeriod(long value, TimeUnit timeUnit)
+   private final boolean rollback;
+   private final boolean inherited;
+
+   public ApplicationExceptionDetails(boolean rollback, boolean inherited)
    {
-      this.value = value;
-      this.timeUnit = timeUnit;
+      this.rollback = rollback;
+      this.inherited = inherited;
    }
 
-   public TimeUnit getTimeUnit()
+   public boolean isInherited()
    {
-      return timeUnit;
+      return inherited;
    }
 
-   public long getValue()
+   public boolean isRollback()
    {
-      return value;
+      return rollback;
    }
 
    @Override
@@ -56,10 +57,10 @@ public final class TimePeriod implements Serializable
       if (this == o) return true;
       if (o == null || getClass() != o.getClass()) return false;
 
-      TimePeriod that = (TimePeriod) o;
+      ApplicationExceptionDetails that = (ApplicationExceptionDetails) o;
 
-      if (value != that.value) return false;
-      if (timeUnit != that.timeUnit) return false;
+      if (inherited != that.inherited) return false;
+      if (rollback != that.rollback) return false;
 
       return true;
    }
@@ -67,17 +68,17 @@ public final class TimePeriod implements Serializable
    @Override
    public int hashCode()
    {
-      int result = (int) (value ^ (value >>> 32));
-      result = 31 * result + (timeUnit != null ? timeUnit.hashCode() : 0);
+      int result = (rollback ? 1 : 0);
+      result = 31 * result + (inherited ? 1 : 0);
       return result;
    }
 
    @Override
    public String toString()
    {
-      return "TimePeriod{" +
-            "timeUnit=" + timeUnit +
-            ", value=" + value +
+      return "ApplicationExceptionDetails{" +
+            "inherited=" + inherited +
+            ", rollback=" + rollback +
             '}';
    }
 }

@@ -21,6 +21,7 @@
  */
 package org.jboss.ejb3.tx2.impl;
 
+import org.jboss.ejb3.tx2.spi.ApplicationExceptionDetails;
 import org.jboss.ejb3.tx2.spi.TransactionalInvocationContext;
 import org.jboss.logging.Logger;
 import org.junit.Assert;
@@ -93,20 +94,7 @@ public class StatefulBMTInterceptorTestCase
    @Test
    public void testApplicationException() throws Exception
    {
-      ApplicationException ae = new ApplicationException()
-      {
-         @Override
-         public boolean rollback()
-         {
-            return false;
-         }
-
-         @Override
-         public Class<? extends Annotation> annotationType()
-         {
-            return ApplicationException.class;
-         }
-      };
+      final ApplicationExceptionDetails ae = new ApplicationExceptionDetails(false, false);
 
       StatefulBMTInterceptor statefulBMTInterceptor = new StatefulBMTInterceptor()
       {
