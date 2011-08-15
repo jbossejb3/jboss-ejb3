@@ -23,9 +23,9 @@
 package org.jboss.ejb3.concurrency.impl;
 
 import org.jboss.ejb3.concurrency.spi.LockableComponent;
+import org.jboss.ejb3.concurrency.spi.TimePeriod;
 import org.jboss.logging.Logger;
 
-import javax.ejb.AccessTimeout;
 import javax.ejb.ConcurrentAccessTimeoutException;
 import javax.ejb.LockType;
 import javax.interceptor.AroundInvoke;
@@ -66,27 +66,27 @@ public abstract class ContainerManagedConcurrencyInterceptor
       // get the Lock applicable for this method
       Lock lock = getLock(lockableComponent, invokedMethod);
       // the default access timeout (will be used in the absence of any explicit access timeout value for the invoked method)
-      AccessTimeout defaultAccessTimeout = lockableComponent.getDefaultAccessTimeout();
+      TimePeriod defaultAccessTimeout = lockableComponent.getDefaultAccessTimeout();
       // set to the default values
-      long time = defaultAccessTimeout.value();
-      TimeUnit unit = defaultAccessTimeout.unit();
+      long time = defaultAccessTimeout.getValue();
+      TimeUnit unit = defaultAccessTimeout.getTimeUnit();
 
-      AccessTimeout accessTimeoutOnMethod = lockableComponent.getAccessTimeout(invokedMethod);
+      TimePeriod accessTimeoutOnMethod = lockableComponent.getAccessTimeout(invokedMethod);
       if (accessTimeoutOnMethod != null)
       {
-         if (accessTimeoutOnMethod.value() < 0)
+         if (accessTimeoutOnMethod.getValue() < 0)
          {
             // for any negative value of timeout, we just default to max timeout val and max timeout unit.
             // violation of spec! But we don't want to wait indefinitely.
-            logger.debug("Ignoring a negative @AccessTimeout value: " + accessTimeoutOnMethod.value() + " and timeout unit: "
-                    + accessTimeoutOnMethod.unit().name() + ". Will default to timeout value: " + defaultAccessTimeout.value()
-                    + " and timeout unit: " + defaultAccessTimeout.unit().name());
+            logger.debug("Ignoring a negative @AccessTimeout value: " + accessTimeoutOnMethod.getValue() + " and timeout unit: "
+                    + accessTimeoutOnMethod.getTimeUnit().name() + ". Will default to timeout value: " + defaultAccessTimeout.getValue()
+                    + " and timeout unit: " + defaultAccessTimeout.getTimeUnit().name());
          }
          else
          {
             // use the explicit access timeout values specified on the method
-            time = accessTimeoutOnMethod.value();
-            unit = accessTimeoutOnMethod.unit();
+            time = accessTimeoutOnMethod.getValue();
+            unit = accessTimeoutOnMethod.getTimeUnit();
          }
       }
       // try getting the lock
