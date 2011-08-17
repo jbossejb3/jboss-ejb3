@@ -26,17 +26,26 @@ import java.io.Serializable;
 /**
  * Class that stores the details of application exceptions
  *
- * @see javax.ejb.ApplicationException
  * @author Stuart Douglas
+ * @see javax.ejb.ApplicationException
  */
 public final class ApplicationExceptionDetails implements Serializable
 {
 
    private final boolean rollback;
    private final boolean inherited;
+   private final String exceptionClassName;
 
-   public ApplicationExceptionDetails(boolean rollback, boolean inherited)
+   public ApplicationExceptionDetails(String exceptionClassName, boolean rollback, boolean inherited)
    {
+      this.exceptionClassName = exceptionClassName;
+      this.rollback = rollback;
+      this.inherited = inherited;
+   }
+
+   public ApplicationExceptionDetails(Class<? extends Throwable> exceptionClass, boolean rollback, boolean inherited)
+   {
+      this.exceptionClassName = exceptionClass.getName();
       this.rollback = rollback;
       this.inherited = inherited;
    }
@@ -51,6 +60,11 @@ public final class ApplicationExceptionDetails implements Serializable
       return rollback;
    }
 
+   public String getExceptionClassName()
+   {
+      return exceptionClassName;
+   }
+
    @Override
    public boolean equals(Object o)
    {
@@ -61,6 +75,8 @@ public final class ApplicationExceptionDetails implements Serializable
 
       if (inherited != that.inherited) return false;
       if (rollback != that.rollback) return false;
+      if (exceptionClassName != null ? !exceptionClassName.equals(that.exceptionClassName) : that.exceptionClassName != null)
+         return false;
 
       return true;
    }
@@ -70,6 +86,7 @@ public final class ApplicationExceptionDetails implements Serializable
    {
       int result = (rollback ? 1 : 0);
       result = 31 * result + (inherited ? 1 : 0);
+      result = 31 * result + (exceptionClassName != null ? exceptionClassName.hashCode() : 0);
       return result;
    }
 
@@ -77,8 +94,9 @@ public final class ApplicationExceptionDetails implements Serializable
    public String toString()
    {
       return "ApplicationExceptionDetails{" +
-            "inherited=" + inherited +
+            "exceptionClassName='" + exceptionClassName + '\'' +
             ", rollback=" + rollback +
+            ", inherited=" + inherited +
             '}';
    }
 }

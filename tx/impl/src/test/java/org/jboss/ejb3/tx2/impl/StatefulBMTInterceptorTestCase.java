@@ -30,11 +30,9 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import javax.ejb.ApplicationException;
 import javax.ejb.EJBException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
-import java.lang.annotation.Annotation;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
@@ -94,7 +92,7 @@ public class StatefulBMTInterceptorTestCase
    @Test
    public void testApplicationException() throws Exception
    {
-      final ApplicationExceptionDetails ae = new ApplicationExceptionDetails(false, false);
+      final ApplicationExceptionDetails ae = new ApplicationExceptionDetails("com.acme.SomeException", false, false);
 
       StatefulBMTInterceptor statefulBMTInterceptor = new StatefulBMTInterceptor()
       {
