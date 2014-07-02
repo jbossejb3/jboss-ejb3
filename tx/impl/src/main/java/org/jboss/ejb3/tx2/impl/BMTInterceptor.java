@@ -21,10 +21,10 @@
  */
 package org.jboss.ejb3.tx2.impl;
 
+import org.jboss.ejb3.tx2.spi.ApplicationExceptionDetails;
 import org.jboss.ejb3.tx2.spi.TransactionalInvocationContext;
 import org.jboss.logging.Logger;
 
-import javax.ejb.ApplicationException;
 import javax.ejb.EJBException;
 import javax.interceptor.AroundInvoke;
 import javax.transaction.Transaction;
@@ -71,7 +71,7 @@ public abstract class BMTInterceptor
     */
    protected Exception handleException(TransactionalInvocationContext invocation, Exception ex) throws Exception
    {
-      ApplicationException ae = invocation.getApplicationException(ex.getClass());
+      ApplicationExceptionDetails ae = invocation.getApplicationException(ex.getClass());
       // it's an application exception, so just throw it back as-is
       if (ae != null)
       {

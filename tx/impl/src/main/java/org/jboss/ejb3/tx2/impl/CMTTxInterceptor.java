@@ -21,25 +21,19 @@
  */
 package org.jboss.ejb3.tx2.impl;
 
+import org.jboss.ejb3.tx2.spi.ApplicationExceptionDetails;
 import org.jboss.ejb3.tx2.spi.TransactionalInvocationContext;
 import org.jboss.logging.Logger;
 import org.jboss.tm.TransactionTimeoutConfiguration;
 import org.jboss.util.deadlock.ApplicationDeadlockException;
 
 import javax.annotation.Resource;
-import javax.ejb.ApplicationException;
 import javax.ejb.EJBException;
 import javax.ejb.EJBTransactionRequiredException;
 import javax.ejb.EJBTransactionRolledbackException;
 import javax.ejb.TransactionAttributeType;
 import javax.interceptor.AroundInvoke;
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.RollbackException;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
+import javax.transaction.*;
 import java.rmi.RemoteException;
 import java.util.Random;
 
@@ -128,11 +122,11 @@ public class CMTTxInterceptor
 
    protected void handleInCallerTx(TransactionalInvocationContext invocation, Throwable t, Transaction tx) throws Exception
    {
-      ApplicationException ae = invocation.getApplicationException(t.getClass());
+      ApplicationExceptionDetails ae = invocation.getApplicationException(t.getClass());
 
       if (ae != null)
       {
-         if (ae.rollback()) setRollbackOnly(tx);
+         if (ae.isRollback()) setRollbackOnly(tx);
          // an app exception can never be an Error
          throw (Exception) t;
       }
@@ -170,10 +164,10 @@ public class CMTTxInterceptor
 
    public void handleExceptionInOurTx(TransactionalInvocationContext invocation, Throwable t, Transaction tx) throws Exception
    {
-      ApplicationException ae = invocation.getApplicationException(t.getClass());
+      ApplicationExceptionDetails ae = invocation.getApplicationException(t.getClass());
       if (ae != null)
       {
-         if (ae.rollback()) setRollbackOnly(tx);
+         if (ae.isRollback()) setRollbackOnly(tx);
          throw (Exception) t;
       }
 

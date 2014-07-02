@@ -22,7 +22,6 @@
 
 package org.jboss.ejb3.concurrency.spi;
 
-import javax.ejb.AccessTimeout;
 import javax.ejb.LockType;
 import java.lang.reflect.Method;
 
@@ -49,18 +48,18 @@ public interface LockableComponent
    LockType getLockType(Method method);
 
    /**
-    * Returns the {@link javax.ejb.AccessTimeout} applicable for the passed <code>method</code>.
+    * Returns the access timeout applicable for the passed <code>method</code>.
     *
     * @param method
     * @return
     */
-   AccessTimeout getAccessTimeout(Method method);
+   TimePeriod getAccessTimeout(Method method);
 
    /**
-    * Returns the default applicable {@link AccessTimeout} for a component. This value will be used if a method doesn't
-    * explicitly specify an {@link AccessTimeout}
+    * Returns the default applicable access timeout for a component. This value will be used if a method doesn't
+    * explicitly specify an access timeout
     *
     * @return
     */
-   AccessTimeout getDefaultAccessTimeout();
+   TimePeriod getDefaultAccessTimeout();
 }

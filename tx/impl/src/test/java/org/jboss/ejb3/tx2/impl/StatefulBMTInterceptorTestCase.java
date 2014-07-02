@@ -21,6 +21,7 @@
  */
 package org.jboss.ejb3.tx2.impl;
 
+import org.jboss.ejb3.tx2.spi.ApplicationExceptionDetails;
 import org.jboss.ejb3.tx2.spi.TransactionalInvocationContext;
 import org.jboss.logging.Logger;
 import org.junit.Assert;
@@ -29,11 +30,9 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import javax.ejb.ApplicationException;
 import javax.ejb.EJBException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
-import java.lang.annotation.Annotation;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
@@ -93,20 +92,7 @@ public class StatefulBMTInterceptorTestCase
    @Test
    public void testApplicationException() throws Exception
    {
-      ApplicationException ae = new ApplicationException()
-      {
-         @Override
-         public boolean rollback()
-         {
-            return false;
-         }
-
-         @Override
-         public Class<? extends Annotation> annotationType()
-         {
-            return ApplicationException.class;
-         }
-      };
+      final ApplicationExceptionDetails ae = new ApplicationExceptionDetails("com.acme.SomeException", false, false);
 
       StatefulBMTInterceptor statefulBMTInterceptor = new StatefulBMTInterceptor()
       {
